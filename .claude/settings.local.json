@@ -38,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node 'SELF/BODY/COMPLETE_VOICE_HOOK_SCRIPT.js'"
+            "command": "node '/Users/syahiidkamil/Documents/professional/neosolutions/NeoHR-Atlas/SELF/BODY/COMPLETE_VOICE_HOOK_SCRIPT.js'"
           }
         ]
       }
