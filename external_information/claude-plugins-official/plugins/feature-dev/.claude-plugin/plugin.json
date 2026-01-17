@@ -1,0 +1,8 @@
+{
+  "name": "feature-dev",
+  "description": "Comprehensive feature development workflow with specialized agents for codebase exploration, architecture design, and quality review",
+  "author": {
+    "name": "Anthropic",
+    "email": "support@anthropic.com"
+  }
+}

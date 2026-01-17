@@ -1,0 +1,7 @@
+{
+  "name": "asana",
+  "description": "Asana project management integration. Create and manage tasks, search projects, update assignments, track progress, and integrate your development workflow with Asana's work management platform.",
+  "author": {
+    "name": "Asana"
+  }
+}

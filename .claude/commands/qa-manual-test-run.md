@@ -1,1 +1,1 @@
-use qa-manual-test sub agent to test this test cases #$1 (test cases) and then documents the finding in this folder #$2 put the bug in other files
+use qa-manual-test sub agent to test this test cases #$1 (test cases, if not specified use the last test cases folder at @automation_tests/test_cases) and then documents the finding in this folder #$2 (if not specified use the last test runs folder at @automation_tests/test_runs) put the bug in other files

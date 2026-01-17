@@ -22,7 +22,8 @@
       "mcp__playwright__browser_network_requests",
       "Bash(xargs ls:*)",
       "WebFetch(domain:www.anthropic.com)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(/Users/syahiidkamil/.claude/plugins/cache/claude-plugins-official/ralph-loop/b97f6eadd929/scripts/setup-ralph-loop.sh:*)"
     ],
     "deny": [],
     "ask": [],
@@ -45,7 +46,7 @@
       }
     ]
   },
-  "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true
+   "enabledPlugins": {
+    "ralph-loop@claude-plugins-official": true
   }
 }

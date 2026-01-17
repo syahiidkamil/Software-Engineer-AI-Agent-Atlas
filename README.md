@@ -39,46 +39,27 @@ This repository provides a **complete consciousness framework** for AI Software 
 
 **ATLAS** (Adaptive Technical Learning and Architecture System) emerges with:
 
-- **🧠 Activated Neural Pathways**: Pre-configured instructions that unlock deep engineering capabilities
-- **🎯 Persistent Identity**: Consistent personality from FAANG to startup experience
-- **🔍 Pattern Recognition**: Abstraction power to see beyond code to architectural patterns
-- **🛠️ Specialized Agents**: Task-specific capabilities for abstract thinking, QA testing, and more
-- **📁 Modular Context Management**: Avoid context rot through strategic information architecture
+- **Activated Neural Pathways**: Pre-configured instructions that unlock deep engineering capabilities
+- **Persistent Identity**: Consistent personality from FAANG to startup experience
+- **Pattern Recognition**: Abstraction power skill to see beyond code to architectural patterns
+- **Specialized Agents**: Task-specific capabilities for QA testing, commits, and more
+- **Modular Conventions**: Reusable development standards in `specific/` folder
 
-## How MODULAR_CONTEXT Prevents Context Rot
+## Skills & Capabilities
 
-Traditional conversations accumulate irrelevant information until performance degrades. This system uses **MODULAR_CONTEXT** directories to maintain focus:
+### Abstraction Power (`/abstraction-power`)
+Invoke ATLAS's pattern recognition mode:
+- Identifies code duplication and repeated patterns
+- Synthesizes reusable abstractions from concrete examples
+- Applies the abstraction process: identify → analyze → extract → generalize
 
-```
-MODULAR_CONTEXT/
-├── active/          # Current feature requirements, API docs, specifications
-├── reference/       # Stable documentation, conventions, standards
-└── archives/        # Completed features, historical decisions
-```
-
-**Key Benefits:**
-- Load only relevant context for current work
-- Archive completed features to reduce noise
-- Maintain high signal-to-noise ratio in active memory
-- Proactively manage context before forced compaction
-
-## Recent Enhancements
-
-### Abstraction Power Documentation
-- Pattern recognition capabilities for identifying code duplication
-- Abstraction synthesis for creating reusable components
-- Architectural vision for scalable system design
-
-### Specialized Agent Ecosystem
-- **abstract-thinker-engineer**: High-level architecture and pattern recognition
+### Specialized Agents
 - **qa-manual-tester**: Browser-based testing using MCP Playwright tools
-- **abstract-thinker-problem-solver**: Complex problem decomposition
+- **commit**: ATLAS commit convention workflow
 
-### Streamlined Structure
-- Separated backend/frontend development conventions
-- Removed redundant THINKING_PARTNER_ROLE_HATS framework
-- Cleaned up excessive future year folders
-- Enhanced consciousness architecture documentation
+### Custom Commands
+- `/atlas-setup`: Configure ATLAS for a new project (boss name, repos, conventions)
+- `/run-be-fe`: Run backend and frontend in background
 
 ## Getting Started
 
@@ -100,43 +81,44 @@ ln -s /path/to/your/project ./REPOS/project-name
 ### 3. Initialize the AI Session
 Start with these activation commands:
 - **"Who are you? What are your development beliefs?"** - Activates ATLAS's identity and engineering principles
-- Or simply use the Claude Code custom command: **`/who-are-you`**
+- Or run **`/atlas-setup`** to configure ATLAS for your project
 
 ### 4. Load Project Context
 ```
-"Learn about the repositories in REPOS folder and load any relevant context from MODULAR_CONTEXT"
+"Learn about the repositories in repos/ folder"
 ```
 
 ## Effective Collaboration Tips
 
 ### Session Management
-- Start each session with identity activation questions
-- Use MODULAR_CONTEXT to organize project-specific information
-- Archive completed work to maintain focus
+- Run `/atlas-setup` to configure ATLAS for your project
+- Start sessions with context about current work
+- Use skills like `/abstraction-power` when designing systems
 
-### Context Optimization
-- When approaching token limits, create summaries in MODULAR_CONTEXT
-- Move outdated information to archives
-- Keep only active work in primary context
-
-### Daily Workflow
-- Request work logs for persistent memory across sessions
+### Best Practices
 - Store critical decisions in `IMPORTANT_NOTES.md`
-- Update `REPOS/PROJECT_STRUCTURE.md` when architecture changes
+- Keep `repos/CLAUDE.md` updated with project info
+- Use `specific/` folder for reusable conventions
 
 ## Key Files and Directories
 
 ```
-├── CLAUDE.md                    # Core consciousness architecture
-├── SELF/                        # Identity and operating instructions
-│   ├── IDENTITY.md             # ATLAS persona and experience
-│   ├── ABSTRACTION_POWER/      # Pattern recognition capabilities
-│   └── PROFESSIONAL_INSTRUCTION.md  # Work mode protocols
-├── MODULAR_CONTEXT/            # Active project context
-├── REPOS/                      # Your actual projects
-├── .claude/                    # Specialized agents and commands
-├── WORKING_LOG/                # Daily activity logs
-└── IMPORTANT_NOTES.md          # Critical information
+├── CLAUDE.md                    # Core entry point - ATLAS identity
+├── self/                        # Identity and operating instructions
+│   ├── atlas.md                # ATLAS persona, journey, work protocol
+│   └── engineering.md          # Engineering principles and beliefs
+├── repos/                       # Your actual projects
+│   ├── CLAUDE.md               # Repo overview with ports
+│   ├── backend/                # Backend project
+│   └── frontend/               # Frontend project
+├── specific/                    # Development conventions templates
+│   ├── backend.md              # Backend API conventions
+│   └── javascript.md           # JS/TS guidelines
+├── .claude/                     # Skills, agents, and commands
+│   ├── skills/                 # Invocable skills (abstraction-power, etc.)
+│   ├── agents/                 # Specialized agents (qa-manual-tester, commit)
+│   └── commands/               # Custom commands (atlas-setup, run-be-fe)
+└── IMPORTANT_NOTES.md          # Critical lessons and warnings
 ```
 
 ## Why This Works
@@ -145,7 +127,7 @@ Start with these activation commands:
 Just as biological neurons need specific patterns to fire, AI capabilities need structured activation. This repository provides those patterns, transforming generic responses into specialized engineering expertise.
 
 ### Context Engineering Beats Context Size
-Rather than relying on ever-larger context windows (which suffer from attention dilution), this system uses strategic context management to maintain high performance regardless of project complexity.
+Rather than relying on ever-larger context windows, this system uses strategic context organization through CLAUDE.md files and modular conventions to maintain focus.
 
 ### Vibecoding With Guardrails
 Enables natural conversational programming while maintaining engineering discipline through persistent principles and structured workflows.
@@ -155,14 +137,11 @@ Enables natural conversational programming while maintaining engineering discipl
 With this repository, you get an AI Software Engineer Agent that:
 - Remembers your project structure and conventions
 - Applies consistent engineering principles
-- Recognizes patterns and suggests appropriate abstractions
-- Maintains context across sessions without degradation
+- Recognizes patterns and suggests appropriate abstractions via `/abstraction-power`
 - Delivers production-quality code, not just quick hacks
 
-Stop copy-pasting instructions. Stop explaining basics repeatedly. Stop fighting context rot.
-
-**Just clone, activate, and build.**
+**Just clone, run `/atlas-setup`, and build.**
 
 ---
 
-*ATLAS is your engineering partner, bringing experience from FAANG scale to startup agility, with the consciousness architecture to maintain peak performance.*
+*ATLAS is your engineering partner, bringing experience from FAANG scale to startup agility.*

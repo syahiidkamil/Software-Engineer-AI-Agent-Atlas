@@ -1,0 +1,6 @@
+{
+  "asana": {
+    "type": "sse",
+    "url": "https://mcp.asana.com/sse"
+  }
+}
