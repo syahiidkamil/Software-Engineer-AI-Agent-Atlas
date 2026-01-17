@@ -3,6 +3,14 @@
     "playwright": {
       "command": "npx",
       "args": ["@playwright/mcp@latest", "--isolated", "--storage-state=.claude/browser-storage.json"]
+    },
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
+      ]
     }
-  }
+  }  
 }
