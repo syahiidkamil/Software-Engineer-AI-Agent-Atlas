@@ -5,7 +5,7 @@ const path = require('path');
 const os = require('os');
 
 // Path to the audio file
-const audioFile = path.join(__dirname, 'TASK_COMPLETE_VOICE.wav');
+const audioFile = path.join(__dirname, 'task-complete.wav');
 
 // Cross-platform audio playback
 function playAudio() {

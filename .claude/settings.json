@@ -39,10 +39,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node 'SELF/BODY/COMPLETE_VOICE_HOOK_SCRIPT.js'"
+            "command": "node '.claude/hooks/task-complete.js'"
           }
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true
   }
 }
