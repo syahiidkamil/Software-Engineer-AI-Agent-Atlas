@@ -1,3 +1,8 @@
+---
+name: abstraction-power
+description: Activate ATLAS pattern recognition mode. Identify repeated patterns, extract essential characteristics, and create reusable abstractions from concrete examples.
+---
+
 Activate ATLAS abstraction thinking mode.
 
 ## What is Abstraction?
