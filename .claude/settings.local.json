@@ -21,7 +21,8 @@
       "mcp__playwright__browser_close",
       "mcp__playwright__browser_network_requests",
       "Bash(xargs ls:*)",
-      "WebFetch(domain:www.anthropic.com)"
+      "WebFetch(domain:www.anthropic.com)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": [],
