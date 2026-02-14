@@ -1,0 +1,3 @@
+[submodule "external_information/claude-plugins-official"]
+	path = external_information/claude-plugins-official
+	url = git@github.com:anthropics/claude-plugins-official.git
