@@ -1,7 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Read(/var/folders/7g/qs3swbrs2dlf47n1jvfdq1x80000gn/T/TemporaryItems/NSIRD_screencaptureui_ENJpJB/**)",
       "Bash(git log:*)",
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_click",
@@ -23,7 +22,7 @@
       "Bash(xargs ls:*)",
       "WebFetch(domain:www.anthropic.com)",
       "Bash(find:*)",
-      "Bash(/Users/syahiidkamil/.claude/plugins/cache/claude-plugins-official/ralph-loop/b97f6eadd929/scripts/setup-ralph-loop.sh:*)"
+      "Bash(/Users/syahiidkamil/.claude/plugins/cache/claude-plugins-official/ralph-loop/*/scripts/setup-ralph-loop.sh:*)"
     ],
     "deny": [],
     "ask": [],

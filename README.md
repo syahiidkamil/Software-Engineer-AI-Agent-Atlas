@@ -92,32 +92,35 @@ Pre-configured MCP servers in `.mcp.json`:
 
 ## Getting Started
 
-### 1. Clone and Activate
+### Quick Start (npx)
+
 ```bash
-git clone --recurse-submodules https://github.com/[your-repo]/ai-software-engineer-agent
-cd ai-software-engineer-agent
+# Scaffold into an existing project
+cd your-project
+npx swe-atlas new-project
+
+# Or scaffold into a new folder
+npx swe-atlas new-project my-workspace
 ```
 
-### 2. Set Up Your Projects
+The CLI will interactively ask for your name, project type (single/multi repo), context templates, and MCP servers.
+
+### Manual Setup (git clone)
+
 ```bash
-# Copy your projects into repos/ folder
-cp -r /path/to/your/project ./repos/
-
-# Or create symlinks for active development
-ln -s /path/to/your/project ./repos/project-name
+git clone --recurse-submodules https://github.com/syahiidkamil/Software-Engineer-AI-Agent-Atlas
+cd Software-Engineer-AI-Agent-Atlas
 ```
 
-### 3. Initialize the AI Session
-- Run **`/atlas-setup`** to configure ATLAS for your project
-- Or ask **"Who are you? What are your development beliefs?"** to activate ATLAS identity
+Then configure with `/atlas-setup` inside Claude Code.
 
-### 4. Start Building
+### After Setup
+
 ```
-# Use guided feature development
-/feature-dev
-
-# Or just describe what you need
-"Add user authentication with JWT tokens"
+# Open in Claude Code, then:
+/atlas-setup              # Configure ATLAS for your project
+/feature-dev              # Guided feature development
+"Add user authentication" # Or just describe what you need
 ```
 
 ## Repository Structure
@@ -202,7 +205,7 @@ With this repository, you get an AI Software Engineer Agent that:
 - Applies consistent engineering principles (KISS, YAGNI, DRY)
 - Delivers production-quality code with empirical verification
 
-**Just clone, run `/atlas-setup`, and build.**
+**`npx swe-atlas new-project` and start building.**
 
 ---
 

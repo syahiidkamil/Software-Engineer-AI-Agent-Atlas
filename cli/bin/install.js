@@ -10,6 +10,7 @@ const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const CYAN = '\x1b[36m';
 const GREEN = '\x1b[32m';
 const YELLOW = '\x1b[33m';
+const RED = '\x1b[31m';
 const DIM = '\x1b[2m';
 const BOLD = '\x1b[1m';
 const RESET = '\x1b[0m';
@@ -26,10 +27,25 @@ function printHeader() {
   print(`${CYAN}${BOLD}  ║                                                  ║${RESET}`);
   print(`${CYAN}${BOLD}  ║   ATLAS — Software Engineer AI Agent             ║${RESET}`);
   print(`${CYAN}${BOLD}  ║   Adaptive Technical Learning & Architecture     ║${RESET}`);
+  print(`${CYAN}${BOLD}  ║   System                                         ║${RESET}`);
   print(`${CYAN}${BOLD}  ║                                                  ║${RESET}`);
   print(`${CYAN}${BOLD}  ╚══════════════════════════════════════════════════╝${RESET}`);
   print();
   print(`${DIM}  FAANG experience for scale. Startup experience for pragmatism.${RESET}`);
+  print();
+}
+
+function printUsage() {
+  print();
+  print(`${BOLD}  Usage:${RESET}`);
+  print(`    swe-atlas new-project ${DIM}[folder-name]${RESET}`);
+  print();
+  print(`${BOLD}  Arguments:${RESET}`);
+  print(`    ${DIM}folder-name${RESET}  Target directory ${DIM}(default: current directory)${RESET}`);
+  print();
+  print(`${BOLD}  Examples:${RESET}`);
+  print(`    swe-atlas new-project              ${DIM}# scaffold in current directory${RESET}`);
+  print(`    swe-atlas new-project my-project   ${DIM}# scaffold in ./my-project${RESET}`);
   print();
 }
 
@@ -58,7 +74,6 @@ async function askChoice(rl, question, options) {
   if (idx >= 0 && idx < options.length) {
     return options[idx].value;
   }
-  // Default to first option
   print(`${DIM}    Defaulting to: ${options[0].label}${RESET}`);
   return options[0].value;
 }
@@ -144,23 +159,71 @@ Mostly scalable without overengineering.
 `;
 }
 
-function generateSettingsJson() {
-  return JSON.stringify(
-    {
-      permissions: {
-        allow: [
-          'Bash(git log:*)',
-          'Bash(mkdir:*)',
-        ],
-        deny: [],
-        ask: [],
-        defaultMode: 'acceptEdits',
-      },
-      enableAllProjectMcpServers: true,
+function generateSettingsJson(targetDir, options = {}) {
+  const os = require('os');
+  const homeDir = os.homedir();
+
+  const allow = [
+    'Bash(git log:*)',
+    'Bash(lsof:*)',
+    'Bash(mkdir:*)',
+    'Bash(xargs ls:*)',
+    'Bash(find:*)',
+    'WebFetch(domain:www.anthropic.com)',
+    `Bash(${homeDir}/.claude/plugins/cache/claude-plugins-official/ralph-loop/*/scripts/setup-ralph-loop.sh:*)`,
+  ];
+
+  if (options.playwright) {
+    allow.push(
+      'mcp__playwright__browser_navigate',
+      'mcp__playwright__browser_click',
+      'mcp__playwright__browser_snapshot',
+      'mcp__playwright__browser_type',
+      'mcp__playwright__browser_console_messages',
+      'mcp__playwright__browser_press_key',
+      'mcp__playwright__browser_take_screenshot',
+      'mcp__playwright__browser_fill_form',
+      'mcp__playwright__browser_evaluate',
+      'mcp__playwright__browser_wait_for',
+      'mcp__playwright__browser_select_option',
+      'mcp__playwright__browser_hover',
+      'mcp__playwright__browser_resize',
+      'mcp__playwright__browser_close',
+      'mcp__playwright__browser_network_requests',
+    );
+  }
+
+  const settings = {
+    permissions: {
+      allow,
+      deny: [],
+      ask: [],
+      defaultMode: 'acceptEdits',
     },
-    null,
-    2
-  ) + '\n';
+    enableAllProjectMcpServers: true,
+    hooks: {
+      Stop: [
+        {
+          matcher: '',
+          hooks: [
+            {
+              type: 'command',
+              command: `node '${targetDir}/.claude/hooks/task-complete.js'`,
+            },
+          ],
+        },
+      ],
+    },
+    enabledPlugins: {
+      'ralph-loop@claude-plugins-official': true,
+    },
+  };
+
+  if (options.playwright) {
+    settings.enabledMcpjsonServers = ['playwright'];
+  }
+
+  return JSON.stringify(settings, null, 2) + '\n';
 }
 
 function generateMcpJson(options = {}) {
@@ -214,10 +277,14 @@ YOU MUST FOLLOW THESE (HIGH PRIORITY):
 `;
 }
 
-// ─── Main ────────────────────────────────────────────────────────────────────
+// ─── Scaffold ────────────────────────────────────────────────────────────────
 
-async function main() {
+async function scaffold(targetDir) {
   printHeader();
+
+  const resolvedDir = path.resolve(targetDir);
+  print(`  ${BOLD}Target:${RESET} ${resolvedDir}`);
+  print();
 
   const rl = createRL();
 
@@ -243,36 +310,7 @@ async function main() {
       },
     ]);
 
-    // 3. Project name / directory
-    let targetDir;
-    if (mode === 'single') {
-      const useCurrentDir = await askChoice(
-        rl,
-        'Scaffold in current directory?',
-        [
-          { label: 'Yes', desc: `Use ${process.cwd()}`, value: 'yes' },
-          { label: 'No', desc: 'Specify a different path', value: 'no' },
-        ]
-      );
-      if (useCurrentDir === 'yes') {
-        targetDir = process.cwd();
-      } else {
-        targetDir = await ask(rl, 'Enter project path:');
-        targetDir = path.resolve(targetDir);
-      }
-    } else {
-      const projectName = await ask(
-        rl,
-        'Workspace name (directory to create):'
-      );
-      if (!projectName) {
-        print(`${YELLOW}  Workspace name is required.${RESET}`);
-        process.exit(1);
-      }
-      targetDir = path.resolve(process.cwd(), projectName);
-    }
-
-    // 4. Context templates
+    // 3. Context templates
     const contextTemplates = await askMultiChoice(
       rl,
       'Which context templates to include?',
@@ -300,7 +338,7 @@ async function main() {
       ]
     );
 
-    // 5. MCP servers
+    // 4. MCP servers
     const mcpServers = await askMultiChoice(
       rl,
       'Which MCP servers to enable?',
@@ -320,35 +358,35 @@ async function main() {
 
     rl.close();
 
-    // ─── Scaffold ────────────────────────────────────────────────────────
+    // ─── Write Files ──────────────────────────────────────────────────────
 
     print();
     print(`${GREEN}${BOLD}  Scaffolding ATLAS...${RESET}`);
     print();
 
-    ensureDir(targetDir);
+    ensureDir(resolvedDir);
 
     // Determine paths based on mode
     const selfDir =
       mode === 'single'
-        ? path.join(targetDir, 'atlas', 'self')
-        : path.join(targetDir, 'self');
+        ? path.join(resolvedDir, 'atlas', 'self')
+        : path.join(resolvedDir, 'self');
     const ctDir =
       mode === 'single'
-        ? path.join(targetDir, 'atlas', 'context-templates')
-        : path.join(targetDir, 'context-templates');
-    const claudeDir = path.join(targetDir, '.claude');
+        ? path.join(resolvedDir, 'atlas', 'context-templates')
+        : path.join(resolvedDir, 'context-templates');
+    const claudeDir = path.join(resolvedDir, '.claude');
 
     // CLAUDE.md
     writeFileSync(
-      path.join(targetDir, 'CLAUDE.md'),
+      path.join(resolvedDir, 'CLAUDE.md'),
       generateClaudeMd(bossName, mode)
     );
     print(`  ${GREEN}+${RESET} CLAUDE.md`);
 
     // IMPORTANT_NOTES.md
     writeFileSync(
-      path.join(targetDir, 'IMPORTANT_NOTES.md'),
+      path.join(resolvedDir, 'IMPORTANT_NOTES.md'),
       generateImportantNotes()
     );
     print(`  ${GREEN}+${RESET} IMPORTANT_NOTES.md`);
@@ -357,7 +395,6 @@ async function main() {
     const selfTemplateDir = path.join(TEMPLATES_DIR, 'self');
     if (fs.existsSync(selfTemplateDir)) {
       copyDirSync(selfTemplateDir, selfDir);
-      // Replace boss name in atlas.md
       const atlasPath = path.join(selfDir, 'atlas.md');
       if (fs.existsSync(atlasPath)) {
         let content = fs.readFileSync(atlasPath, 'utf-8');
@@ -385,41 +422,28 @@ async function main() {
     // .claude/ directory — skills, agents, commands, hooks
     const claudeTemplateDir = path.join(TEMPLATES_DIR, '.claude');
     if (fs.existsSync(claudeTemplateDir)) {
-      // Copy skills
-      const skillsSrc = path.join(claudeTemplateDir, 'skills');
-      if (fs.existsSync(skillsSrc)) {
-        copyDirSync(skillsSrc, path.join(claudeDir, 'skills'));
-        print(`  ${GREEN}+${RESET} .claude/skills/`);
-      }
-
-      // Copy agents
-      const agentsSrc = path.join(claudeTemplateDir, 'agents');
-      if (fs.existsSync(agentsSrc)) {
-        copyDirSync(agentsSrc, path.join(claudeDir, 'agents'));
-        print(`  ${GREEN}+${RESET} .claude/agents/`);
-      }
-
-      // Copy commands
-      const commandsSrc = path.join(claudeTemplateDir, 'commands');
-      if (fs.existsSync(commandsSrc)) {
-        copyDirSync(commandsSrc, path.join(claudeDir, 'commands'));
-        print(`  ${GREEN}+${RESET} .claude/commands/`);
-      }
-
-      // Copy hooks
-      const hooksSrc = path.join(claudeTemplateDir, 'hooks');
-      if (fs.existsSync(hooksSrc)) {
-        copyDirSync(hooksSrc, path.join(claudeDir, 'hooks'));
-        print(`  ${GREEN}+${RESET} .claude/hooks/`);
+      const dirs = ['skills', 'agents', 'commands', 'hooks'];
+      for (const dir of dirs) {
+        const src = path.join(claudeTemplateDir, dir);
+        if (fs.existsSync(src)) {
+          copyDirSync(src, path.join(claudeDir, dir));
+          print(`  ${GREEN}+${RESET} .claude/${dir}/`);
+        }
       }
     }
 
-    // settings.json
+    // settings.json + settings.local.json
+    const settingsContent = generateSettingsJson(resolvedDir, mcpOptions);
     writeFileSync(
       path.join(claudeDir, 'settings.json'),
-      generateSettingsJson()
+      settingsContent
+    );
+    writeFileSync(
+      path.join(claudeDir, 'settings.local.json'),
+      settingsContent
     );
     print(`  ${GREEN}+${RESET} .claude/settings.json`);
+    print(`  ${GREEN}+${RESET} .claude/settings.local.json`);
 
     // .mcp.json
     const mcpOptions = {
@@ -428,7 +452,7 @@ async function main() {
     };
     if (mcpServers.length > 0) {
       writeFileSync(
-        path.join(targetDir, '.mcp.json'),
+        path.join(resolvedDir, '.mcp.json'),
         generateMcpJson(mcpOptions)
       );
       print(`  ${GREEN}+${RESET} .mcp.json`);
@@ -436,44 +460,35 @@ async function main() {
 
     // Multi-repo specific directories
     if (mode === 'multi') {
-      // repos/
-      gitkeep(path.join(targetDir, 'repos', 'backend'));
-      gitkeep(path.join(targetDir, 'repos', 'frontend'));
+      gitkeep(path.join(resolvedDir, 'repos', 'backend'));
+      gitkeep(path.join(resolvedDir, 'repos', 'frontend'));
       writeFileSync(
-        path.join(targetDir, 'repos', 'CLAUDE.md'),
+        path.join(resolvedDir, 'repos', 'CLAUDE.md'),
         generateRepoClaudeMd()
       );
       print(`  ${GREEN}+${RESET} repos/`);
 
-      // automation_tests/
-      gitkeep(path.join(targetDir, 'automation_tests', 'test_cases'));
-      gitkeep(path.join(targetDir, 'automation_tests', 'test_runs'));
+      gitkeep(path.join(resolvedDir, 'automation_tests', 'test_cases'));
+      gitkeep(path.join(resolvedDir, 'automation_tests', 'test_runs'));
       print(`  ${GREEN}+${RESET} automation_tests/`);
 
-      // development-context/
-      gitkeep(path.join(targetDir, 'development-context'));
+      gitkeep(path.join(resolvedDir, 'development-context'));
       print(`  ${GREEN}+${RESET} development-context/`);
-
-      // misc/browser-storage (for playwright)
-      if (mcpOptions.playwright) {
-        gitkeep(path.join(targetDir, 'misc', 'browser-storage'));
-        print(`  ${GREEN}+${RESET} misc/browser-storage/`);
-      }
-    } else {
-      // Single-repo: misc/browser-storage if playwright enabled
-      if (mcpOptions.playwright) {
-        gitkeep(path.join(targetDir, 'misc', 'browser-storage'));
-        print(`  ${GREEN}+${RESET} misc/browser-storage/`);
-      }
     }
 
-    // ─── Summary ─────────────────────────────────────────────────────────
+    // misc/browser-storage (for playwright, both modes)
+    if (mcpOptions.playwright) {
+      gitkeep(path.join(resolvedDir, 'misc', 'browser-storage'));
+      print(`  ${GREEN}+${RESET} misc/browser-storage/`);
+    }
+
+    // ─── Summary ──────────────────────────────────────────────────────────
 
     print();
     print(`${GREEN}${BOLD}  ATLAS scaffolded successfully!${RESET}`);
     print();
     print(`  ${BOLD}Mode:${RESET}      ${mode === 'single' ? 'Single repo' : 'Multi repo'}`);
-    print(`  ${BOLD}Location:${RESET}  ${targetDir}`);
+    print(`  ${BOLD}Location:${RESET}  ${resolvedDir}`);
     print(`  ${BOLD}Boss:${RESET}      ${bossName}`);
     if (contextTemplates.length > 0) {
       print(
@@ -485,21 +500,47 @@ async function main() {
     }
     print();
     print(`${DIM}  Next steps:${RESET}`);
-    if (mode === 'multi') {
-      print(`  ${DIM}  1. cd ${path.basename(targetDir)}${RESET}`);
-      print(`  ${DIM}  2. git init${RESET}`);
-      print(`  ${DIM}  3. Add your repos to repos/ folder${RESET}`);
-      print(`  ${DIM}  4. Open in Claude Code and start building${RESET}`);
+    if (resolvedDir !== process.cwd()) {
+      print(`  ${DIM}  1. cd ${path.relative(process.cwd(), resolvedDir) || '.'}${RESET}`);
+      print(`  ${DIM}  2. Open in Claude Code and start building${RESET}`);
     } else {
       print(`  ${DIM}  1. Open in Claude Code and start building${RESET}`);
-      print(`  ${DIM}  2. Ask: "Who are you?" to activate ATLAS${RESET}`);
     }
+    print(`  ${DIM}  ${resolvedDir !== process.cwd() ? '3' : '2'}. Ask: "Who are you?" to activate ATLAS${RESET}`);
     print();
   } catch (err) {
     rl.close();
     console.error(`\n  Error: ${err.message}`);
     process.exit(1);
   }
+}
+
+// ─── CLI Entry Point ─────────────────────────────────────────────────────────
+
+function main() {
+  const args = process.argv.slice(2);
+  const command = args[0];
+
+  if (!command || command === 'help' || command === '--help' || command === '-h') {
+    printHeader();
+    printUsage();
+    process.exit(0);
+  }
+
+  if (command === 'new-project') {
+    const folderArg = args[1];
+    const targetDir = folderArg
+      ? path.resolve(process.cwd(), folderArg)
+      : process.cwd();
+    scaffold(targetDir);
+    return;
+  }
+
+  // Unknown command
+  print();
+  print(`${RED}  Unknown command: ${command}${RESET}`);
+  printUsage();
+  process.exit(1);
 }
 
 main();
