@@ -1,6 +1,6 @@
 # swe-atlas
 
-![SWE-ATLAS](images/swe-atlas.png)
+![SWE-ATLAS](https://raw.githubusercontent.com/syahiidkamil/Software-Engineer-AI-Agent-Atlas/main/misc/images/swe-atlas.png)
 
 > Turn Claude Code into a senior software engineer with persistent identity, real engineering principles, and production-grade tooling.
 
@@ -124,7 +124,7 @@ Open your project in Claude Code and:
 
 ## The Neuron Activation Problem
 
-![Neuron Activation](images/neuron-activation.gif)
+![Neuron Activation](https://raw.githubusercontent.com/syahiidkamil/Software-Engineer-AI-Agent-Atlas/main/neuron-activation.gif)
 
 AI coding assistants have deep engineering capabilities locked behind generic defaults. The difference between "write a function" and a properly activated AI Software Engineer is like night and day.
 
