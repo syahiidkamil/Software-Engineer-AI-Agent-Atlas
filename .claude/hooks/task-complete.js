@@ -46,7 +46,7 @@ function notifyComplete() {
 
   if (platform === 'darwin') {
     // macOS: Play the wav first, then speak with say
-    const playCmd = `afplay "${audioFile}" 2>/dev/null && say -v Alex "${message}"`;
+    const playCmd = `say -v Alex "${message}" && afplay "${audioFile}" 2>/dev/null`;
     exec(playCmd, (error) => {
       if (error) {
         // Fallback to just say if wav fails
