@@ -300,12 +300,12 @@ async function scaffold(targetDir) {
     const mode = await askChoice(rl, 'Project type?', [
       {
         label: 'Single repo',
-        desc: 'Add ATLAS to an existing project',
+        desc: 'One project, ATLAS identity wrapped in atlas/ folder',
         value: 'single',
       },
       {
         label: 'Multi repo',
-        desc: 'Create a workspace with repos/ folder for multiple projects',
+        desc: 'Workspace with repos/ folder for multiple projects',
         value: 'multi',
       },
     ]);
@@ -432,6 +432,12 @@ async function scaffold(targetDir) {
       }
     }
 
+    // MCP options
+    const mcpOptions = {
+      playwright: mcpServers.includes('playwright'),
+      postgres: mcpServers.includes('postgres'),
+    };
+
     // settings.json + settings.local.json
     const settingsContent = generateSettingsJson(resolvedDir, mcpOptions);
     writeFileSync(
@@ -446,10 +452,6 @@ async function scaffold(targetDir) {
     print(`  ${GREEN}+${RESET} .claude/settings.local.json`);
 
     // .mcp.json
-    const mcpOptions = {
-      playwright: mcpServers.includes('playwright'),
-      postgres: mcpServers.includes('postgres'),
-    };
     if (mcpServers.length > 0) {
       writeFileSync(
         path.join(resolvedDir, '.mcp.json'),

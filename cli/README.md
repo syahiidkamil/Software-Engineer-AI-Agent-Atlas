@@ -4,6 +4,17 @@ Scaffold an **ATLAS** (Adaptive Technical Learning and Architecture System) — 
 
 ATLAS transforms Claude Code into a specialized Software Engineer with persistent identity, engineering principles, and professional-grade tooling.
 
+## Installation
+
+```bash
+# Use directly with npx (no install needed)
+npx swe-atlas new-project
+
+# Or install globally
+npm install -g swe-atlas
+swe-atlas new-project
+```
+
 ## Quick Start
 
 ```bash
