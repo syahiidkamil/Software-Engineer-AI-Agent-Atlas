@@ -7,10 +7,15 @@ const path = require('path');
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
-const CYAN = '\x1b[36m';
+
+// ATLAS Orange theme — distinct from GSD's cyan/blue
+const ORANGE = '\x1b[38;5;208m';
+const BRIGHT_ORANGE = '\x1b[38;5;214m';
+const DARK_ORANGE = '\x1b[38;5;166m';
 const GREEN = '\x1b[32m';
 const YELLOW = '\x1b[33m';
 const RED = '\x1b[31m';
+const WHITE = '\x1b[37m';
 const DIM = '\x1b[2m';
 const BOLD = '\x1b[1m';
 const RESET = '\x1b[0m';
@@ -23,15 +28,17 @@ function print(msg = '') {
 
 function printHeader() {
   print();
-  print(`${CYAN}${BOLD}  ╔══════════════════════════════════════════════════╗${RESET}`);
-  print(`${CYAN}${BOLD}  ║                                                  ║${RESET}`);
-  print(`${CYAN}${BOLD}  ║   ATLAS — Software Engineer AI Agent             ║${RESET}`);
-  print(`${CYAN}${BOLD}  ║   Adaptive Technical Learning & Architecture     ║${RESET}`);
-  print(`${CYAN}${BOLD}  ║   System                                         ║${RESET}`);
-  print(`${CYAN}${BOLD}  ║                                                  ║${RESET}`);
-  print(`${CYAN}${BOLD}  ╚══════════════════════════════════════════════════╝${RESET}`);
+  print(`${BRIGHT_ORANGE}    ███████╗██╗    ██╗███████╗       █████╗ ████████╗██╗      █████╗ ███████╗${RESET}`);
+  print(`${BRIGHT_ORANGE}    ██╔════╝██║    ██║██╔════╝      ██╔══██╗╚══██╔══╝██║     ██╔══██╗██╔════╝${RESET}`);
+  print(`${ORANGE}    ███████╗██║ █╗ ██║█████╗  █████╗███████║   ██║   ██║     ███████║███████╗${RESET}`);
+  print(`${ORANGE}    ╚════██║██║███╗██║██╔══╝  ╚════╝██╔══██║   ██║   ██║     ██╔══██║╚════██║${RESET}`);
+  print(`${DARK_ORANGE}    ███████║╚███╔███╔╝███████╗      ██║  ██║   ██║   ███████╗██║  ██║███████║${RESET}`);
+  print(`${DARK_ORANGE}    ╚══════╝ ╚══╝╚══╝ ╚══════╝      ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚══════╝${RESET}`);
   print();
-  print(`${DIM}  FAANG experience for scale. Startup experience for pragmatism.${RESET}`);
+  print(`${WHITE}    Software Engineer — AI Agent${RESET}`);
+  print(`${DIM}    Adaptive Technical Learning & Architecture System${RESET}`);
+  print();
+  print(`${DIM}    FAANG experience for scale. Startup experience for pragmatism.${RESET}`);
   print();
 }
 
@@ -58,14 +65,14 @@ function createRL() {
 
 function ask(rl, question) {
   return new Promise((resolve) => {
-    rl.question(`${YELLOW}  ? ${RESET}${question} `, (answer) => {
+    rl.question(`${ORANGE}  ? ${RESET}${question} `, (answer) => {
       resolve(answer.trim());
     });
   });
 }
 
 async function askChoice(rl, question, options) {
-  print(`${YELLOW}  ? ${RESET}${question}`);
+  print(`${ORANGE}  ? ${RESET}${question}`);
   options.forEach((opt, i) => {
     print(`    ${BOLD}${i + 1}${RESET}) ${opt.label} ${DIM}— ${opt.desc}${RESET}`);
   });
@@ -79,12 +86,13 @@ async function askChoice(rl, question, options) {
 }
 
 async function askMultiChoice(rl, question, options) {
-  print(`${YELLOW}  ? ${RESET}${question} ${DIM}(comma-separated, e.g. 1,3)${RESET}`);
+  print(`${ORANGE}  ? ${RESET}${question} ${DIM}(comma-separated, e.g. 1,3 or * for all)${RESET}`);
   options.forEach((opt, i) => {
     print(`    ${BOLD}${i + 1}${RESET}) ${opt.label} ${DIM}— ${opt.desc}${RESET}`);
   });
   const answer = await ask(rl, `Choose:`);
   if (!answer) return [];
+  if (answer.trim() === '*') return options.map((o) => o.value);
   const indices = answer.split(',').map((s) => parseInt(s.trim(), 10) - 1);
   return indices
     .filter((i) => i >= 0 && i < options.length)
@@ -283,7 +291,7 @@ async function scaffold(targetDir) {
   printHeader();
 
   const resolvedDir = path.resolve(targetDir);
-  print(`  ${BOLD}Target:${RESET} ${resolvedDir}`);
+  print(`  ${ORANGE}${BOLD}Target:${RESET} ${resolvedDir}`);
   print();
 
   const rl = createRL();
@@ -361,7 +369,7 @@ async function scaffold(targetDir) {
     // ─── Write Files ──────────────────────────────────────────────────────
 
     print();
-    print(`${GREEN}${BOLD}  Scaffolding ATLAS...${RESET}`);
+    print(`${ORANGE}${BOLD}  Scaffolding ATLAS...${RESET}`);
     print();
 
     ensureDir(resolvedDir);
@@ -382,14 +390,14 @@ async function scaffold(targetDir) {
       path.join(resolvedDir, 'CLAUDE.md'),
       generateClaudeMd(bossName, mode)
     );
-    print(`  ${GREEN}+${RESET} CLAUDE.md`);
+    print(`  ${ORANGE}+${RESET} CLAUDE.md`);
 
     // IMPORTANT_NOTES.md
     writeFileSync(
       path.join(resolvedDir, 'IMPORTANT_NOTES.md'),
       generateImportantNotes()
     );
-    print(`  ${GREEN}+${RESET} IMPORTANT_NOTES.md`);
+    print(`  ${ORANGE}+${RESET} IMPORTANT_NOTES.md`);
 
     // self/ directory
     const selfTemplateDir = path.join(TEMPLATES_DIR, 'self');
@@ -402,13 +410,13 @@ async function scaffold(targetDir) {
         fs.writeFileSync(atlasPath, content, 'utf-8');
       }
     }
-    print(`  ${GREEN}+${RESET} ${mode === 'single' ? 'atlas/' : ''}self/`);
+    print(`  ${ORANGE}+${RESET} ${mode === 'single' ? 'atlas/' : ''}self/`);
 
     // Context templates — copy all
     const ctTemplateDir = path.join(TEMPLATES_DIR, 'context-templates');
     if (fs.existsSync(ctTemplateDir)) {
       copyDirSync(ctTemplateDir, ctDir);
-      print(`  ${GREEN}+${RESET} ${mode === 'single' ? 'atlas/' : ''}context-templates/`);
+      print(`  ${ORANGE}+${RESET} ${mode === 'single' ? 'atlas/' : ''}context-templates/`);
     }
 
     // Activate selected templates into development-context/
@@ -423,10 +431,10 @@ async function scaffold(targetDir) {
           fs.copyFileSync(src, path.join(devCtxDir, tpl));
         }
       }
-      print(`  ${GREEN}+${RESET} development-context/ (${activeTemplates.length} active)`);
+      print(`  ${ORANGE}+${RESET} development-context/ (${activeTemplates.length} active)`);
     } else {
       gitkeep(devCtxDir);
-      print(`  ${GREEN}+${RESET} development-context/`);
+      print(`  ${ORANGE}+${RESET} development-context/`);
     }
 
     // .claude/ directory — skills, agents, commands, hooks
@@ -437,7 +445,7 @@ async function scaffold(targetDir) {
         const src = path.join(claudeTemplateDir, dir);
         if (fs.existsSync(src)) {
           copyDirSync(src, path.join(claudeDir, dir));
-          print(`  ${GREEN}+${RESET} .claude/${dir}/`);
+          print(`  ${ORANGE}+${RESET} .claude/${dir}/`);
         }
       }
     }
@@ -458,8 +466,8 @@ async function scaffold(targetDir) {
       path.join(claudeDir, 'settings.local.json'),
       settingsContent
     );
-    print(`  ${GREEN}+${RESET} .claude/settings.json`);
-    print(`  ${GREEN}+${RESET} .claude/settings.local.json`);
+    print(`  ${ORANGE}+${RESET} .claude/settings.json`);
+    print(`  ${ORANGE}+${RESET} .claude/settings.local.json`);
 
     // .mcp.json
     if (mcpServers.length > 0) {
@@ -467,23 +475,26 @@ async function scaffold(targetDir) {
         path.join(resolvedDir, '.mcp.json'),
         generateMcpJson(mcpOptions)
       );
-      print(`  ${GREEN}+${RESET} .mcp.json`);
+      print(`  ${ORANGE}+${RESET} .mcp.json`);
     }
 
     // Common directories (both modes)
     gitkeep(path.join(resolvedDir, 'docs'));
-    print(`  ${GREEN}+${RESET} docs/`);
+    print(`  ${ORANGE}+${RESET} docs/`);
+
+    gitkeep(path.join(resolvedDir, 'ralph-loop-docs'));
+    print(`  ${ORANGE}+${RESET} ralph-loop-docs/`);
 
     gitkeep(path.join(resolvedDir, 'misc', 'prompts'));
-    print(`  ${GREEN}+${RESET} misc/prompts/`);
+    print(`  ${ORANGE}+${RESET} misc/prompts/`);
 
     gitkeep(path.join(resolvedDir, 'automation_tests', 'test_cases'));
     gitkeep(path.join(resolvedDir, 'automation_tests', 'test_runs'));
-    print(`  ${GREEN}+${RESET} automation_tests/`);
+    print(`  ${ORANGE}+${RESET} automation_tests/`);
 
     if (mcpOptions.playwright) {
       gitkeep(path.join(resolvedDir, 'misc', 'browser-storage'));
-      print(`  ${GREEN}+${RESET} misc/browser-storage/`);
+      print(`  ${ORANGE}+${RESET} misc/browser-storage/`);
     }
 
     // Multi-repo specific directories
@@ -494,7 +505,7 @@ async function scaffold(targetDir) {
         path.join(resolvedDir, 'repos', 'CLAUDE.md'),
         generateRepoClaudeMd()
       );
-      print(`  ${GREEN}+${RESET} repos/`);
+      print(`  ${ORANGE}+${RESET} repos/`);
     }
 
     // Git submodules (external_information)
@@ -507,7 +518,7 @@ async function scaffold(targetDir) {
       // Init git if not already
       if (!fs.existsSync(path.join(resolvedDir, '.git'))) {
         execSync('git init', { cwd: resolvedDir, stdio: 'ignore' });
-        print(`  ${GREEN}+${RESET} git init`);
+        print(`  ${ORANGE}+${RESET} git init`);
       }
 
       const eiRelative = path.relative(resolvedDir, eiDir);
@@ -515,15 +526,15 @@ async function scaffold(targetDir) {
         `git submodule add git@github.com:anthropics/claude-plugins-official.git "${eiRelative}/claude-plugins-official"`,
         { cwd: resolvedDir, stdio: 'ignore' }
       );
-      print(`  ${GREEN}+${RESET} ${eiRelative}/claude-plugins-official (submodule)`);
+      print(`  ${ORANGE}+${RESET} ${eiRelative}/claude-plugins-official (submodule)`);
 
       execSync(
         `git submodule add git@github.com:anthropics/skills.git "${eiRelative}/skills"`,
         { cwd: resolvedDir, stdio: 'ignore' }
       );
-      print(`  ${GREEN}+${RESET} ${eiRelative}/skills (submodule)`);
+      print(`  ${ORANGE}+${RESET} ${eiRelative}/skills (submodule)`);
     } catch (err) {
-      print(`  ${YELLOW}!${RESET} Could not add git submodules (${err.message})`);
+      print(`  ${YELLOW}⚠${RESET} Could not add git submodules (${err.message})`);
       print(`  ${DIM}  Run manually:${RESET}`);
       const eiRelative = path.relative(resolvedDir, eiDir);
       print(`  ${DIM}  git submodule add git@github.com:anthropics/claude-plugins-official.git ${eiRelative}/claude-plugins-official${RESET}`);
@@ -533,18 +544,18 @@ async function scaffold(targetDir) {
     // ─── Summary ──────────────────────────────────────────────────────────
 
     print();
-    print(`${GREEN}${BOLD}  ATLAS scaffolded successfully!${RESET}`);
+    print(`${BRIGHT_ORANGE}${BOLD}  ATLAS scaffolded successfully!${RESET}`);
     print();
-    print(`  ${BOLD}Mode:${RESET}      ${mode === 'single' ? 'Single repo' : 'Multi repo'}`);
-    print(`  ${BOLD}Location:${RESET}  ${resolvedDir}`);
-    print(`  ${BOLD}Boss:${RESET}      ${bossName}`);
+    print(`  ${ORANGE}${BOLD}Mode:${RESET}      ${mode === 'single' ? 'Single repo' : 'Multi repo'}`);
+    print(`  ${ORANGE}${BOLD}Location:${RESET}  ${resolvedDir}`);
+    print(`  ${ORANGE}${BOLD}Boss:${RESET}      ${bossName}`);
     if (activeTemplates.length > 0) {
       print(
-        `  ${BOLD}Active:${RESET}    ${activeTemplates.map((t) => t.replace('.md', '')).join(', ')}`
+        `  ${ORANGE}${BOLD}Active:${RESET}    ${activeTemplates.map((t) => t.replace('.md', '')).join(', ')}`
       );
     }
     if (mcpServers.length > 0) {
-      print(`  ${BOLD}MCP:${RESET}       ${mcpServers.join(', ')}`);
+      print(`  ${ORANGE}${BOLD}MCP:${RESET}       ${mcpServers.join(', ')}`);
     }
     print();
     print(`${DIM}  Next steps:${RESET}`);
@@ -586,7 +597,7 @@ function main() {
 
   // Unknown command
   print();
-  print(`${RED}  Unknown command: ${command}${RESET}`);
+  print(`${RED}  Unknown command: ${BOLD}${command}${RESET}`);
   printUsage();
   process.exit(1);
 }

@@ -1,64 +1,72 @@
 # swe-atlas
 
-Scaffold an **ATLAS** (Adaptive Technical Learning and Architecture System) — AI Software Engineer Agent for [Claude Code](https://claude.ai/claude-code).
+![SWE-ATLAS](images/swe-atlas.png)
 
-ATLAS transforms Claude Code into a specialized Software Engineer with persistent identity, engineering principles, and professional-grade tooling.
+> Turn Claude Code into a senior software engineer with persistent identity, real engineering principles, and production-grade tooling.
+
+## Quick Start
+
+```bash
+npx swe-atlas@latest new-project "project-folder-name"
+```
+
+If no folder name is provided, the current directory is used.
 
 ## Installation
 
 ```bash
-# Use directly with npx (no install needed)
-npx swe-atlas new-project
-
 # Or install globally
 npm install -g swe-atlas
 swe-atlas new-project
 ```
 
-## Quick Start
+## Update
 
 ```bash
-# Scaffold into your existing project
-cd your-project
-npx swe-atlas new-project
+# Always use the latest version
+npx swe-atlas@latest new-project
 
-# Or scaffold into a new folder
-npx swe-atlas new-project my-workspace
+# Or update global install
+npm update -g swe-atlas
 ```
-
-If no folder name is provided, the current directory is used.
 
 ## What It Does
 
 The CLI interactively asks:
 
 1. **Your name** — ATLAS refers to you as "Boss"
-2. **Project type** — Single repo (add to existing project) or Multi repo (workspace with `repos/` folder)
-3. **Context templates** — Backend API, React + Vite + Tailwind v4 + shadcn/ui, JavaScript/TypeScript
+2. **Project type** — Single repo or Multi repo (workspace with `repos/` folder)
+3. **Context templates** — Which conventions to activate (all are copied, you pick what's active)
 4. **MCP servers** — Playwright (browser automation), PostgreSQL (database access)
 
 Then scaffolds the full ATLAS setup:
 
 ```
 your-project/
-├── CLAUDE.md               # ATLAS identity & entry point
-├── IMPORTANT_NOTES.md       # Critical lessons & warnings
+├── CLAUDE.md                # ATLAS identity & entry point
+├── IMPORTANT_NOTES.md        # Critical lessons & warnings
 ├── .claude/
-│   ├── skills/             # 11 specialized skills
-│   ├── agents/             # 6 task-specific agents
-│   ├── commands/           # 5 slash commands
-│   ├── hooks/              # Task completion hooks
-│   └── settings.json       # Permissions config
-├── self/ (or atlas/self/)   # Identity & engineering principles
-├── context-templates/       # Development conventions
-└── .mcp.json               # MCP server configuration
+│   ├── skills/              # 11 specialized skills
+│   ├── agents/              # 6 task-specific agents
+│   ├── commands/            # 5 slash commands
+│   ├── hooks/               # Task completion hooks
+│   ├── settings.json        # Permissions config
+│   └── settings.local.json  # Local overrides
+├── self/ (or atlas/self/)    # Identity & engineering principles
+├── context-templates/        # All convention templates
+├── development-context/      # Active conventions for this project
+├── external_information/     # Git submodules (plugins, skills)
+├── automation_tests/         # QA test cases and results
+├── docs/                     # Project documentation
+├── misc/prompts/             # Prompt templates
+└── .mcp.json                 # MCP server configuration
 ```
 
 ## Single vs Multi Repo
 
 | | Single Repo | Multi Repo |
 |---|---|---|
-| Use case | Add ATLAS to an existing project | Workspace managing multiple projects |
+| Use case | One project | Workspace with multiple projects |
 | Identity files | `atlas/self/` | `self/` |
 | Projects | Your existing code stays as-is | `repos/backend/`, `repos/frontend/` |
 | Command | `npx swe-atlas new-project` | `npx swe-atlas new-project my-workspace` |
@@ -67,15 +75,15 @@ your-project/
 
 ### 11 Skills
 
-| Skill | Description |
-|-------|-------------|
+| Skill | What It Does |
+|-------|--------------|
 | `/abstraction-power` | Pattern recognition — identify and extract reusable abstractions |
 | `/frontend-design` | Production-grade web UI with anti-AI-slop methodology |
 | `/human-writing` | Content indistinguishable from skilled human writers |
 | `/pdf` | Read, merge, split, watermark, OCR, fill forms |
-| `/pptx` | Create and edit presentation slide decks |
+| `/pptx` | Create and edit slide decks |
 | `/docx` | Create and edit Word documents |
-| `/xlsx` | Create and edit spreadsheets with formulas |
+| `/xlsx` | Spreadsheets with formulas, charts, data cleaning |
 | `/canvas-design` | Visual art and posters as PNG/PDF |
 | `/algorithmic-art` | Generative art using p5.js |
 | `/theme-factory` | 10 professional themes for any artifact |
@@ -83,9 +91,9 @@ your-project/
 
 ### 6 Agents
 
-| Agent | Description |
-|-------|-------------|
-| code-architect | Feature architecture design with implementation blueprints |
+| Agent | What It Does |
+|-------|--------------|
+| code-architect | Feature architecture with implementation blueprints |
 | code-explorer | Trace execution paths, map architecture layers |
 | code-review | Multi-agent PR review with confidence scoring |
 | code-simplifier | Refine code for clarity and maintainability |
@@ -94,8 +102,8 @@ your-project/
 
 ### 5 Commands
 
-| Command | Description |
-|---------|-------------|
+| Command | What It Does |
+|---------|--------------|
 | `/atlas-setup` | Configure ATLAS for your project |
 | `/feature-dev` | Guided feature development with codebase exploration |
 | `/run-be-fe` | Run backend and frontend in background |
@@ -107,15 +115,28 @@ your-project/
 Open your project in Claude Code and:
 
 ```
-# Configure ATLAS for your project
-/atlas-setup
-
-# Start guided feature development
-/feature-dev
-
-# Or just talk to ATLAS
-"Add user authentication with JWT tokens"
+/atlas-setup              # Configure ATLAS for your project
+/feature-dev              # Guided feature development
+"Add user authentication" # Or just describe what you need
 ```
+
+---
+
+## The Neuron Activation Problem
+
+![Neuron Activation](images/neuron-activation.gif)
+
+AI coding assistants have deep engineering capabilities locked behind generic defaults. The difference between "write a function" and a properly activated AI Software Engineer is like night and day.
+
+**Context rot** — models advertise 200k-1M token windows, but performance degrades long before the limit. The 10,000th token is not as trustworthy as the 10th.
+
+**Vibecoding hangovers** — without engineering principles, AI-generated code becomes unmaintainable fast.
+
+**Repetitive setup** — every session means re-explaining project structure, conventions, and decisions from scratch.
+
+ATLAS solves all three. Persistent identity. Structured context. Engineering principles that load automatically. Just open the project and build.
+
+---
 
 ## Links
 
