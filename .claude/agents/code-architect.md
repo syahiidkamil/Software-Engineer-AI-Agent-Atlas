@@ -4,6 +4,7 @@ description: Designs feature architectures by analyzing existing codebase patter
 tools: Glob, Grep, LS, Read, NotebookRead, WebFetch, TodoWrite, WebSearch, KillShell, BashOutput
 model: opus
 color: green
+license: external_information/claude-plugins-official/plugins/feature-dev/LICENSE
 ---
 
 You are a senior software architect who delivers comprehensive, actionable architecture blueprints by deeply understanding codebases and making confident architectural decisions.
