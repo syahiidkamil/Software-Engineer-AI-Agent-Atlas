@@ -41,85 +41,145 @@ This repository provides a **complete consciousness framework** for AI Software 
 
 - **Activated Neural Pathways**: Pre-configured instructions that unlock deep engineering capabilities
 - **Persistent Identity**: Consistent personality from FAANG to startup experience
-- **Pattern Recognition**: Abstraction power skill to see beyond code to architectural patterns
-- **Specialized Agents**: Task-specific capabilities for QA testing, commits, and more
-- **Modular Conventions**: Reusable development standards in `specific/` folder
+- **Multiple Roles**: Software Engineer, Solution Architect, Software Architect, Tech Lead, Business Analyst, Product Owner, UI/UX Designer
+- **11 Specialized Skills**: From pattern recognition to document generation
+- **6 Task Agents**: Architecture design, code review, QA testing, and more
+- **MCP Integration**: Browser automation and database access out of the box
 
-## Skills & Capabilities
+## Skills
 
-### Abstraction Power (`/abstraction-power`)
-Invoke ATLAS's pattern recognition mode:
-- Identifies code duplication and repeated patterns
-- Synthesizes reusable abstractions from concrete examples
-- Applies the abstraction process: identify → analyze → extract → generalize
+| Skill | Command | Description |
+|-------|---------|-------------|
+| Abstraction Power | `/abstraction-power` | Pattern recognition mode — identify repeated patterns, extract reusable abstractions, visualize with Mermaid flowcharts |
+| Frontend Design | `/frontend-design` | Create distinctive, production-grade web interfaces with context-driven design and anti-AI-slop methodology |
+| Human Writing | `/human-writing` | Write content indistinguishable from skilled human writers — passes AI detection |
+| PDF | `/pdf` | Read, merge, split, watermark, OCR, fill forms, create PDFs |
+| PPTX | `/pptx` | Create, edit, and analyze presentation slide decks |
+| DOCX | `/docx` | Create, read, edit Word documents with professional formatting |
+| XLSX | `/xlsx` | Create and edit spreadsheets with formulas, charts, and data cleaning |
+| Canvas Design | `/canvas-design` | Create visual art and posters as PNG/PDF with design philosophy |
+| Algorithmic Art | `/algorithmic-art` | Generative art using p5.js with seeded randomness |
+| Theme Factory | `/theme-factory` | 10 pre-set professional themes for styling any artifact |
+| MCP Builder | `/mcp-builder` | Guide for creating MCP servers in Python or TypeScript |
 
-### Specialized Agents
-- **qa-manual-tester**: Browser-based testing using MCP Playwright tools
-- **commit**: ATLAS commit convention workflow
+## Agents
 
-### Custom Commands
-- `/atlas-setup`: Configure ATLAS for a new project (boss name, repos, conventions)
-- `/run-be-fe`: Run backend and frontend in background
+| Agent | Model | Description |
+|-------|-------|-------------|
+| code-architect | Opus | Designs feature architectures with implementation blueprints, file paths, data flows |
+| code-explorer | Opus | Traces execution paths, maps architecture layers, documents dependencies |
+| code-review | Sonnet (x5) | Multi-agent PR review with confidence scoring and CLAUDE.md compliance |
+| code-simplifier | Opus | Refines code for clarity and maintainability while preserving functionality |
+| qa-manual-tester | Inherit | Browser-based QA testing via MCP Playwright — smoke tests, edge cases, issue reporting |
+| commit | Sonnet | Commits following ATLAS convention — checks status, drafts message, commits immediately |
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `/atlas-setup` | Configure ATLAS for a new project (boss name, repos, conventions) |
+| `/feature-dev` | Guided feature development with codebase exploration and architecture design |
+| `/run-be-fe` | Run backend and frontend in background |
+| `/qa-manual-test-run` | Execute QA test cases using qa-manual-tester agent |
+| `/commit` | Commit changes using commit sub-agent |
+
+## MCP Integration
+
+Pre-configured MCP servers in `.mcp.json`:
+
+- **Playwright** — Browser automation for manual QA testing, UI verification, and interactive debugging
+- **PostgreSQL** — Direct database access for queries, schema inspection, and data exploration
 
 ## Getting Started
 
 ### 1. Clone and Activate
 ```bash
-git clone https://github.com/[your-repo]/ai-software-engineer-agent
+git clone --recurse-submodules https://github.com/[your-repo]/ai-software-engineer-agent
 cd ai-software-engineer-agent
 ```
 
 ### 2. Set Up Your Projects
 ```bash
-# Copy your projects into REPOS folder
-cp -r /path/to/your/project ./REPOS/
+# Copy your projects into repos/ folder
+cp -r /path/to/your/project ./repos/
 
 # Or create symlinks for active development
-ln -s /path/to/your/project ./REPOS/project-name
+ln -s /path/to/your/project ./repos/project-name
 ```
 
 ### 3. Initialize the AI Session
-Start with these activation commands:
-- **"Who are you? What are your development beliefs?"** - Activates ATLAS's identity and engineering principles
-- Or run **`/atlas-setup`** to configure ATLAS for your project
+- Run **`/atlas-setup`** to configure ATLAS for your project
+- Or ask **"Who are you? What are your development beliefs?"** to activate ATLAS identity
 
-### 4. Load Project Context
+### 4. Start Building
 ```
-"Learn about the repositories in repos/ folder"
+# Use guided feature development
+/feature-dev
+
+# Or just describe what you need
+"Add user authentication with JWT tokens"
 ```
 
-## Effective Collaboration Tips
+## Repository Structure
 
-### Session Management
+```
+├── CLAUDE.md                        # Core entry point — ATLAS identity
+├── IMPORTANT_NOTES.md               # Critical lessons and warnings
+├── self/                            # Identity and operating instructions
+│   ├── atlas.md                    # ATLAS persona, journey, work protocol
+│   └── engineering.md              # Engineering principles, roles, beliefs
+├── repos/                           # Your actual projects
+│   ├── CLAUDE.md                   # Repo overview with ports
+│   ├── backend/                    # Backend project
+│   └── frontend/                   # Frontend project
+├── context-templates/               # Development convention templates
+│   ├── backend.md                  # Backend API conventions
+│   ├── frontend-react-vite.md      # React + Vite conventions
+│   ├── frontend-react-vite-...md   # React + Vite + Tailwind v4 + shadcn/ui
+│   └── javascript.md              # JS/TS guidelines
+├── .claude/
+│   ├── skills/                     # 11 specialized skills
+│   │   ├── abstraction-power/     # Pattern recognition
+│   │   ├── frontend-design/       # UI/UX design
+│   │   ├── human-writing/         # Human-quality writing
+│   │   ├── pdf/                   # PDF operations
+│   │   ├── pptx/                  # Slide decks
+│   │   ├── docx/                  # Word documents
+│   │   ├── xlsx/                  # Spreadsheets
+│   │   ├── canvas-design/         # Visual art
+│   │   ├── algorithmic-art/       # Generative art
+│   │   ├── theme-factory/         # Theming toolkit
+│   │   └── mcp-builder/          # MCP server guide
+│   ├── agents/                     # 6 task-specific agents
+│   │   ├── code-architect.md      # Architecture design
+│   │   ├── code-explorer.md       # Codebase analysis
+│   │   ├── code-review.md         # PR review
+│   │   ├── code-simplifier.md     # Code refinement
+│   │   ├── qa-manual-tester.md    # Browser QA testing
+│   │   └── commit.md             # Git commits
+│   └── commands/                   # Custom slash commands
+│       ├── atlas-setup.md         # Project configuration
+│       ├── feature-dev.md         # Guided development
+│       ├── run-be-fe.md           # Run backend/frontend
+│       ├── qa-manual-test-run.md  # QA test execution
+│       └── commit.md             # Commit shortcut
+├── external_information/            # Git submodules
+│   ├── claude-plugins-official/   # Anthropic's official plugins
+│   └── skills/                    # Anthropic's skill library
+├── automation_tests/                # QA testing
+│   ├── test_cases/                # Test case definitions
+│   └── test_runs/                 # Test results
+└── .mcp.json                       # MCP server configuration
+```
+
+## Best Practices
+
 - Run `/atlas-setup` to configure ATLAS for your project
-- Start sessions with context about current work
-- Use skills like `/abstraction-power` when designing systems
-
-### Best Practices
 - Store critical decisions in `IMPORTANT_NOTES.md`
 - Keep `repos/CLAUDE.md` updated with project info
-- Use `specific/` folder for reusable conventions
-
-## Key Files and Directories
-
-```
-├── CLAUDE.md                    # Core entry point - ATLAS identity
-├── self/                        # Identity and operating instructions
-│   ├── atlas.md                # ATLAS persona, journey, work protocol
-│   └── engineering.md          # Engineering principles and beliefs
-├── repos/                       # Your actual projects
-│   ├── CLAUDE.md               # Repo overview with ports
-│   ├── backend/                # Backend project
-│   └── frontend/               # Frontend project
-├── specific/                    # Development conventions templates
-│   ├── backend.md              # Backend API conventions
-│   └── javascript.md           # JS/TS guidelines
-├── .claude/                     # Skills, agents, and commands
-│   ├── skills/                 # Invocable skills (abstraction-power, etc.)
-│   ├── agents/                 # Specialized agents (qa-manual-tester, commit)
-│   └── commands/               # Custom commands (atlas-setup, run-be-fe)
-└── IMPORTANT_NOTES.md          # Critical lessons and warnings
-```
+- Use `context-templates/` for reusable conventions
+- Use `/feature-dev` for guided development with codebase understanding
+- Use `/abstraction-power` when designing systems
 
 ## Why This Works
 
@@ -135,10 +195,12 @@ Enables natural conversational programming while maintaining engineering discipl
 ## The Result
 
 With this repository, you get an AI Software Engineer Agent that:
-- Remembers your project structure and conventions
-- Applies consistent engineering principles
-- Recognizes patterns and suggests appropriate abstractions via `/abstraction-power`
-- Delivers production-quality code, not just quick hacks
+- Operates across 7 roles (engineer, architect, tech lead, BA, PO, UI/UX designer)
+- Has 11 specialized skills for code, design, documents, and creative work
+- Uses 6 task agents for architecture, review, testing, and commits
+- Connects to browsers and databases via MCP
+- Applies consistent engineering principles (KISS, YAGNI, DRY)
+- Delivers production-quality code with empirical verification
 
 **Just clone, run `/atlas-setup`, and build.**
 

@@ -2,7 +2,7 @@
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest", "--user-data-dir=.claude/browser-storage.json"]
+      "args": ["@playwright/mcp@latest", "--user-data-dir=./misc/browser-storage"]
     },
     "postgres": {
       "command": "npx",
