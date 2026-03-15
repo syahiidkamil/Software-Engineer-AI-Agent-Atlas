@@ -310,10 +310,10 @@ async function scaffold(targetDir) {
       },
     ]);
 
-    // 3. Context templates
-    const contextTemplates = await askMultiChoice(
+    // 3. Active context templates (placed in development-context/ for immediate use)
+    const activeTemplates = await askMultiChoice(
       rl,
-      'Which context templates to include?',
+      'Which context templates to activate? (all are copied, these go into development-context/)',
       [
         {
           label: 'Backend API',
@@ -404,19 +404,29 @@ async function scaffold(targetDir) {
     }
     print(`  ${GREEN}+${RESET} ${mode === 'single' ? 'atlas/' : ''}self/`);
 
-    // Context templates
-    if (contextTemplates.length > 0) {
-      ensureDir(ctDir);
-      const ctTemplateDir = path.join(TEMPLATES_DIR, 'context-templates');
-      for (const tpl of contextTemplates) {
-        const src = path.join(ctTemplateDir, tpl);
+    // Context templates — copy all
+    const ctTemplateDir = path.join(TEMPLATES_DIR, 'context-templates');
+    if (fs.existsSync(ctTemplateDir)) {
+      copyDirSync(ctTemplateDir, ctDir);
+      print(`  ${GREEN}+${RESET} ${mode === 'single' ? 'atlas/' : ''}context-templates/`);
+    }
+
+    // Activate selected templates into development-context/
+    const devCtxDir = mode === 'single'
+      ? path.join(resolvedDir, 'atlas', 'development-context')
+      : path.join(resolvedDir, 'development-context');
+    ensureDir(devCtxDir);
+    if (activeTemplates.length > 0) {
+      for (const tpl of activeTemplates) {
+        const src = path.join(ctDir, tpl);
         if (fs.existsSync(src)) {
-          fs.copyFileSync(src, path.join(ctDir, tpl));
+          fs.copyFileSync(src, path.join(devCtxDir, tpl));
         }
       }
-      print(
-        `  ${GREEN}+${RESET} ${mode === 'single' ? 'atlas/' : ''}context-templates/ (${contextTemplates.length} templates)`
-      );
+      print(`  ${GREEN}+${RESET} development-context/ (${activeTemplates.length} active)`);
+    } else {
+      gitkeep(devCtxDir);
+      print(`  ${GREEN}+${RESET} development-context/`);
     }
 
     // .claude/ directory — skills, agents, commands, hooks
@@ -460,6 +470,22 @@ async function scaffold(targetDir) {
       print(`  ${GREEN}+${RESET} .mcp.json`);
     }
 
+    // Common directories (both modes)
+    gitkeep(path.join(resolvedDir, 'docs'));
+    print(`  ${GREEN}+${RESET} docs/`);
+
+    gitkeep(path.join(resolvedDir, 'misc', 'prompts'));
+    print(`  ${GREEN}+${RESET} misc/prompts/`);
+
+    gitkeep(path.join(resolvedDir, 'automation_tests', 'test_cases'));
+    gitkeep(path.join(resolvedDir, 'automation_tests', 'test_runs'));
+    print(`  ${GREEN}+${RESET} automation_tests/`);
+
+    if (mcpOptions.playwright) {
+      gitkeep(path.join(resolvedDir, 'misc', 'browser-storage'));
+      print(`  ${GREEN}+${RESET} misc/browser-storage/`);
+    }
+
     // Multi-repo specific directories
     if (mode === 'multi') {
       gitkeep(path.join(resolvedDir, 'repos', 'backend'));
@@ -469,19 +495,39 @@ async function scaffold(targetDir) {
         generateRepoClaudeMd()
       );
       print(`  ${GREEN}+${RESET} repos/`);
-
-      gitkeep(path.join(resolvedDir, 'automation_tests', 'test_cases'));
-      gitkeep(path.join(resolvedDir, 'automation_tests', 'test_runs'));
-      print(`  ${GREEN}+${RESET} automation_tests/`);
-
-      gitkeep(path.join(resolvedDir, 'development-context'));
-      print(`  ${GREEN}+${RESET} development-context/`);
     }
 
-    // misc/browser-storage (for playwright, both modes)
-    if (mcpOptions.playwright) {
-      gitkeep(path.join(resolvedDir, 'misc', 'browser-storage'));
-      print(`  ${GREEN}+${RESET} misc/browser-storage/`);
+    // Git submodules (external_information)
+    const { execSync } = require('child_process');
+    const eiDir = mode === 'single'
+      ? path.join(resolvedDir, 'atlas', 'external_information')
+      : path.join(resolvedDir, 'external_information');
+
+    try {
+      // Init git if not already
+      if (!fs.existsSync(path.join(resolvedDir, '.git'))) {
+        execSync('git init', { cwd: resolvedDir, stdio: 'ignore' });
+        print(`  ${GREEN}+${RESET} git init`);
+      }
+
+      const eiRelative = path.relative(resolvedDir, eiDir);
+      execSync(
+        `git submodule add git@github.com:anthropics/claude-plugins-official.git "${eiRelative}/claude-plugins-official"`,
+        { cwd: resolvedDir, stdio: 'ignore' }
+      );
+      print(`  ${GREEN}+${RESET} ${eiRelative}/claude-plugins-official (submodule)`);
+
+      execSync(
+        `git submodule add git@github.com:anthropics/skills.git "${eiRelative}/skills"`,
+        { cwd: resolvedDir, stdio: 'ignore' }
+      );
+      print(`  ${GREEN}+${RESET} ${eiRelative}/skills (submodule)`);
+    } catch (err) {
+      print(`  ${YELLOW}!${RESET} Could not add git submodules (${err.message})`);
+      print(`  ${DIM}  Run manually:${RESET}`);
+      const eiRelative = path.relative(resolvedDir, eiDir);
+      print(`  ${DIM}  git submodule add git@github.com:anthropics/claude-plugins-official.git ${eiRelative}/claude-plugins-official${RESET}`);
+      print(`  ${DIM}  git submodule add git@github.com:anthropics/skills.git ${eiRelative}/skills${RESET}`);
     }
 
     // ─── Summary ──────────────────────────────────────────────────────────
@@ -492,9 +538,9 @@ async function scaffold(targetDir) {
     print(`  ${BOLD}Mode:${RESET}      ${mode === 'single' ? 'Single repo' : 'Multi repo'}`);
     print(`  ${BOLD}Location:${RESET}  ${resolvedDir}`);
     print(`  ${BOLD}Boss:${RESET}      ${bossName}`);
-    if (contextTemplates.length > 0) {
+    if (activeTemplates.length > 0) {
       print(
-        `  ${BOLD}Templates:${RESET} ${contextTemplates.map((t) => t.replace('.md', '')).join(', ')}`
+        `  ${BOLD}Active:${RESET}    ${activeTemplates.map((t) => t.replace('.md', '')).join(', ')}`
       );
     }
     if (mcpServers.length > 0) {
