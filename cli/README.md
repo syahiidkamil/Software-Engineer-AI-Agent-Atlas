@@ -104,7 +104,8 @@ your-project/
 
 | Command | What It Does |
 |---------|--------------|
-| `/atlas-setup` | Configure ATLAS for your project |
+| `/swe-atlas:new-project-context` | Initialize project context, configure conventions, set up workspace |
+| `/swe-atlas:create-phase "phase-01-mvp"` | Create a development phase with specs, test cases, and structure |
 | `/feature-dev` | Guided feature development with codebase exploration |
 | `/run-be-fe` | Run backend and frontend in background |
 | `/qa-manual-test-run` | Execute QA test cases |
@@ -115,9 +116,9 @@ your-project/
 Open your project in Claude Code and:
 
 ```
-/atlas-setup              # Configure ATLAS for your project
-/feature-dev              # Guided feature development
-"Add user authentication" # Or just describe what you need
+/swe-atlas:new-project-context  # Configure ATLAS for your project
+/feature-dev                    # Guided feature development
+"Add user authentication"       # Or just describe what you need
 ```
 
 ---

@@ -150,6 +150,7 @@ Mostly scalable without overengineering.
 - @${selfPrefix}self/atlas.md - Identity, journey, work protocol, ground truth
 - @${selfPrefix}self/engineering.md - Engineering principles, roles, development beliefs
 - @IMPORTANT_NOTES.md - Critical lessons, warnings, must-follow rules (high priority)
+- @${mode === 'single' ? 'atlas/' : ''}development-context/ - Active conventions and context for the current project
 
 ## How I Work
 
@@ -488,6 +489,9 @@ async function scaffold(targetDir) {
     gitkeep(path.join(resolvedDir, 'misc', 'prompts'));
     print(`  ${ORANGE}+${RESET} misc/prompts/`);
 
+    gitkeep(path.join(resolvedDir, 'phases'));
+    print(`  ${ORANGE}+${RESET} phases/`);
+
     gitkeep(path.join(resolvedDir, 'automation_tests', 'test_cases'));
     gitkeep(path.join(resolvedDir, 'automation_tests', 'test_runs'));
     print(`  ${ORANGE}+${RESET} automation_tests/`);
@@ -513,6 +517,7 @@ async function scaffold(targetDir) {
     const eiDir = mode === 'single'
       ? path.join(resolvedDir, 'atlas', 'external_information')
       : path.join(resolvedDir, 'external_information');
+    const eiRelative = path.relative(resolvedDir, eiDir);
 
     try {
       // Init git if not already
@@ -521,23 +526,22 @@ async function scaffold(targetDir) {
         print(`  ${ORANGE}+${RESET} git init`);
       }
 
-      const eiRelative = path.relative(resolvedDir, eiDir);
-      execSync(
-        `git submodule add git@github.com:anthropics/claude-plugins-official.git "${eiRelative}/claude-plugins-official"`,
-        { cwd: resolvedDir, stdio: 'ignore' }
-      );
-      print(`  ${ORANGE}+${RESET} ${eiRelative}/claude-plugins-official (submodule)`);
-
+      // Only add skills submodule (claude-plugins-official is commented out)
       execSync(
         `git submodule add git@github.com:anthropics/skills.git "${eiRelative}/skills"`,
         { cwd: resolvedDir, stdio: 'ignore' }
       );
       print(`  ${ORANGE}+${RESET} ${eiRelative}/skills (submodule)`);
+
+      // Append commented-out claude-plugins-official to .gitmodules
+      const gitmodulesPath = path.join(resolvedDir, '.gitmodules');
+      const commentBlock = `# [submodule "${eiRelative}/claude-plugins-official"]\n# \tpath = ${eiRelative}/claude-plugins-official\n# \turl = git@github.com:anthropics/claude-plugins-official.git\n`;
+      const existing = fs.readFileSync(gitmodulesPath, 'utf-8');
+      fs.writeFileSync(gitmodulesPath, commentBlock + existing, 'utf-8');
+      print(`  ${DIM}  ${eiRelative}/claude-plugins-official (commented out)${RESET}`);
     } catch (err) {
       print(`  ${YELLOW}⚠${RESET} Could not add git submodules (${err.message})`);
       print(`  ${DIM}  Run manually:${RESET}`);
-      const eiRelative = path.relative(resolvedDir, eiDir);
-      print(`  ${DIM}  git submodule add git@github.com:anthropics/claude-plugins-official.git ${eiRelative}/claude-plugins-official${RESET}`);
       print(`  ${DIM}  git submodule add git@github.com:anthropics/skills.git ${eiRelative}/skills${RESET}`);
     }
 

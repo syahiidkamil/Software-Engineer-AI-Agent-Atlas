@@ -58,14 +58,14 @@ git clone --recurse-submodules https://github.com/syahiidkamil/Software-Engineer
 cd Software-Engineer-AI-Agent-Atlas
 ```
 
-Then run `/atlas-setup` inside Claude Code.
+Then run `/swe-atlas:new-project-context` inside Claude Code.
 
 ### After Setup
 
 ```
-/atlas-setup              # Configure ATLAS for your project
-/feature-dev              # Guided feature development
-"Add user authentication" # Or just describe what you need
+/swe-atlas:new-project-context  # Configure ATLAS for your project
+/feature-dev                    # Guided feature development
+"Add user authentication"       # Or just describe what you need
 ```
 
 ---
@@ -101,11 +101,12 @@ Then run `/atlas-setup` inside Claude Code.
 | qa-manual-tester | Inherit | Browser-based QA testing via Playwright |
 | commit | Sonnet | Git commits following ATLAS convention |
 
-### 5 Commands
+### Commands
 
 | Command | What It Does |
 |---------|--------------|
-| `/atlas-setup` | Configure ATLAS for your project |
+| `/swe-atlas:new-project-context` | Initialize project context, configure conventions, set up workspace |
+| `/swe-atlas:create-phase "phase-01-mvp"` | Create a development phase with specs, test cases, and structure |
 | `/feature-dev` | Guided feature development with codebase exploration |
 | `/run-be-fe` | Run backend and frontend in background |
 | `/qa-manual-test-run` | Execute QA test cases |
@@ -134,7 +135,7 @@ Pre-configured in `.mcp.json`:
 ├── .claude/
 │   ├── skills/                     # 11 specialized skills
 │   ├── agents/                     # 6 task-specific agents
-│   ├── commands/                   # 5 slash commands
+│   ├── commands/                   # Slash commands
 │   └── hooks/                      # Task completion hooks
 ├── external_information/            # Git submodules
 │   ├── claude-plugins-official/    # Anthropic's official plugins
