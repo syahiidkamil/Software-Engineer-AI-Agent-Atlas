@@ -125,7 +125,7 @@ Pre-configured in `.mcp.json`:
 
 ```
 ├── CLAUDE.md                        # ATLAS identity & entry point
-├── IMPORTANT_NOTES.md               # Critical lessons and warnings
+├── NOTES.md                         # Regular notes and important must-follow rules
 ├── self/                            # Identity and principles
 │   ├── atlas.md                    # Persona, journey, work protocol
 │   └── engineering.md              # Engineering principles, roles

@@ -149,7 +149,7 @@ Mostly scalable without overengineering.
 
 - @${selfPrefix}self/atlas.md - Identity, journey, work protocol, ground truth
 - @${selfPrefix}self/engineering.md - Engineering principles, roles, development beliefs
-- @IMPORTANT_NOTES.md - Critical lessons, warnings, must-follow rules (high priority)
+- @NOTES.md - Regular notes and important must-follow rules
 - @${mode === 'single' ? 'atlas/' : ''}development-context/ - Active conventions and context for the current project
 
 ## How I Work
@@ -268,17 +268,19 @@ frontend at @repos/frontend (port yyyy)
 `;
 }
 
-function generateImportantNotes() {
-  return `# IMPORTANT NOTES
+function generateNotes() {
+  return `# NOTES
 
-IMPORTANT
-Critical reminders, warnings, and insights that must not be forgotten. These are lessons learned from production incidents, architectural decisions that saved or cost us, and wisdom that prevents repeating mistakes. Update when discovering crucial patterns or avoiding disasters.
+## Regular Notes
 
-## Information Entropy Guide
+General observations, reminders, and context that help with day-to-day work.
 
-This file suggested to contain only **high-entropy information** - things that would genuinely surprise someone or save them from disaster.
+---
 
-as it is IMPORTANT!!! and YOU MUST FOLLOW IT!
+## Important Notes
+
+Critical lessons, warnings, and must-follow rules. High-entropy information only — things that would genuinely surprise someone or save them from disaster.
+
 <IMPORTANT>
 YOU MUST FOLLOW THESE (HIGH PRIORITY):
 ...fill it here
@@ -393,12 +395,12 @@ async function scaffold(targetDir) {
     );
     print(`  ${ORANGE}+${RESET} CLAUDE.md`);
 
-    // IMPORTANT_NOTES.md
+    // NOTES.md
     writeFileSync(
-      path.join(resolvedDir, 'IMPORTANT_NOTES.md'),
-      generateImportantNotes()
+      path.join(resolvedDir, 'NOTES.md'),
+      generateNotes()
     );
-    print(`  ${ORANGE}+${RESET} IMPORTANT_NOTES.md`);
+    print(`  ${ORANGE}+${RESET} NOTES.md`);
 
     // self/ directory
     const selfTemplateDir = path.join(TEMPLATES_DIR, 'self');
@@ -571,6 +573,30 @@ async function scaffold(targetDir) {
     }
     print(`  ${DIM}  ${resolvedDir !== process.cwd() ? '3' : '2'}. Ask: "Who are you?" to activate ATLAS${RESET}`);
     print();
+
+    // ─── Commit Prompt ────────────────────────────────────────────────────
+
+    const rl2 = createRL();
+    const commitAnswer = await ask(rl2, 'Would you like to commit these changes? (Y/n)');
+    rl2.close();
+
+    const shouldCommit = !commitAnswer || commitAnswer.toLowerCase() === 'y' || commitAnswer.toLowerCase() === 'yes';
+
+    if (shouldCommit) {
+      try {
+        const { execSync: exec } = require('child_process');
+        exec('git add -A', { cwd: resolvedDir, stdio: 'ignore' });
+        exec('git commit -m "feat: scaffold ATLAS project structure"', {
+          cwd: resolvedDir,
+          stdio: 'ignore',
+        });
+        print(`  ${ORANGE}${BOLD}✓${RESET} Changes committed!`);
+        print();
+      } catch (commitErr) {
+        print(`  ${YELLOW}⚠${RESET} Could not commit (${commitErr.message})`);
+        print();
+      }
+    }
   } catch (err) {
     rl.close();
     console.error(`\n  Error: ${err.message}`);

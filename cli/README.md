@@ -44,7 +44,7 @@ Then scaffolds the full ATLAS setup:
 ```
 your-project/
 ├── CLAUDE.md                # ATLAS identity & entry point
-├── IMPORTANT_NOTES.md        # Critical lessons & warnings
+├── NOTES.md                  # Regular notes and important must-follow rules
 ├── .claude/
 │   ├── skills/              # 11 specialized skills
 │   ├── agents/              # 6 task-specific agents
