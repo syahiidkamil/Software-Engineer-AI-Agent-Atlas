@@ -137,10 +137,10 @@ Pre-configured in `.mcp.json`:
 │   ├── agents/                     # 6 task-specific agents
 │   ├── commands/                   # Slash commands
 │   └── hooks/                      # Task completion hooks
-├── external_information/            # Git submodules
+├── external-information/             # Git submodules
 │   ├── claude-plugins-official/    # Anthropic's official plugins
 │   └── skills/                     # Anthropic's skill library
-├── automation_tests/                # QA test cases and results
+├── automation-tests/                # QA test cases and results
 ├── docs/                            # Project documentation
 ├── misc/prompts/                    # Prompt templates
 └── .mcp.json                        # MCP server configuration

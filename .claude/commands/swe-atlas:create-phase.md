@@ -37,9 +37,9 @@ Create the phase directory and spec:
 phases/{NN}-{phase-name}/
 ├── SPEC.md                    # Phase specification
 ├── DECISIONS.md               # Technical decisions (locked vs flexible)
-├── test_cases/                # Test case definitions
+├── test-cases/                # Test case definitions
 │   └── .gitkeep
-└── test_runs/                 # Test execution results
+└── test-runs/                 # Test execution results
     └── .gitkeep
 ```
 
@@ -99,7 +99,7 @@ Write `phases/{NN}-{phase-name}/DECISIONS.md`:
 
 Based on the acceptance criteria and deliverables, generate test cases.
 
-Write test case files in `phases/{NN}-{phase-name}/test_cases/`:
+Write test case files in `phases/{NN}-{phase-name}/test-cases/`:
 
 ### TC-{NN}-001.md (one per test scenario)
 
@@ -141,11 +141,11 @@ Phase created: {NN}-{phase-name}
 
 ├── SPEC.md              — {brief summary of objective}
 ├── DECISIONS.md         — {N} locked, {N} flexible, {N} open
-├── test_cases/          — {N} test cases
+├── test-cases/          — {N} test cases
 │   ├── TC-{NN}-001.md  — {title}
 │   ├── TC-{NN}-002.md  — {title}
 │   └── ...
-└── test_runs/           — ready for execution
+└── test-runs/           — ready for execution
 
 Next steps:
 - Review the spec: phases/{NN}-{phase-name}/SPEC.md

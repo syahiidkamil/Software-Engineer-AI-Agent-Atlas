@@ -55,8 +55,8 @@ your-project/
 ├── self/ (or atlas/self/)    # Identity & engineering principles
 ├── context-templates/        # All convention templates
 ├── development-context/      # Active conventions for this project
-├── external_information/     # Git submodules (plugins, skills)
-├── automation_tests/         # QA test cases and results
+├── external-information/     # Git submodules (plugins, skills)
+├── automation-tests/         # QA test cases and results
 ├── docs/                     # Project documentation
 ├── misc/prompts/             # Prompt templates
 └── .mcp.json                 # MCP server configuration

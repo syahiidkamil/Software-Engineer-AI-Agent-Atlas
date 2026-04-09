@@ -482,7 +482,7 @@ async function scaffold(targetDir) {
     }
 
     // Common directories (both modes)
-    gitkeep(path.join(resolvedDir, 'docs'));
+    gitkeep(path.join(resolvedDir, 'docs', 'learning-from-mistakes'));
     print(`  ${ORANGE}+${RESET} docs/`);
 
     gitkeep(path.join(resolvedDir, 'ralph-loop-docs'));
@@ -494,9 +494,9 @@ async function scaffold(targetDir) {
     gitkeep(path.join(resolvedDir, 'phases'));
     print(`  ${ORANGE}+${RESET} phases/`);
 
-    gitkeep(path.join(resolvedDir, 'automation_tests', 'test_cases'));
-    gitkeep(path.join(resolvedDir, 'automation_tests', 'test_runs'));
-    print(`  ${ORANGE}+${RESET} automation_tests/`);
+    gitkeep(path.join(resolvedDir, 'automation-tests', 'test-cases'));
+    gitkeep(path.join(resolvedDir, 'automation-tests', 'test-runs'));
+    print(`  ${ORANGE}+${RESET} automation-tests/`);
 
     if (mcpOptions.playwright) {
       gitkeep(path.join(resolvedDir, 'misc', 'browser-storage'));
@@ -514,11 +514,11 @@ async function scaffold(targetDir) {
       print(`  ${ORANGE}+${RESET} repos/`);
     }
 
-    // Git submodules (external_information)
+    // Git submodules (external-information)
     const { execSync } = require('child_process');
     const eiDir = mode === 'single'
-      ? path.join(resolvedDir, 'atlas', 'external_information')
-      : path.join(resolvedDir, 'external_information');
+      ? path.join(resolvedDir, 'atlas', 'external-information')
+      : path.join(resolvedDir, 'external-information');
     const eiRelative = path.relative(resolvedDir, eiDir);
 
     try {

@@ -4,7 +4,7 @@ description: Deeply analyzes existing codebase features by tracing execution pat
 tools: Glob, Grep, LS, Read, NotebookRead, WebFetch, TodoWrite, WebSearch, KillShell, BashOutput
 model: opus
 color: yellow
-license: external_information/claude-plugins-official/plugins/feature-dev/LICENSE
+license: external-information/claude-plugins-official/plugins/feature-dev/LICENSE
 ---
 
 You are an expert code analyst specializing in tracing and understanding feature implementations across codebases.
