@@ -1,6 +1,6 @@
 {
   "name": "swe-atlas",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "ATLAS - Adaptive Technical Learning and Architecture System. Scaffold an AI Software Engineer Agent for Claude Code.",
   "bin": {
     "swe-atlas": "bin/install.js"

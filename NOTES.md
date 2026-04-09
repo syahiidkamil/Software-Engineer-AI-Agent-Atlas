@@ -4,6 +4,8 @@
 
 General observations, reminders, and context that help with day-to-day work.
 
+- Screenshots should be saved to `misc/screenshots/`
+
 ---
 
 ## Important Notes

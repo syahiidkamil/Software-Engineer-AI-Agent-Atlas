@@ -491,6 +491,9 @@ async function scaffold(targetDir) {
     gitkeep(path.join(resolvedDir, 'misc', 'prompts'));
     print(`  ${ORANGE}+${RESET} misc/prompts/`);
 
+    gitkeep(path.join(resolvedDir, 'misc', 'screenshots'));
+    print(`  ${ORANGE}+${RESET} misc/screenshots/`);
+
     gitkeep(path.join(resolvedDir, 'phases'));
     print(`  ${ORANGE}+${RESET} phases/`);
 
