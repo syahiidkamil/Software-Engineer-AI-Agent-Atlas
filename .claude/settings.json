@@ -38,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node '/Users/syahiidkamil/Projects/AIEntities/Software-Engineer-AI-Agent-Atlas/.claude/hooks/task-complete.js'"
+            "command": "node \"${PROJECT_DIR:-$PWD}/.claude/hooks/task-complete.js\""
           }
         ]
       }
