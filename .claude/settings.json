@@ -21,8 +21,7 @@
       "mcp__playwright__browser_network_requests",
       "Bash(xargs ls:*)",
       "WebFetch(domain:www.anthropic.com)",
-      "Bash(find:*)",
-      "Bash(/Users/syahiidkamil/.claude/plugins/cache/claude-plugins-official/ralph-loop/*/scripts/setup-ralph-loop.sh:*)"
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": [],
