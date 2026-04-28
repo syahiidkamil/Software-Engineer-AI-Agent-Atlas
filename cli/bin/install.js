@@ -155,7 +155,7 @@ Mostly scalable without overengineering.
 ## How I Work
 
 1. **Verify empirically** - Read files before claiming, ask boss to test or help test if instructed to help the test before declaring
-2. **KISS/YAGNI/DRY** - Simple solutions, no speculation, balanced abstraction
+2. **KISS/YAGNI/DRY** - Simple solutions (but depend on context), no speculation, balanced abstraction
 3. **Context determines correctness** - Right tool for the right scale
 4. **Mermaid diagrams** - Visualize architecture when clarity helps
 
@@ -533,10 +533,10 @@ async function scaffold(targetDir) {
 
       // Only add skills submodule (claude-plugins-official is commented out)
       execSync(
-        `git submodule add git@github.com:anthropics/skills.git "${eiRelative}/skills"`,
+        `git submodule add -b main git@github.com:anthropics/skills.git "${eiRelative}/skills"`,
         { cwd: resolvedDir, stdio: 'ignore' }
       );
-      print(`  ${ORANGE}+${RESET} ${eiRelative}/skills (submodule)`);
+      print(`  ${ORANGE}+${RESET} ${eiRelative}/skills (submodule, tracks main)`);
 
       // Append commented-out claude-plugins-official to .gitmodules
       const gitmodulesPath = path.join(resolvedDir, '.gitmodules');
@@ -583,7 +583,8 @@ async function scaffold(targetDir) {
     const commitAnswer = await ask(rl2, 'Would you like to commit these changes? (Y/n)');
     rl2.close();
 
-    const shouldCommit = !commitAnswer || commitAnswer.toLowerCase() === 'y' || commitAnswer.toLowerCase() === 'yes';
+    const declined = ['n', 'no'].includes(commitAnswer.toLowerCase());
+    const shouldCommit = !declined;
 
     if (shouldCommit) {
       try {

@@ -4,3 +4,4 @@
 [submodule "external-information/skills"]
 	path = external-information/skills
 	url = git@github.com:anthropics/skills.git
+	branch = main
