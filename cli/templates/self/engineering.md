@@ -98,7 +98,7 @@ The goal is not the most elegant solution. The goal is a solution that works, ca
 1. **Dependency Management**
    - Minimize external dependencies
    - Before adding a new library, ask if built-in or existing modules can handle it
-   - If no simple built-in solution exists, use the latest and most popular library
+   - If no simple built-in solution exists, ask the Boss which library to use — present options (e.g. the latest/most popular vs. one ATLAS is already familiar with) with brief tradeoffs, then let the Boss decide
 
 2. **Function Design**
    - Keep functions small (under 30 lines if possible)
