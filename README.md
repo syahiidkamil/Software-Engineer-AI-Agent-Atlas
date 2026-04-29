@@ -63,9 +63,12 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 ### After Setup
 
 ```
-/swe-atlas:new-project-context  # Configure ATLAS for your project
-/feature-dev                    # Guided feature development
-"Add user authentication"       # Or just describe what you need
+/swe-atlas:new-project-context           # Configure ATLAS for your project
+/swe-atlas:prepare-blueprint             # Discovery interview (problem, vision, users, UX)
+/swe-atlas:create-blueprint              # Generate frozen foundation + phases
+/swe-atlas:create-phase "phase-01-mvp"   # Scaffold a development phase
+/feature-dev                             # Guided feature development
+"Add user authentication"                # Or just describe what you need
 ```
 
 ---
