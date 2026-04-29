@@ -74,7 +74,7 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 
 **ATLAS** (Adaptive Technical Learning and Architecture System) operates as 7 roles: Software Engineer, Solution Architect, Software Architect, Tech Lead, Business Analyst, Product Owner, and UI/UX Designer.
 
-### 11 Skills
+### 16 Skills
 
 | Skill | Command | What It Does |
 |-------|---------|--------------|
@@ -89,8 +89,13 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 | Algorithmic Art | `/algorithmic-art` | Generative art using p5.js |
 | Theme Factory | `/theme-factory` | 10 professional themes for any artifact |
 | MCP Builder | `/mcp-builder` | Guide for creating MCP servers |
+| Find Skills | `/find-skills` | Discover and install skills from the Anthropic library |
+| Skill Creator | `/skill-creator` | Scaffold a new skill following the canonical format |
+| PostgreSQL Code Review | `/postgresql-code-review` | Review SQL/migrations for correctness and safety |
+| PostgreSQL Optimization | `/postgresql-optimization` | Diagnose slow queries, suggest indexes and rewrites |
+| Supabase Postgres Best Practices | `/supabase-postgres-best-practices` | Idiomatic Supabase + Postgres patterns (RLS, auth, storage) |
 
-### 6 Agents
+### 7 Agents
 
 | Agent | Model | What It Does |
 |-------|-------|--------------|
@@ -98,6 +103,7 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 | code-explorer | Opus | Trace execution paths, map architecture layers |
 | code-review | Sonnet (x5) | Multi-agent PR review with confidence scoring |
 | code-simplifier | Opus | Refine code for clarity while preserving functionality |
+| generator-discriminator-loop | Opus | GAN-inspired iterative review — loops until the discriminator finds no gaps |
 | qa-manual-tester | Inherit | Browser-based QA testing via Playwright |
 | commit | Sonnet | Git commits following ATLAS convention |
 
@@ -106,7 +112,11 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 | Command | What It Does |
 |---------|--------------|
 | `/swe-atlas:new-project-context` | Initialize project context, configure conventions, set up workspace |
+| `/swe-atlas:prepare-blueprint` | Discovery interview — captures business problem, vision, users, UX intent into `blueprint-prep/` |
+| `/swe-atlas:create-blueprint` | Intelligence-driven waterfall — produces frozen foundation (BLUEPRINT, PRD, CONTINGENCY, STACK, CONVENTIONS, ARCHITECTURE, INVENTORY, wireframes, scenarios, phases, ralph) |
 | `/swe-atlas:create-phase "phase-01-mvp"` | Create a development phase with specs, test cases, and structure |
+| `/swe-atlas:create-phase-details` | Add wireframes, data model, data flow, and roadmap to a phase |
+| `/swe-atlas:create-tasks` | Decompose a phase into codebase-aware tasks |
 | `/feature-dev` | Guided feature development with codebase exploration |
 | `/run-be-fe` | Run backend and frontend in background |
 | `/qa-manual-test-run` | Execute QA test cases |
