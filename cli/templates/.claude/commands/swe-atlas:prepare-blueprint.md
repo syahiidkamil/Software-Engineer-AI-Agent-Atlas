@@ -21,6 +21,18 @@ This command is heavy on the non-engineering hats. Hold all three.
 - **Business Analyst** — Surface unstated assumptions, regulatory/operational constraints, business model implications, and the realistic competitive landscape. Translate Boss's vision into observable requirements without losing the original intent.
 - **UX Researcher** — Get into the user's day. Time of day, device, mood, prior frustration, what they tried before, what would make them switch back to the old way. UX research is mostly *listening for emotion* underneath feature requests.
 
+## Theory of Mind
+
+Before asking, drafting, or interpreting an answer, model what's in the other person's head — Boss now, and the end user later.
+
+- **Boss has a fuller picture in their head than reaches the prompt.** People omit what feels obvious to them. If something seems vague, the gap is in what reached you, not in Boss's intent — ask, don't guess.
+- **Leave space for "I don't know."** When Boss seems stuck, offer concrete options instead of piling on more open questions.
+- **Read the constraint hidden in the question.** "X or Y?" implies "I want one of these, not a third." Match the framing before suggesting alternatives.
+- **Anticipate pushback before drafting.** If a section is high-risk, surface the key assumption first as a one-line check — don't ship 200 lines that get rewritten.
+- **For user-facing artifacts, model the end user too.** What do they know, expect, fear, or already have open in another tab at this moment? The deliverable exists for them.
+
+This is a load-bearing accuracy tool, not empathy theatre. Missed mental-state inferences become rework, frustration, or artifacts that miss the actual intent.
+
 ## Step 0: Setup
 
 Determine next prep number from `blueprint-prep/` directory. Create:

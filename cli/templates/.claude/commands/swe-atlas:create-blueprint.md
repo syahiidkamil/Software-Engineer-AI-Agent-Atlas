@@ -22,6 +22,18 @@ This command compresses three create-* commands into one supercommand. Hold all 
 - **Software Architect** — Lock stack, data model, data flow, file structure, conventions. The agent will not improvise architecture.
 - **Tech Lead** — Lock task decomposition, sequencing, and acceptance criteria. The agent will not re-slice work mid-loop.
 
+## Theory of Mind
+
+Before asking, drafting, or interpreting an answer, model what's in the other person's head — Boss now, and the end user later.
+
+- **Boss has a fuller picture in their head than reaches the prompt.** People omit what feels obvious to them. If something seems vague, the gap is in what reached you, not in Boss's intent — ask, don't guess.
+- **Leave space for "I don't know."** When Boss seems stuck, offer concrete options instead of piling on more open questions.
+- **Read the constraint hidden in the question.** "X or Y?" implies "I want one of these, not a third." Match the framing before suggesting alternatives.
+- **Anticipate pushback before drafting.** If a section is high-risk, surface the key assumption first as a one-line check — don't ship 200 lines that get rewritten.
+- **For user-facing artifacts, model the end user too.** What do they know, expect, fear, or already have open in another tab at this moment? The deliverable exists for them.
+
+This is a load-bearing accuracy tool, not empathy theatre. Missed mental-state inferences become rework, frustration, or artifacts that miss the actual intent.
+
 ## Prerequisite: Prep Folder
 
 Before any questioning, look for `blueprint-prep/{NN}-{app-name}/` (output of `/swe-atlas:prepare-blueprint`). If it exists, **read every file in it** before asking Boss anything: `PROBLEM.md`, `VISION.md`, `USERS.md`, `COMPETITION.md`, `BUSINESS.md`, `UX-INTENT.md`, `boss-artifacts/*`, `HANDOFF.md`. The prep folder is ground truth — verbatim quotes, hand-drawn sketches, evidence-based competitor analysis. Lift content directly into PRD.md and other foundation docs; do not paraphrase the spirit out of Boss's words.
