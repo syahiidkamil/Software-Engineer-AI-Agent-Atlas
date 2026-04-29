@@ -222,6 +222,17 @@ function generateSettingsJson(targetDir, options = {}) {
           ],
         },
       ],
+      PreToolUse: [
+        {
+          matcher: 'AskUserQuestion',
+          hooks: [
+            {
+              type: 'command',
+              command: `node '${targetDir}/.claude/hooks/ask-user-input.js'`,
+            },
+          ],
+        },
+      ],
     },
     enabledPlugins: {
       'ralph-loop@claude-plugins-official': true,

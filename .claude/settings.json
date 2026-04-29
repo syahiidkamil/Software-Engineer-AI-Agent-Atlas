@@ -42,6 +42,17 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PROJECT_DIR:-$PWD}/.claude/hooks/ask-user-input.js\""
+          }
+        ]
+      }
     ]
   },
    "enabledPlugins": {
