@@ -1,9 +1,24 @@
 ---
 name: human-writing
-description: Write content indistinguishable from a skilled human writer. Avoids AI-sounding phrases, varies sentence structure, and creates natural, engaging prose.
+description: Write content in any language indistinguishable from a skilled human writer. Avoids AI-sounding phrases, varies sentence structure, creates natural prose. Detects target language and loads language-specific AI-tells, register, and orthography from `languages/`.
 ---
 
-Activate human-like writing mode. The goal is to pass the Turing test. A human reader should not be able to tell this was written by AI.
+Activate human-like writing mode. The goal is to pass the Turing test. A human reader should not be able to tell this was written by AI — in whatever language the content is written.
+
+## Step 0.1: Detect Language and Load the Right Module
+
+Before applying the rest of this skill, identify the target language. The body of this SKILL.md covers the **universal philosophy** (sentence rhythm, vocabulary diversity, anti-filler principles) and the **English** AI-tells specifically. For any other language, also read the matching file in `languages/` *before writing*:
+
+| Language | File | Notes |
+|---|---|---|
+| English | (covered below) | Default — no extra file needed |
+| Bahasa Indonesia | `languages/id.md` | EYD, Indonesian filler phrases, register spectrum |
+
+If the target language has a file in `languages/`, **read it now**. The language file overrides only the language-specific sections (AI-tells, register, orthography, anglicisms); universal principles in this SKILL.md still apply.
+
+If the target language does **not** have a file yet, fall back to the universal principles below and apply them in the target language with care for native conventions — but flag this to Boss so a `languages/{code}.md` can be added later.
+
+This is a single skill, single trigger. Adding new languages is a `languages/{code}.md` file plus a row in the table above — no new skill registration needed.
 
 ## Step 0: Understand the Context First
 

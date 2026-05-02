@@ -65,6 +65,7 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 ```
 /swe-atlas:new-project-context           # Configure ATLAS for your project
 /swe-atlas:prepare-blueprint             # Discovery interview (problem, vision, users, UX)
+/swe-atlas:create-design-md              # Lock visual identity via HTML variant prototyping
 /swe-atlas:create-blueprint              # Generate frozen foundation + phases
 /swe-atlas:create-phase "phase-01-mvp"   # Scaffold a development phase
 /feature-dev                             # Guided feature development
@@ -77,13 +78,14 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 
 **ATLAS** (Adaptive Technical Learning and Architecture System) operates as 7 roles: Software Engineer, Solution Architect, Software Architect, Tech Lead, Business Analyst, Product Owner, and UI/UX Designer.
 
-### 16 Skills
+### 17 Skills
 
 | Skill | Command | What It Does |
 |-------|---------|--------------|
 | Abstraction Power | `/abstraction-power` | Pattern recognition — identify repeated patterns, extract reusable abstractions |
 | Frontend Design | `/frontend-design` | Production-grade web UI with anti-AI-slop methodology |
-| Human Writing | `/human-writing` | Content indistinguishable from skilled human writers |
+| shadcn | `/shadcn` | shadcn/ui components, presets, registries, and project init |
+| Human Writing | `/human-writing` | Content indistinguishable from skilled human writers in any language — auto-loads language-specific AI-tells from `languages/` (currently English default + Bahasa Indonesia; add more via `languages/{iso}.md`) |
 | PDF | `/pdf` | Read, merge, split, watermark, OCR, fill forms |
 | PPTX | `/pptx` | Create and edit slide decks |
 | DOCX | `/docx` | Create and edit Word documents |
@@ -116,13 +118,14 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 |---------|--------------|
 | `/swe-atlas:new-project-context` | Initialize project context, configure conventions, set up workspace |
 | `/swe-atlas:prepare-blueprint` | Discovery interview — captures business problem, vision, users, UX intent into `blueprint-prep/` |
+| `/swe-atlas:create-design-md` | Lock visual identity — discover, prototype 3 distinct HTML variants for browser comparison, iterate, then write `development-context/DESIGN.md` in [Stitch format](https://github.com/google-labs-code/design.md) (YAML tokens + canonical sections) |
 | `/swe-atlas:create-blueprint` | Intelligence-driven waterfall — produces frozen foundation (BLUEPRINT, PRD, CONTINGENCY, STACK, CONVENTIONS, ARCHITECTURE, INVENTORY, wireframes, scenarios, phases, ralph) |
 | `/swe-atlas:create-phase "phase-01-mvp"` | Create a development phase with specs, test cases, and structure |
 | `/swe-atlas:create-phase-details` | Add wireframes, data model, data flow, and roadmap to a phase |
 | `/swe-atlas:create-tasks` | Decompose a phase into codebase-aware tasks |
 | `/feature-dev` | Guided feature development with codebase exploration |
 | `/run-be-fe` | Run backend and frontend in background |
-| `/qa-manual-test-run` | Execute QA test cases |
+| `/qa-manual-test-run` | Execute QA test cases (markdown TC-*.md run via Playwright MCP — never as `.spec.ts` scripts) |
 | `/commit` | Commit using sub-agent |
 
 ### MCP Integration
@@ -145,9 +148,10 @@ Pre-configured in `.mcp.json`:
 ├── repos/                           # Your projects (multi-repo mode)
 ├── context-templates/               # All convention templates
 ├── development-context/             # Active conventions for current project
+│   └── DESIGN.md                   # Visual identity (Stitch format) — fill via /swe-atlas:create-design-md
 ├── .claude/
-│   ├── skills/                     # 11 specialized skills
-│   ├── agents/                     # 6 task-specific agents
+│   ├── skills/                     # 17 specialized skills
+│   ├── agents/                     # 7 task-specific agents
 │   ├── commands/                   # Slash commands
 │   └── hooks/                      # Task completion hooks
 ├── external-information/             # Git submodules
