@@ -147,6 +147,8 @@ Write `phases/{NN}-{phase-name}/tasks/TASK-{NN}-{NNN}.md`:
 - {test cases from phases/{NN}-{phase-name}/test-cases/ that this task must satisfy}
 - {new tests this task should add, if any}
 
+**Testing approach:** Test cases here are markdown `TC-*.md` files (preconditions, steps, expected results) executed manually by the `qa-manual-tester` sub-agent via **Playwright MCP** browser tools (registered in `.mcp.json` as `@playwright/mcp@latest`). **Never generate `.spec.ts`, `playwright.config.ts`, Jest specs, vitest specs, mocha tests, Cypress specs, or any other test-runner code** — no test framework is installed, none should be added. Author markdown only.
+
 ## Estimated Size
 {XS (<2h) | S (half day) | M (1 day) | L (2 days) | XL — split this}
 
@@ -224,7 +226,7 @@ Coverage:
 Next steps:
 - Review the task list: phases/{NN}-{phase-name}/tasks/README.md
 - Pick the first task and run: /feature-dev
-- Or run tests against acceptance: /qa-manual-test-run
+- Or run tests against acceptance (markdown TC-*.md executed via Playwright MCP, never as scripts): /qa-manual-test-run
 ```
 
 Remind Boss: "Run `git diff` to review. When ready, I'll commit."

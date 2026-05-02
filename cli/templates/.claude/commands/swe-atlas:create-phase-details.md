@@ -259,3 +259,5 @@ Next steps:
 ```
 
 Remind Boss: "Run `git diff` to review. When ready, I'll commit."
+
+**Note on testing (project-wide rule):** The flows you diagrammed in DATA-FLOW.md and the milestones in ROADMAP.md will be exercised by markdown test cases (`test-cases/TC-*.md`) generated downstream by `/swe-atlas:create-tasks`, executed manually by the `qa-manual-tester` sub-agent through **Playwright MCP** browser tools. **Never generate `.spec.ts`, `playwright.config.ts`, Jest specs, vitest specs, mocha tests, Cypress specs, or any other test-runner code** — no test framework is installed.

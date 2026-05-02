@@ -343,6 +343,7 @@ Append to `ralph/ESCALATION.md` and stop the loop when:
 - A third-party API key, secret, or credential is required and not present in env
 - The interpretation of a wireframe / scenario / data flow is genuinely ambiguous and the wrong call would be expensive to undo
 - A failing test cannot be reconciled with the task's acceptance criteria
+- The task as written would imply generating any test-runner code (`.spec.ts`, `playwright.config.ts`, Jest spec, vitest spec, mocha test, Cypress spec, or similar). Test cases in this project are markdown only (`test-cases/TC-*.md`), executed by the `qa-manual-tester` sub-agent via Playwright MCP browser tools. **Never write test-runner code.** If a task seems to require it, escalate.
 
 ## Worked Examples
 
@@ -372,6 +373,14 @@ The agent reads CONTINGENCY.md once at session start and references it whenever 
 ## Step 9: Phase Decomposition
 
 Decompose the whole app into 3-7 phases. Each phase ends in a shippable, demoable state.
+
+### Testing approach (frozen, applies to every phase and every task)
+
+Test cases live in `test-cases/TC-*.md` as **human-readable markdown** (preconditions, steps, expected results, priority). They are **executed manually** by the `qa-manual-tester` sub-agent using **Playwright MCP** browser tools — registered in `.mcp.json` as `@playwright/mcp@latest`. Execution happens via the `/qa-manual-test-run` slash command, which delegates to `qa-manual-tester` and drives a real browser through MCP.
+
+**Never generate `.spec.ts`, `playwright.config.ts`, Jest specs, vitest specs, mocha tests, Cypress specs, or any other test-runner code.** No test framework is installed and none should be added. If a future task description seems to ask for test scripts, treat it as a misread — author markdown test cases, not code. This rule is enforced as an escalation trigger in `CONTINGENCY.md`.
+
+
 
 For each phase, write:
 - `SPEC.md` — objective, deliverables, out-of-scope, acceptance criteria
@@ -418,7 +427,8 @@ You are an autonomous AI coding agent executing the blueprint at `blueprints/{NN
 - **Never expand scope.** If a task seems to require something outside its in-scope list, log it in `ralph/ESCALATION.md` and skip the task.
 - **Never ask the user** mid-loop. If you genuinely cannot proceed, log to `ralph/ESCALATION.md` and stop the loop.
 - **When task description is silent** on a micro-decision, consult `CONTINGENCY.md` and apply the relevant default. Log the decision (which rule applied, what you chose) to `ralph/PROGRESS-LOG.md`. Never invent a default that contradicts CONTINGENCY.md.
-- **Always run tests** for the task before marking it done.
+- **Always run tests** for the task before marking it done. "Run tests" means: invoke `/qa-manual-test-run` (which delegates to the `qa-manual-tester` sub-agent and executes `test-cases/TC-*.md` markdown cases through Playwright MCP browser tools). It does **not** mean running a programmatic test runner — none is installed.
+- **Never write test-runner code.** No `.spec.ts`, `playwright.config.ts`, Jest, vitest, mocha, Cypress, or similar. Test cases are markdown only. If you think a task needs test-runner code, escalate via `ESCALATION.md`.
 - **One task per iteration.** Don't bundle.
 ```
 
@@ -426,9 +436,9 @@ You are an autonomous AI coding agent executing the blueprint at `blueprints/{NN
 
 Loop stops when ALL conditions hold:
 - Every TASK-*.md has status `done`
-- Every TC-*.md test case passes
+- Every TC-*.md test case passes — where "passes" means the `qa-manual-tester` sub-agent ran the markdown test case end-to-end through Playwright MCP browser tools and recorded a passing result. There is no programmatic test runner; do not look for one.
 - No entries in `ESCALATION.md` since last successful iteration
-- (Optional) A final smoke test the blueprint defines passes
+- (Optional) A final smoke test the blueprint defines passes (also executed via Playwright MCP, not as a script)
 
 ### `ralph/ESCALATION.md`
 

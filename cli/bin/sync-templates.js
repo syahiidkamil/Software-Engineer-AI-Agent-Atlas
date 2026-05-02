@@ -27,6 +27,12 @@ const MAPPINGS = [
   { src: '.claude/skills', dest: '.claude/skills', exclude: SKILLS_EXCLUDE },
 ];
 
+// File-level mappings (single files copied verbatim from repo root)
+const FILE_MAPPINGS = [
+  { src: 'NOTES.md', dest: 'NOTES.md' },
+  { src: 'development-context/DESIGN.md', dest: 'development-context/DESIGN.md' },
+];
+
 // ─── Colors ──────────────────────────────────────────────────────────────────
 
 const ORANGE = '\x1b[38;5;208m';
@@ -93,8 +99,25 @@ function main() {
     console.log(`  ${GREEN}✓${RESET} ${src}/ → templates/${dest}/ ${DIM}(${fileCount} files)${RESET}${excludeNote}`);
   }
 
+  for (const { src, dest } of FILE_MAPPINGS) {
+    const srcAbs = path.join(REPO_ROOT, src);
+    const destAbs = path.join(TEMPLATES_DIR, dest);
+
+    if (!fs.existsSync(srcAbs)) {
+      console.log(`  ${DIM}- ${src} (skipped — not present at repo root)${RESET}`);
+      continue;
+    }
+
+    ensureDir(path.dirname(destAbs));
+    fs.copyFileSync(srcAbs, destAbs);
+    totalFiles += 1;
+
+    console.log(`  ${GREEN}✓${RESET} ${src} → templates/${dest} ${DIM}(1 file)${RESET}`);
+  }
+
+  const totalMappings = MAPPINGS.length + FILE_MAPPINGS.length;
   console.log();
-  console.log(`${BOLD}${GREEN}  Synced ${totalFiles} files across ${MAPPINGS.length} mappings.${RESET}`);
+  console.log(`${BOLD}${GREEN}  Synced ${totalFiles} files across ${totalMappings} mappings.${RESET}`);
 }
 
 try {

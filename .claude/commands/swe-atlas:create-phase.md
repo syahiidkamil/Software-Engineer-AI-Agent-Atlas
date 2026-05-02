@@ -59,16 +59,18 @@ phases/{NN}-{phase-name}/
 
 ### SPEC.md Structure
 
+**SPEC.md is a high-level product specification.** It captures *what* the phase delivers in product/user terms — never *how* it's built. Keep technical decisions out by default so implementation stays flexible. Technical decisions belong in `DECISIONS.md`; implementation specifics are generated downstream by `/swe-atlas:create-phase-details` and `/swe-atlas:create-tasks`.
+
 Write `phases/{NN}-{phase-name}/SPEC.md`:
 
 ```markdown
 # Phase {NN}: {Phase Name}
 
 ## Objective
-{One paragraph — what this phase delivers and why it matters}
+{One paragraph — what this phase delivers and why it matters, in product/user terms}
 
 ## Deliverables
-{Bulleted list of concrete, verifiable outcomes}
+{Bulleted list of concrete, verifiable outcomes described as user-observable behavior or product capabilities — not files, classes, libraries, or schemas}
 
 ## Out of Scope
 {What this phase explicitly does NOT include}
@@ -77,18 +79,21 @@ Write `phases/{NN}-{phase-name}/SPEC.md`:
 - **Requires:** {phases or systems that must exist first}
 - **Enables:** {what future phases this unblocks}
 
-## Technical Approach
-{High-level architecture decisions — how this will be built}
-
 ## Acceptance Criteria
-{Numbered list of conditions that must ALL be true for this phase to be complete}
+{Numbered list of conditions that must ALL be true for this phase to be complete — observable user behavior or product outcomes, not implementation steps}
 1. {Observable user behavior or system state}
 2. {Measurable outcome}
 3. ...
-
-## Implementation Notes
-{Any specific patterns, files, or approaches identified from codebase exploration}
 ```
+
+**Optional section — include only if Boss explicitly asked for high-level technical guidance in the SPEC:**
+
+```markdown
+## High-Level Technical Approach (optional)
+{One short paragraph at the architecture level only — e.g. "extends the existing admin dashboard", "reuses the current auth middleware". Never specific file paths, library names, schemas, or function signatures. Those live in DECISIONS.md or are decided at task time.}
+```
+
+**Default: omit the technical approach section entirely.** Ask Boss before adding it. If Boss said anything in Batch 3 (technical direction) during Step 1, route that information into `DECISIONS.md`, not `SPEC.md`.
 
 ### DECISIONS.md Structure
 
@@ -108,6 +113,12 @@ Write `phases/{NN}-{phase-name}/DECISIONS.md`:
 ```
 
 ## Step 3: Generate Test Cases
+
+### Testing approach (project-wide rule — applies to every test case below)
+
+Test cases live in `phases/{NN}-{phase-name}/test-cases/TC-*.md` as **human-readable markdown** (preconditions, steps, expected results, priority). They are **executed manually** by the `qa-manual-tester` sub-agent using **Playwright MCP** browser tools — registered in `.mcp.json` as `@playwright/mcp@latest`. Execution happens via the `/qa-manual-test-run` slash command, which delegates to `qa-manual-tester` and drives a real browser through MCP.
+
+**Never generate `.spec.ts`, `playwright.config.ts`, Jest specs, vitest specs, mocha tests, Cypress specs, or any other test-runner code.** No test framework is installed and none should be added. If a future task description seems to ask for test scripts, treat it as a misread — author markdown test cases, not code.
 
 Based on the acceptance criteria and deliverables, generate test cases.
 
@@ -162,7 +173,7 @@ Phase created: {NN}-{phase-name}
 Next steps:
 - Review the spec: phases/{NN}-{phase-name}/SPEC.md
 - Start implementation: /feature-dev
-- Run tests: /qa-manual-test-run
+- Run tests (markdown TC-*.md executed via Playwright MCP, not as scripts): /qa-manual-test-run
 ```
 
 Remind Boss: "Run `git diff` to review. When ready, I'll commit."

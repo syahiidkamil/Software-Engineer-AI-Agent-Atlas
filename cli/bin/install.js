@@ -406,11 +406,12 @@ async function scaffold(targetDir) {
     );
     print(`  ${ORANGE}+${RESET} CLAUDE.md`);
 
-    // NOTES.md
-    writeFileSync(
-      path.join(resolvedDir, 'NOTES.md'),
-      generateNotes()
-    );
+    // NOTES.md — prefer synced template, fall back to inline skeleton
+    const notesTemplate = path.join(TEMPLATES_DIR, 'NOTES.md');
+    const notesContent = fs.existsSync(notesTemplate)
+      ? fs.readFileSync(notesTemplate, 'utf-8')
+      : generateNotes();
+    writeFileSync(path.join(resolvedDir, 'NOTES.md'), notesContent);
     print(`  ${ORANGE}+${RESET} NOTES.md`);
 
     // self/ directory
@@ -449,6 +450,14 @@ async function scaffold(targetDir) {
     } else {
       gitkeep(devCtxDir);
       print(`  ${ORANGE}+${RESET} development-context/`);
+    }
+
+    // DESIGN.md — always copied as a placeholder skeleton (Stitch format).
+    // Boss runs /swe-atlas:create-design-md to fill it in via interview + HTML variants.
+    const designTemplate = path.join(TEMPLATES_DIR, 'development-context', 'DESIGN.md');
+    if (fs.existsSync(designTemplate)) {
+      fs.copyFileSync(designTemplate, path.join(devCtxDir, 'DESIGN.md'));
+      print(`  ${ORANGE}+${RESET} development-context/DESIGN.md (skeleton — run /swe-atlas:create-design-md to fill)`);
     }
 
     // .claude/ directory — skills, agents, commands, hooks

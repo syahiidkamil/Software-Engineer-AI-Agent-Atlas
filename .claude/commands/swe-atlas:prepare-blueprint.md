@@ -344,3 +344,5 @@ Next step:
 ```
 
 Remind Boss: "The strength of the eventual blueprint depends on the depth of this prep. It's worth taking a second session if anything feels thin."
+
+**Note on downstream testing (project-wide rule):** Test cases generated downstream by `/swe-atlas:create-blueprint`, `/swe-atlas:create-phase`, and `/swe-atlas:create-tasks` are **markdown only** (`test-cases/TC-*.md`), executed manually by the `qa-manual-tester` sub-agent via **Playwright MCP** browser tools. They are **never** `.spec.ts` files, `playwright.config.ts`, Jest specs, vitest specs, mocha tests, or any other test-runner code. Keep this in mind when describing user pain or vision — there's no need to specify a test framework, because there isn't one.
