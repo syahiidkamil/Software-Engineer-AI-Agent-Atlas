@@ -24,6 +24,7 @@ const MAPPINGS = [
   { src: '.claude/agents', dest: '.claude/agents' },
   { src: '.claude/commands', dest: '.claude/commands' },
   { src: '.claude/hooks', dest: '.claude/hooks' },
+  { src: '.claude/rules', dest: '.claude/rules' },
   { src: '.claude/skills', dest: '.claude/skills', exclude: SKILLS_EXCLUDE },
 ];
 

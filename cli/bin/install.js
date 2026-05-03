@@ -463,7 +463,7 @@ async function scaffold(targetDir) {
     // .claude/ directory — skills, agents, commands, hooks
     const claudeTemplateDir = path.join(TEMPLATES_DIR, '.claude');
     if (fs.existsSync(claudeTemplateDir)) {
-      const dirs = ['skills', 'agents', 'commands', 'hooks'];
+      const dirs = ['skills', 'agents', 'commands', 'hooks', 'rules'];
       for (const dir of dirs) {
         const src = path.join(claudeTemplateDir, dir);
         if (fs.existsSync(src)) {
