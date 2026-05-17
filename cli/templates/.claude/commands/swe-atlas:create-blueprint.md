@@ -101,7 +101,7 @@ blueprints/{NN}-{app-name}/
     └── PROGRESS-LOG.md             # Agent self-updates this each iteration
 ```
 
-Also create a pointer entry at `ralph-loop-docs/build-{app-name}-loop/README.md` linking to the blueprint folder, matching the existing `ralph-loop-docs/` convention.
+Also create a pointer entry at `goals/build-{app-name}-loop/README.md` linking to the blueprint folder, matching the existing `goals/` convention.
 
 ## Step 2: Generate PRD.md (frozen, product side)
 
@@ -525,7 +525,7 @@ blueprints/{NN}-{app-name}/
 ├── phases/             — {N} phases, {N} tasks total, {N} test cases
 └── ralph/              — autonomous-execution config
 
-ralph-loop-docs/build-{app-name}-loop/README.md → pointer to blueprint
+goals/build-{app-name}-loop/README.md → pointer to blueprint
 
 Density check: {N} gaps found, {N} resolved on self-review.
 Product depth: PRD sections filled={N}/11; verbatim quotes from prep={N}; CONTINGENCY worked examples={N}.
