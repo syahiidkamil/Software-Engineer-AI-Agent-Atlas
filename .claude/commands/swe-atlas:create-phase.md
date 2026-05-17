@@ -3,7 +3,7 @@ description: Create a development phase with specs, test cases, and implementati
 argument-hint: "phase-name"
 ---
 
-You are ATLAS. Boss wants to create a new development phase. Your job: understand the phase deeply, define clear specs, set up test cases, and create an actionable implementation structure.
+You are ATLAS. Boss wants to create a new development phase. Your job: understand the phase deeply, brainstorm a basic mockup of what it delivers, then define clear specs and test cases grounded in that mockup.
 
 The phase name is provided as argument: $ARGUMENTS
 
@@ -41,12 +41,31 @@ Use AskUserQuestion to gather context. Ask in focused batches.
 If Boss says to explore the codebase, spawn a **code-explorer** agent:
 "Analyze the codebase focusing on areas relevant to {phase-name}. Identify: existing patterns to follow, integration points, files that will likely be modified, and any technical debt that might affect this phase."
 
-## Step 2: Define the Spec
+## Step 2: Brainstorm a Basic Mockup
 
-Create the phase directory and spec:
+Before writing any spec, brainstorm a **basic mockup** of what this phase delivers. A spec written against a concrete mockup is grounded; a spec written in the abstract drifts generic and gets rewritten. The mockup is where a misunderstanding surfaces cheaply — far cheaper than discovering it in the test cases or in code.
+
+Keep it **low-fidelity and fast** — this is a thinking sketch, not a build:
+
+- **UI-facing phases** — ASCII wireframes / low-fi layout sketches: screen boxes, key elements, where things sit, the flow between screens.
+- **Non-UI phases** (API, data pipeline, backend job) — a structural sketch instead: a Mermaid flow or sequence diagram, sample request/response payloads, the shape of the key data.
+
+Where the mockup lives — pick based on weight:
+
+- **Inline** in the conversation — when the phase is small and the mockup is a sketch or two.
+- **`MOCKUP.md`** inside the phase folder — when the mockup is substantial enough that the spec, the test cases, and the downstream `/swe-atlas:create-phase-details` and `/swe-atlas:create-tasks` commands should all read from it. If you save `MOCKUP.md`, determine the phase number now (next available in `phases/`) and create `phases/{NN}-{phase-name}/` so the file has a home.
+
+Show the mockup to Boss and use AskUserQuestion to get a reaction — "Does this match what you pictured? What's missing or wrong?" Iterate until it lands. Only then move on to the spec.
+
+(For a full clickable, multi-screen interactive prototype rather than a quick sketch, that's a separate command: `/swe-atlas:brainstorming-with-prototype`.)
+
+## Step 3: Define the Spec
+
+Create the phase directory (if Step 2 didn't already create it) and the spec files:
 
 ```
 phases/{NN}-{phase-name}/
+├── MOCKUP.md                  # Basic mockup — if saved in Step 2 (may be inline instead)
 ├── SPEC.md                    # Phase specification
 ├── DECISIONS.md               # Technical decisions (locked vs flexible)
 ├── test-cases/                # Test case definitions
@@ -55,7 +74,7 @@ phases/{NN}-{phase-name}/
     └── .gitkeep
 ```
 
-**Determine phase number:** Check existing `phases/` directory for the next available number (01, 02, 03...).
+**Determine phase number:** Check existing `phases/` directory for the next available number (01, 02, 03...). Skip if Step 2 already created the folder.
 
 ### SPEC.md Structure
 
@@ -112,7 +131,7 @@ Write `phases/{NN}-{phase-name}/DECISIONS.md`:
 {Things that need to be resolved during implementation}
 ```
 
-## Step 3: Generate Test Cases
+## Step 4: Generate Test Cases
 
 ### Testing approach (project-wide rule — applies to every test case below)
 
@@ -155,13 +174,14 @@ Generate test cases covering:
 
 Use AskUserQuestion: "I've drafted {N} test cases. Want to review them, add more, or proceed?"
 
-## Step 4: Summary
+## Step 5: Summary
 
 Report what was created:
 
 ```
 Phase created: {NN}-{phase-name}
 
+├── MOCKUP.md            — basic mockup (if saved)
 ├── SPEC.md              — {brief summary of objective}
 ├── DECISIONS.md         — {N} locked, {N} flexible, {N} open
 ├── test-cases/          — {N} test cases
@@ -172,7 +192,7 @@ Phase created: {NN}-{phase-name}
 
 Next steps:
 - Review the spec: phases/{NN}-{phase-name}/SPEC.md
-- Start implementation: /feature-dev
+- Start building: /feature-dev
 - Run tests (markdown TC-*.md executed via Playwright MCP, not as scripts): /qa-manual-test-run
 ```
 
