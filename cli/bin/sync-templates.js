@@ -31,7 +31,6 @@ const MAPPINGS = [
 // File-level mappings (single files copied verbatim from repo root)
 const FILE_MAPPINGS = [
   { src: 'NOTES.md', dest: 'NOTES.md' },
-  { src: 'development-context/DESIGN.md', dest: 'development-context/DESIGN.md' },
 ];
 
 // ─── Colors ──────────────────────────────────────────────────────────────────

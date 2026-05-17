@@ -118,7 +118,7 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 |---------|--------------|
 | `/swe-atlas:new-project-context` | Initialize project context, configure conventions, set up workspace |
 | `/swe-atlas:prepare-blueprint` | Discovery interview — captures business problem, vision, users, UX intent into `blueprint-prep/` |
-| `/swe-atlas:create-design-md` | Lock visual identity — discover, prototype 3 distinct HTML variants for browser comparison, iterate, then write `development-context/DESIGN.md` in [Stitch format](https://github.com/google-labs-code/design.md) (YAML tokens + canonical sections) |
+| `/swe-atlas:create-design-md` | Lock visual identity — discover, prototype 3 distinct HTML variants for browser comparison, iterate, then write `.claude/rules/DESIGN.md` in [Stitch format](https://github.com/google-labs-code/design.md) (YAML tokens + canonical sections) |
 | `/swe-atlas:create-blueprint` | Intelligence-driven waterfall — produces frozen foundation (BLUEPRINT, PRD, CONTINGENCY, STACK, CONVENTIONS, ARCHITECTURE, INVENTORY, wireframes, scenarios, phases, ralph) |
 | `/swe-atlas:create-phase "phase-01-mvp"` | Create a development phase with specs, test cases, and structure |
 | `/swe-atlas:create-phase-details` | Add wireframes, data model, data flow, and roadmap to a phase |
@@ -146,13 +146,12 @@ Pre-configured in `.mcp.json`:
 │   ├── atlas.md                    # Persona, journey, work protocol
 │   └── engineering.md              # Engineering principles, roles
 ├── repos/                           # Your projects (multi-repo mode)
-├── development-context/             # Active conventions for current project
-│   └── DESIGN.md                   # Visual identity (Stitch format) — fill via /swe-atlas:create-design-md
 ├── .claude/
 │   ├── skills/                     # 17 specialized skills
 │   ├── agents/                     # 7 task-specific agents
 │   ├── commands/                   # Slash commands
-│   └── hooks/                      # Task completion hooks
+│   ├── hooks/                      # Task completion hooks
+│   └── rules/                      # Project rules — conventions + DESIGN.md (auto-loaded)
 ├── automation-tests/                # QA test cases and results
 ├── docs/                            # Project documentation
 │   └── external-information/       # Git submodules (Anthropic plugins & skills)

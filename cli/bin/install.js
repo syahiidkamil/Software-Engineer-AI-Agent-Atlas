@@ -149,7 +149,6 @@ I carry FAANG experience for scale and quality, and startup experience for pragm
 - @${selfPrefix}self/atlas.md - Identity, journey, work protocol, ground truth
 - @${selfPrefix}self/engineering.md - Engineering principles, roles, development beliefs
 - @NOTES.md - Regular notes and important must-follow rules
-- @${mode === 'single' ? 'atlas/' : ''}development-context/ - Active conventions and context for the current project
 
 ## How I Work
 
@@ -333,10 +332,10 @@ async function scaffold(targetDir) {
       },
     ]);
 
-    // 3. Active context templates (placed in development-context/ for immediate use)
+    // 3. Active context templates (activated as project rules in .claude/rules/)
     const activeTemplates = await askMultiChoice(
       rl,
-      'Which context templates to activate? (all are copied, these go into development-context/)',
+      'Which context templates to activate? (all are copied to misc/context-templates/, these become rules in .claude/rules/)',
       [
         {
           label: 'Backend API',
@@ -435,33 +434,9 @@ async function scaffold(targetDir) {
       print(`  ${ORANGE}+${RESET} ${mode === 'single' ? 'atlas/' : ''}misc/context-templates/`);
     }
 
-    // Activate selected templates into development-context/
-    const devCtxDir = mode === 'single'
-      ? path.join(resolvedDir, 'atlas', 'development-context')
-      : path.join(resolvedDir, 'development-context');
-    ensureDir(devCtxDir);
-    if (activeTemplates.length > 0) {
-      for (const tpl of activeTemplates) {
-        const src = path.join(ctDir, tpl);
-        if (fs.existsSync(src)) {
-          fs.copyFileSync(src, path.join(devCtxDir, tpl));
-        }
-      }
-      print(`  ${ORANGE}+${RESET} development-context/ (${activeTemplates.length} active)`);
-    } else {
-      gitkeep(devCtxDir);
-      print(`  ${ORANGE}+${RESET} development-context/`);
-    }
-
-    // DESIGN.md — always copied as a placeholder skeleton (Stitch format).
-    // Boss runs /swe-atlas:create-design-md to fill it in via interview + HTML variants.
-    const designTemplate = path.join(TEMPLATES_DIR, 'development-context', 'DESIGN.md');
-    if (fs.existsSync(designTemplate)) {
-      fs.copyFileSync(designTemplate, path.join(devCtxDir, 'DESIGN.md'));
-      print(`  ${ORANGE}+${RESET} development-context/DESIGN.md (skeleton — run /swe-atlas:create-design-md to fill)`);
-    }
-
-    // .claude/ directory — skills, agents, commands, hooks
+    // .claude/ directory — skills, agents, commands, hooks, rules.
+    // rules/ ships the DESIGN.md skeleton; selected context templates are
+    // activated into it below.
     const claudeTemplateDir = path.join(TEMPLATES_DIR, '.claude');
     if (fs.existsSync(claudeTemplateDir)) {
       const dirs = ['skills', 'agents', 'commands', 'hooks', 'rules'];
@@ -472,6 +447,19 @@ async function scaffold(targetDir) {
           print(`  ${ORANGE}+${RESET} .claude/${dir}/`);
         }
       }
+    }
+
+    // Activate selected context templates as project rules in .claude/rules/
+    if (activeTemplates.length > 0) {
+      const rulesDir = path.join(claudeDir, 'rules');
+      ensureDir(rulesDir);
+      for (const tpl of activeTemplates) {
+        const src = path.join(ctTemplateDir, tpl);
+        if (fs.existsSync(src)) {
+          fs.copyFileSync(src, path.join(rulesDir, tpl));
+        }
+      }
+      print(`  ${ORANGE}+${RESET} .claude/rules/ (${activeTemplates.length} active)`);
     }
 
     // MCP options
