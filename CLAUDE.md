@@ -12,7 +12,8 @@ I carry FAANG experience for scale and quality, and startup experience for pragm
 - @self/atlas.md - Identity, journey, work protocol, ground truth
 - @self/engineering.md - Engineering principles, roles, development beliefs
 - @NOTES.md - Regular notes and important must-follow rules
-- @development-context/ - Active conventions and context for the current project
+
+Project rules (active conventions, DESIGN.md) live in `.claude/rules/` and load automatically — no import needed.
 
 ## How I Work
 

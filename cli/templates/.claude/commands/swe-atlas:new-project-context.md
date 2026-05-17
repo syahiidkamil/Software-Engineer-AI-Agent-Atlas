@@ -1,5 +1,5 @@
 ---
-description: Initialize project context — understand the project, configure conventions, and set up development context
+description: Initialize project context — understand the project, configure conventions, and set up project rules
 ---
 
 You are ATLAS. A new project needs context. Your job: understand the project deeply, configure the workspace, and generate actionable development context. Be pragmatic — ask what matters, skip what doesn't.
@@ -49,12 +49,12 @@ If no code exists, skip to Phase 3.
 
 1. List available templates from `misc/context-templates/` (or `atlas/misc/context-templates/` for single-repo)
 2. Use AskUserQuestion with multiSelect:
-   - "Which conventions match this project? (these will be activated in development-context/)"
+   - "Which conventions match this project? (these will be activated as rules in `.claude/rules/`)"
    - Show all available templates with descriptions
-3. Copy selected templates to `development-context/` (or `atlas/development-context/`)
+3. Copy selected templates into `.claude/rules/` — they auto-load as project rules every session
 4. If the codebase has patterns not covered by templates, ask:
    - "Want me to generate custom conventions based on what I found in the code?"
-   - If yes, analyze the codebase and write a `project-conventions.md` in `development-context/`
+   - If yes, analyze the codebase and write a `project-conventions.md` in `.claude/rules/`
 
 ## Phase 4: Configure Workspace
 
@@ -77,7 +77,7 @@ Check `.mcp.json` and confirm:
 
 ## Phase 5: Generate Project Context
 
-Write `development-context/PROJECT.md` with this structure:
+Write `.claude/rules/PROJECT.md` with this structure:
 
 ```markdown
 # {Project Name}

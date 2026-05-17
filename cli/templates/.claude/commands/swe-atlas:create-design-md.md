@@ -40,7 +40,7 @@ This is a load-bearing accuracy tool, not empathy theatre.
 
 1. Determine next exploration number from `design-explore/` directory. If the directory doesn't exist, create it.
 2. Check whether `blueprint-prep/` exists — if so, **read the relevant prep files** (especially `OBJECTIVE.md`, `VISION.md`, `USERS.md`, `UX-INTENT.md`, `boss-artifacts/sketches/`) before asking Boss anything. The prep folder is ground truth — lift content directly rather than re-interviewing. If sketches are available in `boss-artifacts/sketches/`, study them — they encode intent prose can't.
-3. Check whether a non-empty `development-context/DESIGN.md` already exists. If yes:
+3. Check whether a non-empty `.claude/rules/DESIGN.md` already exists. If yes:
    - Ask Boss whether to **refine** the existing DESIGN.md (treat it as starting point, only iterate where Boss isn't satisfied) or **start fresh** (replace it; archive the existing file under `design-explore/{NN}-{app-name}/PREVIOUS-DESIGN.md`).
 4. Create the working folder:
 
@@ -175,7 +175,7 @@ Iterate until Boss says it's locked. Each round writes a new `ROUND-{NN}.md`. Ca
 
 ## Step 6: Lock in & write DESIGN.md
 
-Once Boss locks the direction, write `DECISION.md` summarizing what was chosen (which variant, which blends, the key feedback that drove the choice). Then generate the final `development-context/DESIGN.md`.
+Once Boss locks the direction, write `DECISION.md` summarizing what was chosen (which variant, which blends, the key feedback that drove the choice). Then generate the final `.claude/rules/DESIGN.md`.
 
 ### Format: Stitch DESIGN.md spec
 
@@ -193,7 +193,7 @@ DESIGN.md has two parts:
    8. Do's and Don'ts
    - (Extended, optional) Iconography, Tone & Voice, Responsive Behavior, Accessibility, Open Gaps
 
-Use the template at `development-context/DESIGN.md` (which already exists with placeholders) as the structural starting point — don't reinvent the section order or token shape. Replace every `{{PLACEHOLDER}}` with the values derived from the locked-in variant.
+Use the template at `.claude/rules/DESIGN.md` (which already exists with placeholders) as the structural starting point — don't reinvent the section order or token shape. Replace every `{{PLACEHOLDER}}` with the values derived from the locked-in variant.
 
 ### Token derivation
 
@@ -226,7 +226,7 @@ Each markdown section should be **2–4 sentences of rationale + bullets for app
 
 ### Final write
 
-Output to `development-context/DESIGN.md`, replacing the placeholder template. Update the `Last updated` date.
+Output to `.claude/rules/DESIGN.md`, replacing the placeholder template. Update the `Last updated` date.
 
 If a previous DESIGN.md was archived in Step 0, leave the archived copy in place — useful for reviewing what changed.
 
@@ -258,7 +258,7 @@ design-explore/{NN}-{app-name}/
 ├── feedback/               — {N} rounds of iteration captured
 └── DECISION.md             — final choice + rationale
 
-development-context/DESIGN.md  — locked design system, Stitch format
+.claude/rules/DESIGN.md  — locked design system, Stitch format
                                  ({N} colors, {N} typography levels,
                                   {N} spacing steps, {N} components)
 
@@ -270,10 +270,10 @@ How AI agents on this project will use it:
   to DESIGN.md *first*, then implemented. Never the other way around.
 
 Next steps:
-- Review the locked DESIGN.md: development-context/DESIGN.md
+- Review the locked DESIGN.md: .claude/rules/DESIGN.md
 - (Optional) review the variant comparison: design-explore/{NN}-{app-name}/variants/
 - When ready, I'll commit.
-- New screens can now reference tokens directly — see development-context/DESIGN.md before implementing.
+- New screens can now reference tokens directly — see .claude/rules/DESIGN.md before implementing.
 ```
 
 Remind Boss: "DESIGN.md is the source of truth from now on. If a future screen feels off, it's usually because someone bypassed the tokens — point them back here."
