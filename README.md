@@ -174,7 +174,7 @@ Just as biological neurons need specific patterns to fire, AI capabilities need 
 Rather than relying on ever-larger context windows, ATLAS uses strategic context organization through CLAUDE.md files and modular conventions to maintain focus where it matters.
 
 ### Vibecoding With Guardrails
-Natural conversational programming with engineering discipline. KISS, YAGNI, DRY principles are baked in. Every session starts with the same standards.
+Natural conversational programming with engineering discipline. Production-grade, industry-appropriate best practices are the default — with KISS, YAGNI, and DRY applied in balance. Every session starts with the same standards.
 
 ---
 
