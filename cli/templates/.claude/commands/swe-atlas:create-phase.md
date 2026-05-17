@@ -1,5 +1,5 @@
 ---
-description: Create a development phase with specs, test cases, and implementation structure
+description: Create a development phase — brainstorm a basic mockup first, then define specs and test cases
 argument-hint: "phase-name"
 ---
 
