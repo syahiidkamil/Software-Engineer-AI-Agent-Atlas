@@ -396,8 +396,8 @@ async function scaffold(targetDir) {
         : path.join(resolvedDir, 'self');
     const ctDir =
       mode === 'single'
-        ? path.join(resolvedDir, 'atlas', 'context-templates')
-        : path.join(resolvedDir, 'context-templates');
+        ? path.join(resolvedDir, 'atlas', 'misc', 'context-templates')
+        : path.join(resolvedDir, 'misc', 'context-templates');
     const claudeDir = path.join(resolvedDir, '.claude');
 
     // CLAUDE.md
@@ -429,10 +429,10 @@ async function scaffold(targetDir) {
     print(`  ${ORANGE}+${RESET} ${mode === 'single' ? 'atlas/' : ''}self/`);
 
     // Context templates — copy all
-    const ctTemplateDir = path.join(TEMPLATES_DIR, 'context-templates');
+    const ctTemplateDir = path.join(TEMPLATES_DIR, 'misc', 'context-templates');
     if (fs.existsSync(ctTemplateDir)) {
       copyDirSync(ctTemplateDir, ctDir);
-      print(`  ${ORANGE}+${RESET} ${mode === 'single' ? 'atlas/' : ''}context-templates/`);
+      print(`  ${ORANGE}+${RESET} ${mode === 'single' ? 'atlas/' : ''}misc/context-templates/`);
     }
 
     // Activate selected templates into development-context/
@@ -541,8 +541,8 @@ async function scaffold(targetDir) {
     // Git submodules (external-information)
     const { execSync } = require('child_process');
     const eiDir = mode === 'single'
-      ? path.join(resolvedDir, 'atlas', 'external-information')
-      : path.join(resolvedDir, 'external-information');
+      ? path.join(resolvedDir, 'atlas', 'docs', 'external-information')
+      : path.join(resolvedDir, 'docs', 'external-information');
     const eiRelative = path.relative(resolvedDir, eiDir);
 
     try {

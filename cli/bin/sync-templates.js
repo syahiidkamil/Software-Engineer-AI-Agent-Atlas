@@ -20,7 +20,7 @@ const SKILLS_EXCLUDE = new Set([
 
 const MAPPINGS = [
   { src: 'self', dest: 'self' },
-  { src: 'context-templates', dest: 'context-templates' },
+  { src: 'misc/context-templates', dest: 'misc/context-templates' },
   { src: '.claude/agents', dest: '.claude/agents' },
   { src: '.claude/commands', dest: '.claude/commands' },
   { src: '.claude/hooks', dest: '.claude/hooks' },

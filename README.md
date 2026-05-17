@@ -146,7 +146,6 @@ Pre-configured in `.mcp.json`:
 │   ├── atlas.md                    # Persona, journey, work protocol
 │   └── engineering.md              # Engineering principles, roles
 ├── repos/                           # Your projects (multi-repo mode)
-├── context-templates/               # All convention templates
 ├── development-context/             # Active conventions for current project
 │   └── DESIGN.md                   # Visual identity (Stitch format) — fill via /swe-atlas:create-design-md
 ├── .claude/
@@ -154,12 +153,12 @@ Pre-configured in `.mcp.json`:
 │   ├── agents/                     # 7 task-specific agents
 │   ├── commands/                   # Slash commands
 │   └── hooks/                      # Task completion hooks
-├── external-information/             # Git submodules
-│   ├── claude-plugins-official/    # Anthropic's official plugins
-│   └── skills/                     # Anthropic's skill library
 ├── automation-tests/                # QA test cases and results
 ├── docs/                            # Project documentation
-├── misc/prompts/                    # Prompt templates
+│   └── external-information/       # Git submodules (Anthropic plugins & skills)
+├── misc/                            # Working files
+│   ├── context-templates/          # All convention templates
+│   └── prompts/                    # Prompt templates
 └── .mcp.json                        # MCP server configuration
 ```
 

@@ -47,7 +47,7 @@ If no code exists, skip to Phase 3.
 
 ## Phase 3: Configure Conventions
 
-1. List available templates from `context-templates/` (or `atlas/context-templates/` for single-repo)
+1. List available templates from `misc/context-templates/` (or `atlas/misc/context-templates/` for single-repo)
 2. Use AskUserQuestion with multiSelect:
    - "Which conventions match this project? (these will be activated in development-context/)"
    - Show all available templates with descriptions
