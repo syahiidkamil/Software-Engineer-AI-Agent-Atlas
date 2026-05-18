@@ -506,9 +506,9 @@ async function scaffold(targetDir) {
     gitkeep(path.join(resolvedDir, 'phases'));
     print(`  ${ORANGE}+${RESET} phases/`);
 
-    gitkeep(path.join(resolvedDir, 'automation-tests', 'test-cases'));
-    gitkeep(path.join(resolvedDir, 'automation-tests', 'test-runs'));
-    print(`  ${ORANGE}+${RESET} automation-tests/`);
+    gitkeep(path.join(resolvedDir, 'misc', 'automation-tests', 'test-cases'));
+    gitkeep(path.join(resolvedDir, 'misc', 'automation-tests', 'test-runs'));
+    print(`  ${ORANGE}+${RESET} misc/automation-tests/`);
 
     if (mcpOptions.playwright) {
       gitkeep(path.join(resolvedDir, 'misc', 'browser-storage'));

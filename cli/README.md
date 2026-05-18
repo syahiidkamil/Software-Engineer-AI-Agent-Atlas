@@ -152,10 +152,10 @@ Pre-configured in `.mcp.json`:
 │   ├── commands/                   # Slash commands
 │   ├── hooks/                      # Task completion hooks
 │   └── rules/                      # Project rules — conventions + DESIGN.md (auto-loaded)
-├── automation-tests/                # QA test cases and results
 ├── docs/                            # Project documentation
 │   └── external-information/       # Git submodules (Anthropic plugins & skills)
 ├── misc/                            # Working files
+│   ├── automation-tests/           # QA test cases and results
 │   ├── context-templates/          # All convention templates
 │   └── prompts/                    # Prompt templates
 └── .mcp.json                        # MCP server configuration
