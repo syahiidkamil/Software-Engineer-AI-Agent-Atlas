@@ -31,6 +31,10 @@ const MAPPINGS = [
 // File-level mappings (single files copied verbatim from repo root)
 const FILE_MAPPINGS = [
   { src: 'NOTES.md', dest: 'NOTES.md' },
+  // Rename `.gitignore` → `gitignore` because npm strips `.gitignore` from
+  // published packages; install.js writes it back as `.gitignore` in the
+  // scaffolded project.
+  { src: '.gitignore', dest: 'gitignore' },
 ];
 
 // ─── Colors ──────────────────────────────────────────────────────────────────

@@ -279,6 +279,14 @@ frontend at @repos/frontend (port yyyy)
 `;
 }
 
+function generateGitignore() {
+  return `.DS_Store
+misc/screenshots/*
+!misc/screenshots/.gitkeep
+misc/browser-storage
+`;
+}
+
 function generateNotes() {
   return `# NOTES
 
@@ -413,6 +421,21 @@ async function scaffold(targetDir) {
       : generateNotes();
     writeFileSync(path.join(resolvedDir, 'NOTES.md'), notesContent);
     print(`  ${ORANGE}+${RESET} NOTES.md`);
+
+    // .gitignore — template is named `gitignore` (no dot) so npm doesn't strip
+    // it on publish; we write it to `.gitignore` in the target. Don't overwrite
+    // an existing one — preserve user-managed entries.
+    const gitignorePath = path.join(resolvedDir, '.gitignore');
+    if (!fs.existsSync(gitignorePath)) {
+      const gitignoreTemplate = path.join(TEMPLATES_DIR, 'gitignore');
+      const gitignoreContent = fs.existsSync(gitignoreTemplate)
+        ? fs.readFileSync(gitignoreTemplate, 'utf-8')
+        : generateGitignore();
+      writeFileSync(gitignorePath, gitignoreContent);
+      print(`  ${ORANGE}+${RESET} .gitignore`);
+    } else {
+      print(`  ${DIM}  .gitignore already exists — skipped${RESET}`);
+    }
 
     // self/ directory
     const selfTemplateDir = path.join(TEMPLATES_DIR, 'self');
