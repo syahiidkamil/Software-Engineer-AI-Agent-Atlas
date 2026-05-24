@@ -8,14 +8,6 @@ const path = require('path');
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const TEMPLATES_DIR = path.resolve(__dirname, '..', 'templates');
 
-// ─── Skills not bundled as defaults (domain-specific) ────────────────────────
-
-const SKILLS_EXCLUDE = new Set([
-  'postgresql-optimization',
-  'postgresql-code-review',
-  'supabase-postgres-best-practices',
-]);
-
 // ─── Mappings: source at repo root → bundled template path ───────────────────
 
 const MAPPINGS = [
@@ -25,7 +17,7 @@ const MAPPINGS = [
   { src: '.claude/commands', dest: '.claude/commands' },
   { src: '.claude/hooks', dest: '.claude/hooks' },
   { src: '.claude/rules', dest: '.claude/rules' },
-  { src: '.claude/skills', dest: '.claude/skills', exclude: SKILLS_EXCLUDE },
+  { src: '.claude/skills', dest: '.claude/skills' },
 ];
 
 // File-level mappings (single files copied verbatim from repo root)
