@@ -65,9 +65,9 @@ If Boss says "whatever you think is best," give your recommendation with one-sen
 
 ## Step 3: Build `phase.html` (the deliverable)
 
-**Determine the phase number** — next available in `phases/` (01, 02, 03...) — and create `phases/{NN}-{phase-name}/`.
+**Determine the phase number** — next available in `docs/phases/` (01, 02, 03...) — and create `docs/phases/{NN}-{phase-name}/`.
 
-Write `phases/{NN}-{phase-name}/phase.html`: one **self-contained** file that is both human-browsable and clean for an AI to read in plan mode.
+Write `docs/phases/{NN}-{phase-name}/phase.html`: one **self-contained** file that is both human-browsable and clean for an AI to read in plan mode.
 
 **Constraints:**
 - **Single file, no dependencies.** Inline `<style>` only. No external CDN, no JS framework, no build step. It must open by double-click and read as plain text.
@@ -104,12 +104,12 @@ Report what was created:
 ```
 Phase created: {NN}-{phase-name}
 
-phases/{NN}-{phase-name}/
+docs/phases/{NN}-{phase-name}/
 ├── phase.html          — wireframe + overview + clarifications + matrices (the deliverable)
 └── {optional}          — DATA-MODEL.md / DATA-FLOW.md / ROADMAP.md / DECISIONS.md (only if added)
 
 Next step:
-- Open phases/{NN}-{phase-name}/phase.html in the browser to review the wireframe.
+- Open docs/phases/{NN}-{phase-name}/phase.html in the browser to review the wireframe.
 - To implement: open it in Claude Code plan mode (or run /plandev:feature) and build straight from it.
 ```
 
