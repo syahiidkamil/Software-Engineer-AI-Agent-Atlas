@@ -19,6 +19,5 @@ This folder holds language-specific extensions to `human-writing/SKILL.md`. The 
 2. Cover at minimum: AI-tells in this language (transition phrases, filler, sentence patterns), orthographic conventions, register spectrum, common anglicisms or loanword guidance, structural quirks (punctuation habits, voice preference, paragraph rhythm).
 3. Reuse the section structure of `id.md` so language modules are visually consistent.
 4. Add a row to the table above and to SKILL.md's Step 0.1 manifest.
-5. Re-sync templates if this is upstream of `cli/templates/`.
 
 The skill's trigger description in SKILL.md does **not** need to enumerate languages — language detection happens inside the skill, so a single description scales to N languages without polluting the skill list.

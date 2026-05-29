@@ -6,7 +6,10 @@ const path = require('path');
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
+// The package root IS the source of truth. bin/ sits at the package root, so
+// `..` resolves to the dir that holds self/, .claude/, misc/, NOTES.md — both
+// in this repo (dev) and in the published npm tarball.
+const TEMPLATES_DIR = path.join(__dirname, '..');
 
 // ATLAS Orange theme — distinct from GSD's cyan/blue
 const ORANGE = '\x1b[38;5;208m';

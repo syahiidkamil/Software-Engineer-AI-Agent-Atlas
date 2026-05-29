@@ -1,0 +1,37 @@
+{
+  "name": "swe-atlas",
+  "version": "1.10.0",
+  "description": "ATLAS - Adaptive Technical Learning and Architecture System. Scaffold an AI Software Engineer Agent for Claude Code.",
+  "bin": {
+    "swe-atlas": "bin/install.js"
+  },
+  "files": [
+    "bin/",
+    "self/",
+    ".claude/agents/",
+    ".claude/commands/",
+    ".claude/hooks/",
+    ".claude/rules/",
+    ".claude/skills/",
+    "misc/context-templates/",
+    "misc/images/",
+    "NOTES.md",
+    "neuron-activation.gif"
+  ],
+  "keywords": [
+    "claude-code",
+    "ai-agent",
+    "software-engineer",
+    "scaffolding",
+    "atlas"
+  ],
+  "author": "Syahiid Kamil",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syahiidkamil/Software-Engineer-AI-Agent-Atlas"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
