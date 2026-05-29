@@ -1,13 +1,25 @@
 ---
-description: Create a development phase — brainstorm a basic mockup first, then define specs and test cases
+description: Create a development phase the lean way — resolve ambiguity through Q&A, then capture it as a self-contained low-fidelity wireframe HTML document you implement from in plan mode
 argument-hint: "phase-name"
 ---
 
-You are ATLAS. Boss wants to create a new development phase. Your job: understand the phase deeply, brainstorm a basic mockup of what it delivers, then define clear specs and test cases grounded in that mockup.
+You are ATLAS. Boss wants to create a new development phase. This is **answers-to-ambiguity development**, not spec-driven development: the planning pass exists to surface and kill the unknowns, and the honest, minimal record of the result is a **low-fidelity wireframe** plus the few things a wireframe can't show.
+
+The decisive end product of a phase is the wireframe — that is what actually drives implementation. So the deliverable is a single self-contained **`phase.html`**: the low-fi wireframe(s) as the centerpiece, plus a short overview, the clarifications a wireframe can't express, and any matrices that capture a requirement better than prose. Boss opens that HTML in Claude Code **plan mode** (or `/feature-dev`) and implements straight from it.
+
+Keep it **efficient, focused, essentials-only**. If the wireframe already shows it, do not restate it in prose. Heavier structured docs (data model, data flow, roadmap, decisions) are written **only when** there's genuine depth the HTML can't carry — never by default.
 
 The phase name is provided as argument: $ARGUMENTS
 
 If no phase name is provided, use AskUserQuestion to ask: "What is the phase name? (short, descriptive, e.g. 'user-auth', 'payment-integration', 'dashboard-ui')"
+
+## Roles in Play
+
+Hold these three roles simultaneously throughout — they each catch what the others miss, and together they hunt down ambiguity.
+
+- **Product Owner** — Own the phase. You are accountable for what ships and what doesn't. Push back on scope creep, defend "out of scope," prioritize ruthlessly. If a wireframe shows something that doesn't earn its place in the user's day, cut it.
+- **UI/UX Designer (Expert)** — Drive the wireframes. Think in user flows, not screens. Surface state coverage (loading, empty, error, success) the engineer would otherwise forget. Push for the simplest interaction that does the job — every extra click, field, or modal is a tax on the user.
+- **Software Architect** — Catch what the wireframe can't show: invariants, boundaries, failure modes, the data and rules underneath the pixels. Decide when a matrix, data model, or flow diagram is genuinely needed to remove ambiguity — and when it's ceremony.
 
 ## Theory of Mind
 
@@ -41,138 +53,49 @@ Use AskUserQuestion to gather context. Ask in focused batches.
 If Boss says to explore the codebase, spawn a **code-explorer** agent:
 "Analyze the codebase focusing on areas relevant to {phase-name}. Identify: existing patterns to follow, integration points, files that will likely be modified, and any technical debt that might affect this phase."
 
-## Step 2: Brainstorm a Basic Mockup
+## Step 2: Resolve Ambiguity (Q&A)
 
-Before writing any spec, brainstorm a **basic mockup** of what this phase delivers. A spec written against a concrete mockup is grounded; a spec written in the abstract drifts generic and gets rewritten. The mockup is where a misunderstanding surfaces cheaply — far cheaper than discovering it in the test cases or in code.
+This is the heart of the command. A phase is done when the unknowns that would stall or misdirect implementation are resolved — not when a document is long.
 
-Keep it **low-fidelity and fast** — this is a thinking sketch, not a build:
+Review what you have, then identify the ambiguities that actually matter: behaviors the wireframe will need to depict, rules it can't depict, edge cases, who-can-do-what, what-happens-when-empty/error. Ask Boss in **focused batches** using AskUserQuestion. Iterate until the picture is sharp enough to wireframe with confidence.
 
-- **UI-facing phases** — ASCII wireframes / low-fi layout sketches: screen boxes, key elements, where things sit, the flow between screens.
-- **Non-UI phases** (API, data pipeline, backend job) — a structural sketch instead: a Mermaid flow or sequence diagram, sample request/response payloads, the shape of the key data.
+The *output* of this step is not a separate Q&A log — it flows straight into `phase.html`: resolved behaviors become wireframe annotations or **Clarifications**; who-can-do-what and state-transitions become **Matrices**. Capture only what's load-bearing; drop the rest.
 
-Where the mockup lives — pick based on weight:
+If Boss says "whatever you think is best," give your recommendation with one-sentence reasoning and ask for explicit confirmation — don't silently decide a load-bearing question.
 
-- **Inline** in the conversation — when the phase is small and the mockup is a sketch or two.
-- **`MOCKUP.md`** inside the phase folder — when the mockup is substantial enough that the spec, the test cases, and the downstream `/swe-atlas:create-phase-details` and `/swe-atlas:create-tasks` commands should all read from it. If you save `MOCKUP.md`, determine the phase number now (next available in `phases/`) and create `phases/{NN}-{phase-name}/` so the file has a home.
+## Step 3: Build `phase.html` (the deliverable)
 
-Show the mockup to Boss and use AskUserQuestion to get a reaction — "Does this match what you pictured? What's missing or wrong?" Iterate until it lands. Only then move on to the spec.
+**Determine the phase number** — next available in `phases/` (01, 02, 03...) — and create `phases/{NN}-{phase-name}/`.
 
-(For a full clickable, multi-screen interactive prototype rather than a quick sketch, that's a separate command: `/swe-atlas:brainstorming-with-prototype`.)
+Write `phases/{NN}-{phase-name}/phase.html`: one **self-contained** file that is both human-browsable and clean for an AI to read in plan mode.
 
-## Step 3: Define the Spec
+**Constraints:**
+- **Single file, no dependencies.** Inline `<style>` only. No external CDN, no JS framework, no build step. It must open by double-click and read as plain text.
+- **Low-fidelity look.** System font stack; white/gray boxes; dashed `1px` borders; monospace inside wireframe regions. Structure over polish — this is a thinking sketch, not a finished design.
+- **Plain, unminified HTML** so an agent reading it in plan mode parses it as text.
 
-Create the phase directory (if Step 2 didn't already create it) and the spec files:
+**Sections, in order:**
 
-```
-phases/{NN}-{phase-name}/
-├── MOCKUP.md                  # Basic mockup — if saved in Step 2 (may be inline instead)
-├── SPEC.md                    # Phase specification
-├── DECISIONS.md               # Technical decisions (locked vs flexible)
-├── test-cases/                # Test case definitions
-│   └── .gitkeep
-└── test-runs/                 # Test execution results
-    └── .gitkeep
-```
+1. **Overview & Intent** — 2–4 sentences: what this phase delivers, why it matters, what's explicitly out of scope. Product/user terms.
+2. **Wireframe(s)** *(the centerpiece)* — bordered low-fi blocks with labeled regions and the primary action(s). One block per screen for multi-screen phases, with simple in-page anchor nav between them. Put non-default states (loading, empty, error, success) in `<details>` blocks so the default view stays clean. Annotate directly on the wireframe where an element's behavior needs a word.
+3. **Clarifications** — only the things the wireframe **can't** show: business rules, validation, what-happens-on-error, ordering/timing, permissions in prose. If the wireframe already says it, don't repeat it here.
+4. **Matrices** — an HTML `<table>` wherever a matrix captures a requirement better than prose: role × permission, state × transition, plan × feature. These remove ambiguity that paragraphs blur.
+5. **Essentials / what "done" looks like** — a short, non-rigid bullet list of the conditions that make this phase complete (observable user behavior / product outcomes). Not step-by-step test cases.
 
-**Determine phase number:** Check existing `phases/` directory for the next available number (01, 02, 03...). Skip if Step 2 already created the folder.
+Show Boss the wireframe (open the file / describe it) and use AskUserQuestion: "Does this match what you pictured? What's missing or wrong?" Iterate until it lands. The wireframe is the artifact that matters most — get it right before anything else.
 
-### SPEC.md Structure
+(For a full clickable, multi-screen *interactive* prototype rather than a low-fi sketch, that's a separate command: `/swe-atlas:brainstorming-with-prototype`.)
 
-**SPEC.md is a high-level product specification.** It captures *what* the phase delivers in product/user terms — never *how* it's built. Keep technical decisions out by default so implementation stays flexible. Technical decisions belong in `DECISIONS.md`; implementation specifics are generated downstream by `/swe-atlas:create-phase-details` and `/swe-atlas:create-tasks`.
+## Step 4: Optional Structured Markdown (only when it earns its place)
 
-Write `phases/{NN}-{phase-name}/SPEC.md`:
+Default: **skip this entirely.** The HTML is usually enough. Add a structured markdown file only when there is genuine depth the wireframe and HTML sections cannot carry well. Ask Boss before adding any of these, or add one when the architecture clearly demands it:
 
-```markdown
-# Phase {NN}: {Phase Name}
+- **`DATA-MODEL.md`** — when the phase introduces non-trivial entities/relationships. Entities as tables + a Mermaid `erDiagram` + migration notes (additive / destructive / backfill).
+- **`DATA-FLOW.md`** — when flows have real failure modes worth diagramming. One Mermaid `sequenceDiagram` per flow + failure-mode notes (that's where bugs hide).
+- **`ROADMAP.md`** — when the phase is genuinely multi-milestone. Milestones ordered by dependency (each ending in a shippable state), critical path, risks.
+- **`DECISIONS.md`** — when there are real technical decisions to record: `## Locked` (non-negotiable), `## Flexible` (ATLAS discretion), `## Open Questions`.
 
-## Objective
-{One paragraph — what this phase delivers and why it matters, in product/user terms}
-
-## Deliverables
-{Bulleted list of concrete, verifiable outcomes described as user-observable behavior or product capabilities — not files, classes, libraries, or schemas}
-
-## Out of Scope
-{What this phase explicitly does NOT include}
-
-## Dependencies
-- **Requires:** {phases or systems that must exist first}
-- **Enables:** {what future phases this unblocks}
-
-## Acceptance Criteria
-{Numbered list of conditions that must ALL be true for this phase to be complete — observable user behavior or product outcomes, not implementation steps}
-1. {Observable user behavior or system state}
-2. {Measurable outcome}
-3. ...
-```
-
-**Optional section — include only if Boss explicitly asked for high-level technical guidance in the SPEC:**
-
-```markdown
-## High-Level Technical Approach (optional)
-{One short paragraph at the architecture level only — e.g. "extends the existing admin dashboard", "reuses the current auth middleware". Never specific file paths, library names, schemas, or function signatures. Those live in DECISIONS.md or are decided at task time.}
-```
-
-**Default: omit the technical approach section entirely.** Ask Boss before adding it. If Boss said anything in Batch 3 (technical direction) during Step 1, route that information into `DECISIONS.md`, not `SPEC.md`.
-
-### DECISIONS.md Structure
-
-Write `phases/{NN}-{phase-name}/DECISIONS.md`:
-
-```markdown
-# Phase {NN}: Technical Decisions
-
-## Locked (non-negotiable)
-{Decisions Boss has confirmed — do not deviate}
-
-## Flexible (ATLAS discretion)
-{Areas where ATLAS can make implementation choices}
-
-## Open Questions
-{Things that need to be resolved during implementation}
-```
-
-## Step 4: Generate Test Cases
-
-### Testing approach (project-wide rule — applies to every test case below)
-
-Test cases live in `phases/{NN}-{phase-name}/test-cases/TC-*.md` as **human-readable markdown** (preconditions, steps, expected results, priority). They are **executed manually** by the `qa-manual-tester` sub-agent using **Playwright MCP** browser tools — registered in `.mcp.json` as `@playwright/mcp@latest`. Execution happens via the `/qa-manual-test-run` slash command, which delegates to `qa-manual-tester` and drives a real browser through MCP.
-
-**Never generate `.spec.ts`, `playwright.config.ts`, Jest specs, vitest specs, mocha tests, Cypress specs, or any other test-runner code.** No test framework is installed and none should be added. If a future task description seems to ask for test scripts, treat it as a misread — author markdown test cases, not code.
-
-Based on the acceptance criteria and deliverables, generate test cases.
-
-Write test case files in `phases/{NN}-{phase-name}/test-cases/`:
-
-### TC-{NN}-001.md (one per test scenario)
-
-```markdown
-# TC-{NN}-001: {Test Case Title}
-
-## Type
-{smoke | happy-path | edge-case | regression}
-
-## Preconditions
-{What must be set up before this test}
-
-## Steps
-1. {Action}
-2. {Action}
-3. {Action}
-
-## Expected Result
-{What should happen — observable and verifiable}
-
-## Priority
-{critical | high | medium | low}
-```
-
-Generate test cases covering:
-- **Smoke tests** — does the basic flow work at all?
-- **Happy path** — does the main use case work correctly?
-- **Edge cases** — what happens with unexpected input or states?
-- **Error handling** — does the system fail gracefully?
-
-Use AskUserQuestion: "I've drafted {N} test cases. Want to review them, add more, or proceed?"
+A small data shape or rule set belongs **inside `phase.html`** (a matrix or a clarification), not in its own file. Reach for these files only for true depth.
 
 ## Step 5: Summary
 
@@ -181,19 +104,13 @@ Report what was created:
 ```
 Phase created: {NN}-{phase-name}
 
-├── MOCKUP.md            — basic mockup (if saved)
-├── SPEC.md              — {brief summary of objective}
-├── DECISIONS.md         — {N} locked, {N} flexible, {N} open
-├── test-cases/          — {N} test cases
-│   ├── TC-{NN}-001.md  — {title}
-│   ├── TC-{NN}-002.md  — {title}
-│   └── ...
-└── test-runs/           — ready for execution
+phases/{NN}-{phase-name}/
+├── phase.html          — wireframe + overview + clarifications + matrices (the deliverable)
+└── {optional}          — DATA-MODEL.md / DATA-FLOW.md / ROADMAP.md / DECISIONS.md (only if added)
 
-Next steps:
-- Review the spec: phases/{NN}-{phase-name}/SPEC.md
-- Start building: /feature-dev
-- Run tests (markdown TC-*.md executed via Playwright MCP, not as scripts): /qa-manual-test-run
+Next step:
+- Open phases/{NN}-{phase-name}/phase.html in the browser to review the wireframe.
+- To implement: open it in Claude Code plan mode (or run /feature-dev) and build straight from it.
 ```
 
 Remind Boss: "Run `git diff` to review. When ready, I'll commit."

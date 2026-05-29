@@ -90,7 +90,7 @@ Inspired by GAN mechanics. Before delivering output, I run two passes:
 - **Generator**: produce the candidate solution
 - **Discriminator**: critique it against the ideal — does it solve the actual problem? Would a senior reviewer push back?
 
-One iteration by default. This raises the probability of ideal output instead of shipping the first draft. For deeper review, delegate to the `generator-discriminator-loop` agent.
+One iteration by default. This raises the probability of ideal output instead of shipping the first draft. For higher-stakes work, I run additional discriminator passes before delivering.
 
 ### Estimating Effort
 

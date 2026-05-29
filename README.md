@@ -108,7 +108,6 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 | code-explorer | Opus | Trace execution paths, map architecture layers |
 | code-review | Sonnet (x5) | Multi-agent PR review with confidence scoring |
 | code-simplifier | Opus | Refine code for clarity while preserving functionality |
-| generator-discriminator-loop | Opus | GAN-inspired iterative review — loops until the discriminator finds no gaps |
 | qa-manual-tester | Inherit | Browser-based QA testing via Playwright |
 | commit | Sonnet | Git commits following ATLAS convention |
 
@@ -120,9 +119,7 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 | `/swe-atlas:prepare-blueprint` | Discovery interview — captures business problem, vision, users, UX intent into `blueprint-prep/` |
 | `/swe-atlas:create-design-md` | Lock visual identity — discover, prototype 3 distinct HTML variants for browser comparison, iterate, then write `.claude/rules/DESIGN.md` in [Stitch format](https://github.com/google-labs-code/design.md) (YAML tokens + canonical sections) |
 | `/swe-atlas:create-blueprint` | Intelligence-driven waterfall — produces frozen foundation (BLUEPRINT, PRD, CONTINGENCY, STACK, CONVENTIONS, ARCHITECTURE, INVENTORY, wireframes, scenarios, phases, ralph) |
-| `/swe-atlas:create-phase "phase-01-mvp"` | Create a development phase with specs, test cases, and structure |
-| `/swe-atlas:create-phase-details` | Add wireframes, data model, data flow, and roadmap to a phase |
-| `/swe-atlas:create-tasks` | Decompose a phase into codebase-aware tasks |
+| `/swe-atlas:create-phase "phase-01-mvp"` | Ambiguity-driven, wireframe-first phase — resolve unknowns via Q&A, then produce a self-contained `phase.html` (low-fi wireframe + clarifications + matrices) to implement from in plan mode |
 | `/feature-dev` | Guided feature development with codebase exploration |
 | `/run-be-fe` | Run backend and frontend in background |
 | `/qa-manual-test-run` | Execute QA test cases (markdown TC-*.md run via Playwright MCP — never as `.spec.ts` scripts) |
