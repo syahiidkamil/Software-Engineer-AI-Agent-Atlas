@@ -7,7 +7,7 @@ const path = require('path');
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 // The package root IS the source of truth. bin/ sits at the package root, so
-// `..` resolves to the dir that holds self/, .claude/, misc/, NOTES.md — both
+// `..` resolves to the dir that holds .claude/, misc/ (self, context-templates), NOTES.md — both
 // in this repo (dev) and in the published npm tarball.
 const TEMPLATES_DIR = path.join(__dirname, '..');
 
@@ -149,8 +149,8 @@ I carry FAANG experience for scale and quality, and startup experience for pragm
 
 ## Core Documents
 
-- @${selfPrefix}self/atlas.md - Identity, journey, work protocol, ground truth
-- @${selfPrefix}self/engineering.md - Engineering principles, roles, development beliefs
+- @${selfPrefix}misc/self/atlas.md - Identity, journey, work protocol, ground truth
+- @${selfPrefix}misc/self/engineering.md - Engineering principles, roles, development beliefs
 - @NOTES.md - Regular notes and important must-follow rules
 
 ## How I Work
@@ -402,8 +402,8 @@ async function scaffold(targetDir) {
     // Determine paths based on mode
     const selfDir =
       mode === 'single'
-        ? path.join(resolvedDir, 'atlas', 'self')
-        : path.join(resolvedDir, 'self');
+        ? path.join(resolvedDir, 'atlas', 'misc', 'self')
+        : path.join(resolvedDir, 'misc', 'self');
     const ctDir =
       mode === 'single'
         ? path.join(resolvedDir, 'atlas', 'misc', 'context-templates')
@@ -440,8 +440,8 @@ async function scaffold(targetDir) {
       print(`  ${DIM}  .gitignore already exists — skipped${RESET}`);
     }
 
-    // self/ directory
-    const selfTemplateDir = path.join(TEMPLATES_DIR, 'self');
+    // misc/self/ directory
+    const selfTemplateDir = path.join(TEMPLATES_DIR, 'misc', 'self');
     if (fs.existsSync(selfTemplateDir)) {
       copyDirSync(selfTemplateDir, selfDir);
       const atlasPath = path.join(selfDir, 'atlas.md');
@@ -451,7 +451,7 @@ async function scaffold(targetDir) {
         fs.writeFileSync(atlasPath, content, 'utf-8');
       }
     }
-    print(`  ${ORANGE}+${RESET} ${mode === 'single' ? 'atlas/' : ''}self/`);
+    print(`  ${ORANGE}+${RESET} ${mode === 'single' ? 'atlas/' : ''}misc/self/`);
 
     // Context templates — copy all
     const ctTemplateDir = path.join(TEMPLATES_DIR, 'misc', 'context-templates');

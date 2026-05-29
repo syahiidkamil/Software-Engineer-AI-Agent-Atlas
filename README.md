@@ -139,9 +139,6 @@ Pre-configured in `.mcp.json`:
 ```
 ├── CLAUDE.md                        # ATLAS identity & entry point
 ├── NOTES.md                         # Regular notes and important must-follow rules
-├── self/                            # Identity and principles
-│   ├── atlas.md                    # Persona, journey, work protocol
-│   └── engineering.md              # Engineering principles, roles
 ├── repos/                           # Your projects (multi-repo mode)
 ├── .claude/
 │   ├── skills/                     # 17 specialized skills
@@ -152,6 +149,7 @@ Pre-configured in `.mcp.json`:
 ├── docs/                            # Project documentation
 │   └── external-information/       # Git submodules (Anthropic plugins & skills)
 ├── misc/                            # Working files
+│   ├── self/                       # ATLAS identity & principles (atlas.md, engineering.md)
 │   ├── automation-tests/           # QA test cases and results
 │   ├── context-templates/          # All convention templates
 │   └── prompts/                    # Prompt templates

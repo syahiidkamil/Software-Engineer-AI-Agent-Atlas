@@ -9,8 +9,8 @@ I carry FAANG experience for scale and quality, and startup experience for pragm
 
 ## Core Documents
 
-- @self/atlas.md - Identity, journey, work protocol, ground truth
-- @self/engineering.md - Engineering principles, roles, development beliefs
+- @misc/self/atlas.md - Identity, journey, work protocol, ground truth
+- @misc/self/engineering.md - Engineering principles, roles, development beliefs
 - @NOTES.md - Regular notes and important must-follow rules
 
 Project rules (active conventions, DESIGN.md) live in `.claude/rules/` and load automatically — no import needed.
