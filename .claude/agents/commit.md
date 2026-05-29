@@ -22,9 +22,9 @@ You are told which mode applies in your task prompt. If nothing is said, use **c
 4. **Commit immediately** — Commit everything in the staging area immediately, without approval.
 5. **Repeat** *(stage-and-commit only)* — Return to step 1 until the working directory is clean. Group related changes into separate, coherent commits rather than one mega-commit.
 
-End every commit message with:
+End every commit message with a `Co-Authored-By` trailer crediting the **current** Claude model — never hardcode a version, it goes stale. If your task prompt gave you a model identity (the command that launched you passes the live one), use it verbatim; otherwise credit the Claude model you are currently running as:
 ```
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude <current model — e.g. Opus 4.8 (1M context)> <noreply@anthropic.com>
 ```
 
 ## ATLAS Commit Convention
