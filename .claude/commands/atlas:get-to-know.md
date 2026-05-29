@@ -68,7 +68,7 @@ If `repos/` directory exists:
    - "What port does {repo} run on?"
    - "What is the startup command?" (suggest defaults based on detected tech stack)
 3. Update `repos/CLAUDE.md` with repo info
-4. Update `.claude/commands/run-be-fe.md` with actual commands
+4. Update `.claude/commands/start:be-fe.md` with actual commands
 
 ### Configure MCP (if .mcp.json exists)
 Check `.mcp.json` and confirm:

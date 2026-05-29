@@ -1,0 +1,1 @@
+use qa-manual-tester sub agent to test this test cases #$1 (test cases, if not specified use the latest test cases at @docs/living-test-cases) and then documents the finding in this folder #$2 (if not specified use the latest test runs folder at @misc/test-runs) put the bug in other files

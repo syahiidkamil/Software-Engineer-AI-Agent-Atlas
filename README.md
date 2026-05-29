@@ -58,18 +58,16 @@ git clone --recurse-submodules https://github.com/syahiidkamil/Software-Engineer
 cd Software-Engineer-AI-Agent-Atlas
 ```
 
-Then run `/swe-atlas:new-project-context` inside Claude Code.
+Then run `/atlas:get-to-know` inside Claude Code.
 
 ### After Setup
 
 ```
-/swe-atlas:new-project-context           # Configure ATLAS for your project
-/swe-atlas:prepare-blueprint             # Discovery interview (problem, vision, users, UX)
-/swe-atlas:create-design-md              # Lock visual identity via HTML variant prototyping
-/swe-atlas:create-blueprint              # Generate frozen foundation + phases
-/swe-atlas:create-phase "phase-01-mvp"   # Scaffold a development phase
-/feature-dev                             # Guided feature development
-"Add user authentication"                # Or just describe what you need
+/atlas:get-to-know                  # Configure ATLAS for your project
+/design:create-design-md            # Lock visual identity via HTML variant prototyping
+/plan:create-phase "phase-01-mvp"   # Wireframe-first phase doc (phase.html)
+/plandev:feature                    # Guided feature development
+"Add user authentication"           # Or just describe what you need
 ```
 
 ---
@@ -113,17 +111,22 @@ Then run `/swe-atlas:new-project-context` inside Claude Code.
 
 ### Commands
 
+Commands are namespaced by prefix: `atlas:` (onboarding), `plan:` / `plandev:` (planning & building), `design:` / `brainstorm:` (UX & visuals), `qa:` (testing), `start:` (run), `git:` (version control).
+
 | Command | What It Does |
 |---------|--------------|
-| `/swe-atlas:new-project-context` | Initialize project context, configure conventions, set up workspace |
-| `/swe-atlas:prepare-blueprint` | Discovery interview — captures business problem, vision, users, UX intent into `blueprint-prep/` |
-| `/swe-atlas:create-design-md` | Lock visual identity — discover, prototype 3 distinct HTML variants for browser comparison, iterate, then write `.claude/rules/DESIGN.md` in [Stitch format](https://github.com/google-labs-code/design.md) (YAML tokens + canonical sections) |
-| `/swe-atlas:create-blueprint` | Intelligence-driven waterfall — produces frozen foundation (BLUEPRINT, PRD, CONTINGENCY, STACK, CONVENTIONS, ARCHITECTURE, INVENTORY, wireframes, scenarios, phases, ralph) |
-| `/swe-atlas:create-phase "phase-01-mvp"` | Ambiguity-driven, wireframe-first phase — resolve unknowns via Q&A, then produce a self-contained `phase.html` (low-fi wireframe + clarifications + matrices) to implement from in plan mode |
-| `/feature-dev` | Guided feature development with codebase exploration |
-| `/run-be-fe` | Run backend and frontend in background |
-| `/qa-manual-test-run` | Execute QA test cases (markdown TC-*.md run via Playwright MCP — never as `.spec.ts` scripts) |
-| `/commit` | Commit using sub-agent |
+| `/atlas:get-to-know` | Initialize project context — understand the project, configure conventions, set up project rules |
+| `/plan:create-phase "phase-01-mvp"` | Ambiguity-driven, wireframe-first phase — resolve unknowns via Q&A, then produce a self-contained `phase.html` (low-fi wireframe + clarifications + matrices) to implement from in plan mode |
+| `/plandev:feature` | Guided feature development with codebase exploration |
+| `/design:create-design-md` | Lock visual identity — prototype 3 distinct HTML variants for browser comparison, iterate, then write `.claude/rules/DESIGN.md` in [Stitch format](https://github.com/google-labs-code/design.md) (YAML tokens + canonical sections) |
+| `/brainstorm:wireframe` | Quick standalone low-fi wireframe as self-contained HTML (gray boxes, no framework) |
+| `/brainstorm:prototype` | Clickable multi-screen React prototype for idea validation (`misc/prototypes/`) |
+| `/qa:create-test-cases` | Author human-readable manual test cases (markdown) into `docs/living-test-cases/` |
+| `/qa:manual-test-run` | Execute living test cases via the qa-manual-tester agent + Playwright MCP; results land in `misc/test-runs/` |
+| `/start:be-fe` | Run backend and frontend in the background |
+| `/git:commit` | Commit what's already staged (commit subagent, runs in background) |
+| `/git:stage-commit` | Stage and commit all working-directory changes (commit subagent) |
+| `/git:log` | Recent commits with a brief summary + continual context |
 
 ### MCP Integration
 
@@ -147,10 +150,11 @@ Pre-configured in `.mcp.json`:
 │   ├── hooks/                      # Task completion hooks
 │   └── rules/                      # Project rules — conventions + DESIGN.md (auto-loaded)
 ├── docs/                            # Project documentation
-│   └── external-information/       # Git submodules (Anthropic plugins & skills)
+│   ├── external-information/       # Git submodules (Anthropic plugins & skills)
+│   └── living-test-cases/          # Manual test cases (markdown), maintained as the product evolves
 ├── misc/                            # Working files
 │   ├── self/                       # ATLAS identity & principles (atlas.md, engineering.md)
-│   ├── automation-tests/           # QA test cases and results
+│   ├── test-runs/                  # QA test-run results
 │   ├── context-templates/          # All convention templates
 │   └── prompts/                    # Prompt templates
 └── .mcp.json                        # MCP server configuration

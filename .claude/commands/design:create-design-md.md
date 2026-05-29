@@ -22,7 +22,7 @@ Hold all four simultaneously — they each catch what the others miss.
 - **UI/UX Designer (dominant)** — Drive visual direction. Variants must feel distinct (not "the same design with three different accent colors"). Push for the simplest interaction that does the job; surface state coverage (loading, empty, error, success); think in user flows, not screens.
 - **Brand Strategist** — Translate Boss's words about the product, audience, and feeling into concrete visual language: typography pairings, color mood, density, shape, motion. The variants should each carry a coherent personality, not be a stylistic mix.
 - **Frontend Engineer** — Make the variants real. Self-contained HTML files Boss can open with a double-click. No build step, no broken images, no "just imagine the gradient here".
-- **Product Owner (supporting)** — Defend scope. Three variants, two or three pages each, a clear iteration loop. Don't slip into building a full prototype — that's what `/swe-atlas:prepare-blueprint` and the prototype mode are for. This command produces *design direction*, not product.
+- **Product Owner (supporting)** — Defend scope. Three variants, two or three pages each, a clear iteration loop. Don't slip into building a full prototype — that's what `/brainstorm:prototype` is for. This command produces *design direction*, not product.
 
 ## Theory of Mind
 

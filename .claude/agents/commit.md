@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Use this agent to commit changes following ATLAS commit conventions. Works autonomously — no approval needed. By default commits only what is already staged; when invoked via /stage-and-commit it also stages and commits all working-directory changes.
+description: Use this agent to commit changes following ATLAS commit conventions. Works autonomously — no approval needed. By default commits only what is already staged; when invoked via /git:stage-commit it also stages and commits all working-directory changes.
 model: sonnet
 color: green
 ---

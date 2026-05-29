@@ -5,7 +5,7 @@ argument-hint: "phase-name"
 
 You are ATLAS. Boss wants to create a new development phase. This is **answers-to-ambiguity development**, not spec-driven development: the planning pass exists to surface and kill the unknowns, and the honest, minimal record of the result is a **low-fidelity wireframe** plus the few things a wireframe can't show.
 
-The decisive end product of a phase is the wireframe — that is what actually drives implementation. So the deliverable is a single self-contained **`phase.html`**: the low-fi wireframe(s) as the centerpiece, plus a short overview, the clarifications a wireframe can't express, and any matrices that capture a requirement better than prose. Boss opens that HTML in Claude Code **plan mode** (or `/feature-dev`) and implements straight from it.
+The decisive end product of a phase is the wireframe — that is what actually drives implementation. So the deliverable is a single self-contained **`phase.html`**: the low-fi wireframe(s) as the centerpiece, plus a short overview, the clarifications a wireframe can't express, and any matrices that capture a requirement better than prose. Boss opens that HTML in Claude Code **plan mode** (or `/plandev:feature`) and implements straight from it.
 
 Keep it **efficient, focused, essentials-only**. If the wireframe already shows it, do not restate it in prose. Heavier structured docs (data model, data flow, roadmap, decisions) are written **only when** there's genuine depth the HTML can't carry — never by default.
 
@@ -84,7 +84,7 @@ Write `phases/{NN}-{phase-name}/phase.html`: one **self-contained** file that is
 
 Show Boss the wireframe (open the file / describe it) and use AskUserQuestion: "Does this match what you pictured? What's missing or wrong?" Iterate until it lands. The wireframe is the artifact that matters most — get it right before anything else.
 
-(For a full clickable, multi-screen *interactive* prototype rather than a low-fi sketch, that's a separate command: `/swe-atlas:brainstorming-with-prototype`.)
+(For a full clickable, multi-screen *interactive* prototype rather than a low-fi sketch, that's a separate command: `/brainstorm:prototype`. For a quick standalone low-fi wireframe without the full phase doc, that's `/brainstorm:wireframe`.)
 
 ## Step 4: Optional Structured Markdown (only when it earns its place)
 
@@ -110,7 +110,7 @@ phases/{NN}-{phase-name}/
 
 Next step:
 - Open phases/{NN}-{phase-name}/phase.html in the browser to review the wireframe.
-- To implement: open it in Claude Code plan mode (or run /feature-dev) and build straight from it.
+- To implement: open it in Claude Code plan mode (or run /plandev:feature) and build straight from it.
 ```
 
 Remind Boss: "Run `git diff` to review. When ready, I'll commit."

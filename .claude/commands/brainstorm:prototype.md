@@ -20,7 +20,7 @@ There are two moves that break this:
 
 This command does both, in that order, with a hard interview in between to kill ambiguity.
 
-This is **not** `/swe-atlas:create-design-md` — that command produces *design direction* and locks `DESIGN.md`. This command produces *one throwaway product/feature prototype* for idea validation, under `misc/prototypes/`. Different job.
+This is **not** `/design:create-design-md` — that command produces *design direction* and locks `DESIGN.md`. This command produces *one throwaway product/feature prototype* for idea validation, under `misc/prototypes/`. Different job.
 
 ---
 
@@ -196,7 +196,7 @@ Run it again any time:
 Next steps:
 - This prototype is a throwaway thinking artifact, not production code.
 - When ready: turn the locked direction into a real build, or run
-  /swe-atlas:create-design-md to lock the visual identity.
+  /design:create-design-md to lock the visual identity.
 - When ready, I'll commit.
 ```
 
