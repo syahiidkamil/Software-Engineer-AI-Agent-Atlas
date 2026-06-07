@@ -1,7 +1,7 @@
 {
   "name": "swe-atlas",
   "version": "2.1.0",
-  "description": "ATLAS - Adaptive Technical Learning and Architecture System. Scaffold an AI Software Engineer Agent for Claude Code.",
+  "description": "Turn Claude Code into a senior AI software engineer: skills, subagents, slash commands, and engineering conventions, scaffolded with one command. A pragmatic alternative to spec-driven development.",
   "bin": {
     "swe-atlas": "bin/install.js"
   },
@@ -20,9 +20,25 @@
   ],
   "keywords": [
     "claude-code",
+    "claude",
+    "anthropic",
     "ai-agent",
+    "ai-coding-agent",
+    "coding-agent",
+    "ai-software-engineer",
     "software-engineer",
+    "claude-code-template",
+    "claude-code-skills",
+    "claude-code-agents",
+    "subagents",
+    "slash-commands",
+    "claude-md",
+    "spec-driven-development",
+    "wireframe",
+    "prototype",
+    "developer-tools",
     "scaffolding",
+    "llm",
     "atlas"
   ],
   "author": "Syahiid Kamil",

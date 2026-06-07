@@ -1,6 +1,6 @@
-# SWE-ATLAS
+# SWE-ATLAS — a senior AI software engineer for Claude Code
 
-![SWE-ATLAS](misc/images/swe-atlas.png)
+![SWE-ATLAS — turn Claude Code into a senior AI software engineer with skills, subagents, and engineering conventions](misc/images/swe-atlas.png)
 
 > The senior-engineer layer for Claude Code. Explore before you build, clarify only what matters, capture it in living HTML — then hand it to Claude Code's native plan / goal / workflow loop. Fewer tokens, less ceremony, faster to the thing people actually pictured.
 
@@ -9,6 +9,8 @@ npx swe-atlas@latest new-project
 ```
 
 One command. Full setup. No copy-pasting prompts every session.
+
+ATLAS is an open-source **Claude Code template** — a curated set of skills, subagents, slash commands, and engineering conventions that turn Claude Code into a production-grade AI software engineer, with a wireframe-and-prototype workflow in place of heavyweight spec-driven development.
 
 ---
 
@@ -214,7 +216,7 @@ playwright-cli install --skills
 
 ### Neuron activation through structure
 
-![Neuron Activation](neuron-activation.gif)
+![Neuron activation — structured context fires Claude Code's latent senior-engineering capability](neuron-activation.gif)
 
 AI coding assistants keep deep engineering capability locked behind generic defaults. Ask "write a function" and you get code. Give the same model structured context, engineering principles, and a persistent identity, and you get architected solutions — proper abstractions, error handling, scalability considered. The difference is **neuron activation**: the right instructions firing the right capabilities. ATLAS supplies those patterns by default, every session.
 
