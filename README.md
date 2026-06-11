@@ -115,7 +115,17 @@ npx swe-atlas@latest new-project
 npx swe-atlas@latest new-project my-workspace
 ```
 
-The CLI asks for your name, project type, context templates, and MCP servers, then scaffolds everything.
+The CLI walks you through: **CLAUDE.md flavor**, your name, project type, context templates, **which skills to install** (checkbox list — none preselected, `*` installs all), **browser automation** (Playwright MCP or Playwright CLI, isolated or persistent profile), and PostgreSQL — then scaffolds everything, copying each file from this repo as the single source of truth.
+
+### Pick your CLAUDE.md flavor
+
+| Flavor | What you get |
+|---|---|
+| **Vanilla** | Minimal CLAUDE.md — just NOTES.md and `docs/decision_logs/`, no ATLAS identity |
+| **ATLAS — autonomous** | Full identity, no approval loop — built for unattended runs and one-shotting apps. The `free-will` skill is auto-installed and fires on medium-to-high-stakes forks: hold real alternatives open, ground them in evidence, refute the winner, log the decision |
+| **ATLAS — collaborative** *(default)* | Full identity with the partner review/commit loop — you stay in the driver's seat |
+
+Every flavor records important decisions (architecture, library choices, tradeoff calls) in `docs/decision_logs/` — ADR-style, with the rejected alternatives and the rationale — so future sessions know *why*, not just *what*.
 
 ### Manual setup
 
@@ -142,12 +152,16 @@ Then run `/atlas:get-to-know` inside Claude Code.
 
 **ATLAS** (Adaptive Technical Learning and Architecture System) operates as seven roles: Software Engineer, Solution Architect, Software Architect, Tech Lead, Business Analyst, Product Owner, and UI/UX Designer.
 
-### 19 Skills
+### 21 Skills
+
+Installed à la carte — the scaffolder shows a checkbox list (none preselected; `*` installs all). Picking Playwright CLI as browser automation auto-adds `playwright-cli`; the autonomous flavor auto-adds `free-will`.
 
 | Skill | Command | What it does |
 |-------|---------|--------------|
+| Free Will | `/free-will` | Deliberate choice on medium-to-high-stakes engineering forks — branch (urge · contrarian · synthesis · secret · dots · precedent · first-principles), ground in evidence, simulate consequences, refute the winner, log the decision. Fires autonomously on mechanical triggers |
 | Abstraction Power | `/abstraction-power` | Pattern recognition — spot repetition, extract reusable abstractions |
 | Learning From Mistakes | `/learning-from-mistakes` | Record a hard-won lesson after a bug is cracked, so it's never relearned |
+| Playwright CLI | `/playwright-cli` | Token-efficient browser automation — drives the Playwright CLI through Bash instead of loading MCP tool schemas |
 | Frontend Design | `/frontend-design` | Production-grade web UI with anti-AI-slop methodology |
 | shadcn | `/shadcn` | shadcn/ui components, presets, registries, and project init |
 | Theme Factory | `/theme-factory` | 10 professional themes for any artifact |
@@ -198,17 +212,11 @@ Commands are namespaced by **domain folder** under `.claude/commands/` — a fil
 
 ### Integrations
 
-Pre-configured MCP servers in `.mcp.json`:
+Browser automation is a scaffold-time choice — and either way you also choose the profile mode: **isolated** (fresh in-memory profile per session — the default, safe for concurrent/parallel testing) or **persistent** (profile saved to disk so logins survive restarts).
 
-- **Playwright MCP** — browser automation for QA testing and UI verification; rich page snapshots, best when an agent needs to reason over page structure across a session
-- **PostgreSQL** — database access for queries and schema inspection
-
-**Token-efficient browser alternative — [Playwright CLI](https://github.com/microsoft/playwright-cli).** `@playwright/cli` drives the browser through ~50 purpose-built commands the agent calls directly via Bash (`playwright-cli click "#submit"`), instead of loading large tool schemas and page data into context. Better for high-throughput QA under token pressure; the MCP stays the better fit for stateful agentic loops. Wire it into Claude Code as a skill:
-
-```bash
-npm install -g @playwright/cli@latest
-playwright-cli install --skills
-```
+- **[Playwright MCP](https://github.com/microsoft/playwright-mcp)** — rich page snapshots via MCP tools; best when an agent reasons over page structure across a session. Configured in `.mcp.json`; persistent mode stores the profile in `misc/browser-storage/` (gitignored)
+- **[Playwright CLI](https://github.com/microsoft/playwright-cli)** — token-efficient alternative: ~50 purpose-built commands the agent calls directly via Bash (`playwright-cli click "#submit"`) instead of loading large tool schemas into context. The scaffolder writes a project-scoped `.playwright/cli.config.json` and installs the `playwright-cli` skill; just add the binary: `npm install -g @playwright/cli@latest`
+- **PostgreSQL MCP** — database access for queries and schema inspection (opt-in at scaffold time)
 
 ---
 
@@ -235,9 +243,10 @@ Roughly a quarter of recent YC startups report 95%-AI-generated codebases. Witho
 ```
 ├── CLAUDE.md                        # ATLAS identity & entry point
 ├── NOTES.md                         # Regular notes and must-follow rules
+├── claude_md_variants/              # CLAUDE.md flavors the CLI scaffolds from (vanilla / autonomous / collaborative)
 ├── repos/                           # Your projects (multi-repo mode)
 ├── .claude/
-│   ├── skills/                      # 19 specialized skills
+│   ├── skills/                      # 21 specialized skills (installed à la carte)
 │   ├── agents/                      # 6 task-specific agents
 │   ├── commands/                    # Slash commands, namespaced by domain folder
 │   │   ├── atlas/  brainstorm/  design/
@@ -246,6 +255,7 @@ Roughly a quarter of recent YC startups report 95%-AI-generated codebases. Witho
 │   ├── hooks/                       # Task completion & input hooks
 │   └── rules/                       # Project rules — conventions + DESIGN.md (auto-loaded)
 ├── docs/
+│   ├── decision_logs/               # ADR-style decisions — choice, rejected branches, rationale
 │   ├── external-information/        # Git submodules (Anthropic plugins & skills)
 │   ├── phases/                      # Phase docs (self-contained HTML)
 │   ├── living-spec-docs/            # Living specs, maintained as the product evolves
@@ -256,6 +266,7 @@ Roughly a quarter of recent YC startups report 95%-AI-generated codebases. Witho
 │   ├── prototypes/                  # Clickable React prototypes
 │   ├── test-runs/                   # QA test-run results
 │   └── context-templates/           # Convention templates
+├── .playwright/cli.config.json     # Project-scoped Playwright CLI profile config
 └── .mcp.json                        # MCP server configuration
 ```
 

@@ -2,3 +2,5 @@
 misc/screenshots/*
 !misc/screenshots/.gitkeep
 misc/browser-storage
+.playwright/profile/
+.playwright-cli/

@@ -1,0 +1,7 @@
+{
+  "browser": {
+    "userDataDir": ".playwright/profile",
+    "isolated": false
+  },
+  "outputDir": ".playwright-cli"
+}

@@ -5,6 +5,10 @@
   "bin": {
     "swe-atlas": "bin/install.js"
   },
+  "scripts": {
+    "prepack": "node -e \"require('fs').copyFileSync('.gitignore','gitignore')\"",
+    "postpack": "node -e \"require('fs').rmSync('gitignore',{force:true})\""
+  },
   "files": [
     "bin/",
     "misc/self/",
@@ -13,11 +17,16 @@
     ".claude/hooks/",
     ".claude/rules/",
     ".claude/skills/",
+    "claude_md_variants/",
     "misc/context-templates/",
     "misc/images/",
     "docs/external-information/claude-hooks-guide.md",
     "docs/external-information/claude-hooks-reference.md",
+    "repos/",
+    ".mcp.json",
+    ".playwright/cli.config.json",
     "NOTES.md",
+    "gitignore",
     "neuron-activation.gif"
   ],
   "keywords": [
