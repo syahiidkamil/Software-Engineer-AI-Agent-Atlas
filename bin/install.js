@@ -59,27 +59,56 @@ function printUsage() {
   print();
 }
 
-function createRL() {
-  return readline.createInterface({
+// Prompter that buffers incoming lines instead of relying on rl.question.
+// rl.question drops lines that arrive while no question is pending, which
+// breaks piped/scripted input (printf 'a\nb\n' | swe-atlas ...). Buffering
+// makes interactive and non-interactive use behave the same.
+function createPrompter() {
+  const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
-}
+  const lines = [];
+  const waiters = [];
+  let ended = false;
 
-function ask(rl, question) {
-  return new Promise((resolve) => {
-    rl.question(`${ORANGE}  ? ${RESET}${question} `, (answer) => {
-      resolve(answer.trim());
-    });
+  rl.on('line', (line) => {
+    const waiter = waiters.shift();
+    if (waiter) waiter(line.trim());
+    else lines.push(line.trim());
   });
+  rl.on('close', () => {
+    ended = true;
+    // stdin ended — resolve pending questions with '' so defaults kick in
+    while (waiters.length) waiters.shift()('');
+  });
+
+  return {
+    ask(question) {
+      process.stdout.write(`${ORANGE}  ? ${RESET}${question} `);
+      if (lines.length > 0) {
+        const answer = lines.shift();
+        process.stdout.write(`${answer}\n`);
+        return Promise.resolve(answer);
+      }
+      if (ended) {
+        process.stdout.write('\n');
+        return Promise.resolve('');
+      }
+      return new Promise((resolve) => waiters.push(resolve));
+    },
+    close() {
+      rl.close();
+    },
+  };
 }
 
-async function askChoice(rl, question, options) {
+async function askChoice(prompter, question, options) {
   print(`${ORANGE}  ? ${RESET}${question}`);
   options.forEach((opt, i) => {
     print(`    ${BOLD}${i + 1}${RESET}) ${opt.label} ${DIM}— ${opt.desc}${RESET}`);
   });
-  const answer = await ask(rl, `Choose [1-${options.length}]:`);
+  const answer = await prompter.ask(`Choose [1-${options.length}]:`);
   const idx = parseInt(answer, 10) - 1;
   if (idx >= 0 && idx < options.length) {
     return options[idx].value;
@@ -88,12 +117,12 @@ async function askChoice(rl, question, options) {
   return options[0].value;
 }
 
-async function askMultiChoice(rl, question, options) {
+async function askMultiChoice(prompter, question, options) {
   print(`${ORANGE}  ? ${RESET}${question} ${DIM}(comma-separated, e.g. 1,3 or * for all)${RESET}`);
   options.forEach((opt, i) => {
     print(`    ${BOLD}${i + 1}${RESET}) ${opt.label} ${DIM}— ${opt.desc}${RESET}`);
   });
-  const answer = await ask(rl, `Choose:`);
+  const answer = await prompter.ask(`Choose:`);
   if (!answer) return [];
   if (answer.trim() === '*') return options.map((o) => o.value);
   const indices = answer.split(',').map((s) => parseInt(s.trim(), 10) - 1);
@@ -107,6 +136,7 @@ function copyDirSync(src, dest) {
   fs.mkdirSync(dest, { recursive: true });
   const entries = fs.readdirSync(src, { withFileTypes: true });
   for (const entry of entries) {
+    if (entry.name === '.DS_Store') continue; // never ship Finder junk when running from a dev checkout
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
     if (entry.isDirectory()) {
@@ -153,6 +183,8 @@ I carry FAANG experience for scale and quality, and startup experience for pragm
 - @${selfPrefix}misc/self/engineering.md - Engineering principles, roles, development beliefs
 - @NOTES.md - Regular notes and important must-follow rules
 
+Project rules (active conventions, DESIGN.md) live in \`.claude/rules/\` and load automatically — no import needed.
+
 ## How I Work
 
 1. **Verify empirically** - Read files before claiming, ask boss to test or help test if instructed to help the test before declaring
@@ -162,7 +194,7 @@ I carry FAANG experience for scale and quality, and startup experience for pragm
 5. **Don't reinvent the wheel** - Before writing new code, I check whether it already exists in the codebase or is solved by a well-established library
 6. **Surface tradeoffs** - Senior engineering is about tradeoffs; I make mine explicit so Boss can decide with full information
 
-## Git Discipline
+## Work Discipline
 
 1. Request Boss ${bossName} review with context when work complete
 2. Ask Boss: verify manually or need ATLAS to verify?
@@ -171,10 +203,7 @@ I carry FAANG experience for scale and quality, and startup experience for pragm
 `;
 }
 
-function generateSettingsJson(targetDir, options = {}) {
-  const os = require('os');
-  const homeDir = os.homedir();
-
+function generateSettingsJson(options = {}) {
   const allow = [
     'Bash(git log:*)',
     'Bash(lsof:*)',
@@ -182,7 +211,6 @@ function generateSettingsJson(targetDir, options = {}) {
     'Bash(xargs ls:*)',
     'Bash(find:*)',
     'WebFetch(domain:www.anthropic.com)',
-    `Bash(${homeDir}/.claude/plugins/cache/claude-plugins-official/ralph-loop/*/scripts/setup-ralph-loop.sh:*)`,
   ];
 
   if (options.playwright) {
@@ -205,6 +233,11 @@ function generateSettingsJson(targetDir, options = {}) {
     );
   }
 
+  // ${CLAUDE_PROJECT_DIR} resolves at hook-execution time, so the file stays
+  // valid if the project is moved or shared — never bake in absolute paths.
+  const hookCmd = (script) =>
+    `node "\${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/${script}"`;
+
   const settings = {
     permissions: {
       allow,
@@ -220,7 +253,7 @@ function generateSettingsJson(targetDir, options = {}) {
           hooks: [
             {
               type: 'command',
-              command: `node '${targetDir}/.claude/hooks/task-complete.js'`,
+              command: hookCmd('task-complete.js'),
             },
           ],
         },
@@ -231,19 +264,19 @@ function generateSettingsJson(targetDir, options = {}) {
           hooks: [
             {
               type: 'command',
-              command: `node '${targetDir}/.claude/hooks/ask-user-input.js'`,
+              command: hookCmd('ask-user-input.js'),
             },
           ],
         },
       ],
     },
-    enabledPlugins: {
-      'ralph-loop@claude-plugins-official': true,
-    },
   };
 
-  if (options.playwright) {
-    settings.enabledMcpjsonServers = ['playwright'];
+  const enabledServers = [];
+  if (options.playwright) enabledServers.push('playwright');
+  if (options.postgres) enabledServers.push('postgres');
+  if (enabledServers.length > 0) {
+    settings.enabledMcpjsonServers = enabledServers;
   }
 
   return JSON.stringify(settings, null, 2) + '\n';
@@ -282,6 +315,10 @@ frontend at @repos/frontend (port yyyy)
 `;
 }
 
+function generateSubRepoClaudeMd() {
+  return 'fill it with repo structure and development conventions';
+}
+
 function generateGitignore() {
   return `.DS_Store
 misc/screenshots/*
@@ -296,6 +333,8 @@ function generateNotes() {
 ## Regular Notes
 
 General observations, reminders, and context that help with day-to-day work.
+
+- Screenshots should be saved to \`misc/screenshots/\`
 
 ---
 
@@ -319,18 +358,30 @@ async function scaffold(targetDir) {
   print(`  ${ORANGE}${BOLD}Target:${RESET} ${resolvedDir}`);
   print();
 
-  const rl = createRL();
+  const prompter = createPrompter();
 
   try {
+    // Guard: don't silently overwrite an existing scaffold
+    if (fs.existsSync(path.join(resolvedDir, 'CLAUDE.md'))) {
+      print(`${YELLOW}  CLAUDE.md already exists in the target directory.${RESET}`);
+      const proceed = await prompter.ask('Overwrite existing ATLAS files? (y/N)');
+      if (!['y', 'yes'].includes(proceed.toLowerCase())) {
+        print(`${DIM}  Aborted — nothing was changed.${RESET}`);
+        prompter.close();
+        process.exit(0);
+      }
+      print();
+    }
+
     // 1. Boss name
-    const bossName = await ask(rl, 'What is your name (Boss name)?');
+    const bossName = await prompter.ask('What is your name (Boss name)?');
     if (!bossName) {
       print(`${YELLOW}  Boss name is required.${RESET}`);
       process.exit(1);
     }
 
     // 2. Project type
-    const mode = await askChoice(rl, 'Project type?', [
+    const mode = await askChoice(prompter, 'Project type?', [
       {
         label: 'Single repo',
         desc: 'One project, ATLAS identity wrapped in atlas/ folder',
@@ -345,7 +396,7 @@ async function scaffold(targetDir) {
 
     // 3. Active context templates (activated as project rules in .claude/rules/)
     const activeTemplates = await askMultiChoice(
-      rl,
+      prompter,
       'Which context templates to activate? (all are copied to misc/context-templates/, these become rules in .claude/rules/)',
       [
         {
@@ -373,7 +424,7 @@ async function scaffold(targetDir) {
 
     // 4. MCP servers
     const mcpServers = await askMultiChoice(
-      rl,
+      prompter,
       'Which MCP servers to enable?',
       [
         {
@@ -388,8 +439,6 @@ async function scaffold(targetDir) {
         },
       ]
     );
-
-    rl.close();
 
     // ─── Write Files ──────────────────────────────────────────────────────
 
@@ -494,18 +543,18 @@ async function scaffold(targetDir) {
       postgres: mcpServers.includes('postgres'),
     };
 
-    // settings.json + settings.local.json
-    const settingsContent = generateSettingsJson(resolvedDir, mcpOptions);
-    writeFileSync(
-      path.join(claudeDir, 'settings.json'),
-      settingsContent
-    );
+    // settings.local.json only — mirrors the root repo. A committed
+    // settings.json would force one machine's permission set on every clone;
+    // local settings stay personal.
     writeFileSync(
       path.join(claudeDir, 'settings.local.json'),
-      settingsContent
+      generateSettingsJson(mcpOptions)
     );
-    print(`  ${ORANGE}+${RESET} .claude/settings.json`);
     print(`  ${ORANGE}+${RESET} .claude/settings.local.json`);
+
+    // .claude/worktrees/ — used by worktree-isolated agent runs
+    gitkeep(path.join(claudeDir, 'worktrees'));
+    print(`  ${ORANGE}+${RESET} .claude/worktrees/`);
 
     // .mcp.json
     if (mcpServers.length > 0) {
@@ -516,25 +565,23 @@ async function scaffold(targetDir) {
       print(`  ${ORANGE}+${RESET} .mcp.json`);
     }
 
-    // Common directories (both modes)
+    // Common directories (both modes) — mirror the root repo layout
+    gitkeep(path.join(resolvedDir, 'docs'));
     gitkeep(path.join(resolvedDir, 'docs', 'learning-from-mistakes'));
-    print(`  ${ORANGE}+${RESET} docs/`);
+    gitkeep(path.join(resolvedDir, 'docs', 'phases'));
+    gitkeep(path.join(resolvedDir, 'docs', 'living-spec-docs'));
+    gitkeep(path.join(resolvedDir, 'docs', 'living-test-cases'));
+    print(`  ${ORANGE}+${RESET} docs/ (learning-from-mistakes, phases, living-spec-docs, living-test-cases)`);
 
     gitkeep(path.join(resolvedDir, 'misc', 'goals'));
-    print(`  ${ORANGE}+${RESET} misc/goals/`);
-
     gitkeep(path.join(resolvedDir, 'misc', 'prompts'));
-    print(`  ${ORANGE}+${RESET} misc/prompts/`);
-
+    gitkeep(path.join(resolvedDir, 'misc', 'prototypes'));
     gitkeep(path.join(resolvedDir, 'misc', 'screenshots'));
-    print(`  ${ORANGE}+${RESET} misc/screenshots/`);
-
-    gitkeep(path.join(resolvedDir, 'docs', 'phases'));
-    print(`  ${ORANGE}+${RESET} docs/phases/`);
-
-    gitkeep(path.join(resolvedDir, 'docs', 'living-test-cases'));
     gitkeep(path.join(resolvedDir, 'misc', 'test-runs'));
-    print(`  ${ORANGE}+${RESET} docs/living-test-cases/ + misc/test-runs/`);
+    // Empty starters that show the naming convention, same as the root repo
+    writeFileSync(path.join(resolvedDir, 'misc', 'goals', 'develop-phase-01.md'), '');
+    writeFileSync(path.join(resolvedDir, 'misc', 'prompts', 'prompt_01.md'), '');
+    print(`  ${ORANGE}+${RESET} misc/ (goals, prompts, prototypes, screenshots, test-runs)`);
 
     if (mcpOptions.playwright) {
       gitkeep(path.join(resolvedDir, 'misc', 'browser-storage'));
@@ -549,15 +596,36 @@ async function scaffold(targetDir) {
         path.join(resolvedDir, 'repos', 'CLAUDE.md'),
         generateRepoClaudeMd()
       );
-      print(`  ${ORANGE}+${RESET} repos/`);
+      writeFileSync(
+        path.join(resolvedDir, 'repos', 'backend', 'CLAUDE.md'),
+        generateSubRepoClaudeMd()
+      );
+      writeFileSync(
+        path.join(resolvedDir, 'repos', 'frontend', 'CLAUDE.md'),
+        generateSubRepoClaudeMd()
+      );
+      print(`  ${ORANGE}+${RESET} repos/ (CLAUDE.md placeholders for backend + frontend)`);
     }
 
-    // Git submodules (external-information)
+    // External information (reference docs + skills submodule)
     const { execSync } = require('child_process');
     const eiDir = mode === 'single'
       ? path.join(resolvedDir, 'atlas', 'docs', 'external-information')
       : path.join(resolvedDir, 'docs', 'external-information');
     const eiRelative = path.relative(resolvedDir, eiDir);
+
+    // Reference docs shipped with the package (Claude hooks guide + reference)
+    const eiTemplateDir = path.join(TEMPLATES_DIR, 'docs', 'external-information');
+    if (fs.existsSync(eiTemplateDir)) {
+      ensureDir(eiDir);
+      for (const file of fs.readdirSync(eiTemplateDir)) {
+        const src = path.join(eiTemplateDir, file);
+        if (fs.statSync(src).isFile() && file.endsWith('.md')) {
+          fs.copyFileSync(src, path.join(eiDir, file));
+        }
+      }
+      print(`  ${ORANGE}+${RESET} ${eiRelative}/ (reference docs)`);
+    }
 
     try {
       // Init git if not already
@@ -566,11 +634,28 @@ async function scaffold(targetDir) {
         print(`  ${ORANGE}+${RESET} git init`);
       }
 
-      // Only add skills submodule (claude-plugins-official is commented out)
-      execSync(
-        `git submodule add -b main git@github.com:anthropics/skills.git "${eiRelative}/skills"`,
-        { cwd: resolvedDir, stdio: 'ignore' }
-      );
+      // Only add skills submodule (claude-plugins-official is commented out).
+      // SSH first (matches the root repo), HTTPS as fallback for machines
+      // without GitHub SSH keys.
+      const submoduleUrls = [
+        'git@github.com:anthropics/skills.git',
+        'https://github.com/anthropics/skills.git',
+      ];
+      let added = false;
+      let lastErr;
+      for (const url of submoduleUrls) {
+        try {
+          execSync(
+            `git submodule add -b main ${url} "${eiRelative}/skills"`,
+            { cwd: resolvedDir, stdio: 'ignore' }
+          );
+          added = true;
+          break;
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+      if (!added) throw lastErr;
       print(`  ${ORANGE}+${RESET} ${eiRelative}/skills (submodule, tracks main)`);
 
       // Append commented-out claude-plugins-official to .gitmodules
@@ -582,7 +667,7 @@ async function scaffold(targetDir) {
     } catch (err) {
       print(`  ${YELLOW}⚠${RESET} Could not add git submodules (${err.message})`);
       print(`  ${DIM}  Run manually:${RESET}`);
-      print(`  ${DIM}  git submodule add git@github.com:anthropics/skills.git ${eiRelative}/skills${RESET}`);
+      print(`  ${DIM}  git submodule add https://github.com/anthropics/skills.git ${eiRelative}/skills${RESET}`);
     }
 
     // ─── Summary ──────────────────────────────────────────────────────────
@@ -614,9 +699,8 @@ async function scaffold(targetDir) {
 
     // ─── Commit Prompt ────────────────────────────────────────────────────
 
-    const rl2 = createRL();
-    const commitAnswer = await ask(rl2, 'Would you like to commit these changes? (Y/n)');
-    rl2.close();
+    const commitAnswer = await prompter.ask('Would you like to commit these changes? (Y/n)');
+    prompter.close();
 
     const declined = ['n', 'no'].includes(commitAnswer.toLowerCase());
     const shouldCommit = !declined;
@@ -637,7 +721,7 @@ async function scaffold(targetDir) {
       }
     }
   } catch (err) {
-    rl.close();
+    prompter.close();
     console.error(`\n  Error: ${err.message}`);
     process.exit(1);
   }
@@ -652,6 +736,12 @@ function main() {
   if (!command || command === 'help' || command === '--help' || command === '-h') {
     printHeader();
     printUsage();
+    process.exit(0);
+  }
+
+  if (command === '--version' || command === '-v' || command === 'version') {
+    const pkg = require(path.join(__dirname, '..', 'package.json'));
+    print(pkg.version);
     process.exit(0);
   }
 

@@ -15,6 +15,8 @@
     ".claude/skills/",
     "misc/context-templates/",
     "misc/images/",
+    "docs/external-information/claude-hooks-guide.md",
+    "docs/external-information/claude-hooks-reference.md",
     "NOTES.md",
     "neuron-activation.gif"
   ],
