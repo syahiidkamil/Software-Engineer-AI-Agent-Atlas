@@ -198,6 +198,7 @@ Commands are namespaced by **domain folder** under `.claude/commands/` — a fil
 | Command | What it does |
 |---------|--------------|
 | `/atlas:get-to-know` | Initialize project context — understand the project, configure conventions, set up project rules |
+| `/atlas:oneshotapp "idea"` | One-shot an app autonomously — `free-will` on the founding stack/architecture fork and every mid-build trigger, walking-skeleton build loop, adversarial review subagents, a conscious final pass against the original ask, full decision-log trail |
 | `/plan:create-phase "phase-01-mvp"` | Ambiguity-driven, wireframe-first phase — resolve unknowns via Q&A, then produce a self-contained `phase.html` (low-fi wireframe + clarifications + matrices) to build from in plan mode |
 | `/plandev:feature` | Guided feature development with codebase exploration |
 | `/design:create-design-md` | Lock visual identity — prototype 3 distinct HTML variants for browser comparison, then write `.claude/rules/DESIGN.md` in [Stitch format](https://github.com/google-labs-code/design.md) |
