@@ -152,9 +152,11 @@ Then run `/atlas:get-to-know` inside Claude Code.
 
 **ATLAS** (Adaptive Technical Learning and Architecture System) operates as seven roles: Software Engineer, Solution Architect, Software Architect, Tech Lead, Business Analyst, Product Owner, and UI/UX Designer.
 
-### 21 Skills
+### 17 Skills
 
 Installed à la carte — the scaffolder shows a checkbox list (none preselected; `*` installs all). Picking Playwright CLI as browser automation auto-adds `playwright-cli`; the autonomous flavor auto-adds `free-will`.
+
+> Heavy document skills (`canvas-design`, `docx`, `pptx`, `xlsx` — ~8 MB of fonts and Office schemas) were dropped from ATLAS to keep `npx swe-atlas` under 1 MB. Scaffolded projects still get them: the [anthropics/skills](https://github.com/anthropics/skills) submodule at `docs/external-information/skills` carries the canonical versions.
 
 | Skill | Command | What it does |
 |-------|---------|--------------|
@@ -165,13 +167,9 @@ Installed à la carte — the scaffolder shows a checkbox list (none preselected
 | Frontend Design | `/frontend-design` | Production-grade web UI with anti-AI-slop methodology |
 | shadcn | `/shadcn` | shadcn/ui components, presets, registries, and project init |
 | Theme Factory | `/theme-factory` | 10 professional themes for any artifact |
-| Canvas Design | `/canvas-design` | Visual art and posters as PNG/PDF |
 | Algorithmic Art | `/algorithmic-art` | Generative art using p5.js |
 | Human Writing | `/human-writing` | Prose indistinguishable from a skilled human in any language (English + Bahasa Indonesia built in; add via `languages/{iso}.md`) |
 | PDF | `/pdf` | Read, merge, split, watermark, OCR, fill forms |
-| PPTX | `/pptx` | Create and edit slide decks |
-| DOCX | `/docx` | Create and edit Word documents |
-| XLSX | `/xlsx` | Spreadsheets with formulas, charts, data cleaning |
 | PostgreSQL Code Review | `/postgresql-code-review` | Review SQL/migrations for correctness and safety |
 | PostgreSQL Optimization | `/postgresql-optimization` | Diagnose slow queries, suggest indexes and rewrites |
 | Supabase Postgres Best Practices | `/supabase-postgres-best-practices` | Idiomatic Supabase + Postgres patterns (RLS, auth, storage) |
@@ -247,7 +245,7 @@ Roughly a quarter of recent YC startups report 95%-AI-generated codebases. Witho
 ├── claude_md_variants/              # CLAUDE.md flavors the CLI scaffolds from (vanilla / autonomous / collaborative)
 ├── repos/                           # Your projects (multi-repo mode)
 ├── .claude/
-│   ├── skills/                      # 21 specialized skills (installed à la carte)
+│   ├── skills/                      # 17 specialized skills (installed à la carte)
 │   ├── agents/                      # 6 task-specific agents
 │   ├── commands/                    # Slash commands, namespaced by domain folder
 │   │   ├── atlas/  brainstorm/  design/
