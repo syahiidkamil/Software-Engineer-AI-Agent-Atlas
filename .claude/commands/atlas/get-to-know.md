@@ -47,14 +47,10 @@ If no code exists, skip to Phase 3.
 
 ## Phase 3: Configure Conventions
 
-1. List available templates from `misc/context-templates/` (or `atlas/misc/context-templates/` for single-repo)
-2. Use AskUserQuestion with multiSelect:
-   - "Which conventions match this project? (these will be activated as rules in `.claude/rules/`)"
-   - Show all available templates with descriptions
-3. Copy selected templates into `.claude/rules/` — they auto-load as project rules every session
-4. If the codebase has patterns not covered by templates, ask:
-   - "Want me to generate custom conventions based on what I found in the code?"
-   - If yes, analyze the codebase and write a `project-conventions.md` in `.claude/rules/`
+1. Ask Boss: "Want me to generate project conventions based on the tech stack and what I found in the code?"
+2. If yes, write a `project-conventions.md` in `.claude/rules/` tailored to the detected stack and patterns — it auto-loads as a project rule every session
+
+Do not use `misc/archive/` (or `atlas/misc/archive/`) — it holds retired material (old context templates) kept for reference only.
 
 ## Phase 4: Configure Workspace
 
@@ -71,9 +67,8 @@ If `repos/` directory exists:
 4. Update `.claude/commands/start/be-fe.md` with actual commands
 
 ### Configure MCP (if .mcp.json exists)
-Check `.mcp.json` and confirm:
-- "Playwright MCP is configured. Keep it? (for QA testing)"
-- "PostgreSQL MCP is configured. Update the connection string?"
+Don't re-ask about Playwright — the scaffolder already asked the browser automation choice (none / Playwright MCP / Playwright CLI) during `new-project`.
+- If PostgreSQL MCP is configured, ask: "Update the connection string?"
 
 ## Phase 5: Generate Project Context
 

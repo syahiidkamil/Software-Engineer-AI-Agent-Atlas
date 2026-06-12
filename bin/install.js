@@ -7,7 +7,7 @@ const path = require('path');
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 // The package root IS the source of truth. bin/ sits at the package root, so
-// `..` resolves to the dir that holds .claude/, misc/ (self, context-templates), NOTES.md — both
+// `..` resolves to the dir that holds .claude/, misc/ (self, archive), NOTES.md — both
 // in this repo (dev) and in the published npm tarball.
 const TEMPLATES_DIR = path.join(__dirname, '..');
 
@@ -64,24 +64,30 @@ function printUsage() {
 // breaks piped/scripted input (printf 'a\nb\n' | swe-atlas ...). Buffering
 // makes interactive and non-interactive use behave the same.
 function createPrompter() {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
   const lines = [];
   const waiters = [];
   let ended = false;
+  let rl = null;
+  let swapping = false;
 
-  rl.on('line', (line) => {
-    const waiter = waiters.shift();
-    if (waiter) waiter(line.trim());
-    else lines.push(line.trim());
-  });
-  rl.on('close', () => {
-    ended = true;
-    // stdin ended — resolve pending questions with '' so defaults kick in
-    while (waiters.length) waiters.shift()('');
-  });
+  function attach() {
+    rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    rl.on('line', (line) => {
+      const waiter = waiters.shift();
+      if (waiter) waiter(line.trim());
+      else lines.push(line.trim());
+    });
+    rl.on('close', () => {
+      if (swapping) return; // deliberate detach for a raw-mode prompt, not EOF
+      ended = true;
+      // stdin ended — resolve pending questions with '' so defaults kick in
+      while (waiters.length) waiters.shift()('');
+    });
+  }
+  attach();
 
   return {
     ask(question) {
@@ -97,6 +103,14 @@ function createPrompter() {
       }
       return new Promise((resolve) => waiters.push(resolve));
     },
+    // Raw-mode prompts (the checkbox picker) need readline out of the way,
+    // or it echoes keypresses and buffers them as a pending line.
+    detach() {
+      swapping = true;
+      rl.close();
+      swapping = false;
+    },
+    reattach: attach,
     close() {
       rl.close();
     },
@@ -131,6 +145,88 @@ async function askMultiChoice(prompter, question, options) {
   return indices
     .filter((i) => i >= 0 && i < options.length)
     .map((i) => options[i].value);
+}
+
+// Interactive checkbox picker — ↑/↓ to move, space to toggle, a to toggle
+// all, enter to confirm. Zero-dependency raw-mode rendering.
+function askCheckboxInteractive(prompter, question, options) {
+  return new Promise((resolve) => {
+    const stdin = process.stdin;
+    prompter.detach();
+    readline.emitKeypressEvents(stdin);
+    stdin.setRawMode(true);
+    stdin.resume();
+    process.stdout.write('\x1b[?25l'); // hide cursor while navigating
+
+    let cursor = 0;
+    let rendered = false;
+    const checked = options.map(() => false);
+    const lineCount = options.length + 1;
+
+    function render() {
+      if (rendered) process.stdout.write(`\x1b[${lineCount}A`); // redraw in place
+      rendered = true;
+      const width = process.stdout.columns || 80;
+      process.stdout.write(
+        `\x1b[2K${ORANGE}  ? ${RESET}${question} ${DIM}(↑/↓ · space toggle · a = all · enter confirm)${RESET}\n`
+      );
+      options.forEach((opt, i) => {
+        // keep each entry on one terminal row — wrapping breaks in-place redraw
+        let desc = opt.desc;
+        const maxDesc = width - opt.label.length - 12;
+        if (desc.length > maxDesc) desc = maxDesc > 3 ? `${desc.slice(0, maxDesc - 3)}...` : '';
+        const pointer = i === cursor ? `${ORANGE}❯${RESET}` : ' ';
+        const box = checked[i] ? `${ORANGE}[x]${RESET}` : '[ ]';
+        process.stdout.write(
+          `\x1b[2K  ${pointer} ${box} ${opt.label}${desc ? ` ${DIM}— ${desc}${RESET}` : ''}\n`
+        );
+      });
+    }
+
+    function restore() {
+      stdin.setRawMode(false);
+      stdin.removeListener('keypress', onKeypress);
+      process.stdout.write('\x1b[?25h'); // show cursor again
+    }
+
+    function onKeypress(str, key = {}) {
+      if (key.ctrl && key.name === 'c') {
+        restore();
+        print();
+        process.exit(130);
+      }
+      if (key.name === 'up' || key.name === 'k') {
+        cursor = (cursor - 1 + options.length) % options.length;
+      } else if (key.name === 'down' || key.name === 'j') {
+        cursor = (cursor + 1) % options.length;
+      } else if (key.name === 'space') {
+        checked[cursor] = !checked[cursor];
+      } else if (str === 'a') {
+        const all = checked.every(Boolean);
+        checked.fill(!all);
+      } else if (key.name === 'return') {
+        restore();
+        prompter.reattach();
+        resolve(options.filter((_, i) => checked[i]).map((o) => o.value));
+        return;
+      }
+      render();
+    }
+
+    stdin.on('keypress', onKeypress);
+    render();
+  });
+}
+
+// Checkbox UX on a real terminal; numeric askMultiChoice fallback keeps
+// piped/scripted input (printf 'a\nb\n' | swe-atlas ...) working.
+async function askCheckbox(prompter, question, options) {
+  if (!process.stdin.isTTY) {
+    return askMultiChoice(prompter, question, options);
+  }
+  const selected = await askCheckboxInteractive(prompter, question, options);
+  print(`${DIM}    ${selected.length} selected${RESET}`);
+  return selected;
 }
 
 // Discover installable skills from the package's .claude/skills/ directory,
@@ -390,52 +486,35 @@ async function scaffold(targetDir) {
       },
     ]);
 
-    // 4. Active context templates (activated as project rules in .claude/rules/)
-    const activeTemplates = await askMultiChoice(
-      prompter,
-      'Which context templates to activate? (all are copied to misc/context-templates/, these become rules in .claude/rules/)',
-      [
-        {
-          label: 'Backend API',
-          desc: 'RESTful conventions, error handling patterns',
-          value: 'backend.md',
-        },
-        {
-          label: 'React + Vite + Tailwind v4 + shadcn/ui',
-          desc: 'Full frontend stack conventions',
-          value: 'frontend-react-vite-tailwind-4-and-shadcn.md',
-        },
-        {
-          label: 'React + Vite (basic)',
-          desc: 'Minimal React + Vite conventions',
-          value: 'frontend-react-vite.md',
-        },
-        {
-          label: 'JavaScript/TypeScript',
-          desc: 'JS/TS language patterns',
-          value: 'javascript.md',
-        },
-      ]
-    );
-
-    // 5. Skills — checkbox-style, all unchecked by default
+    // 4. Skills — interactive checkbox, all unchecked by default
     const skillOptions = listSkills();
     let selectedSkills = [];
     if (skillOptions.length > 0) {
-      selectedSkills = await askMultiChoice(
+      selectedSkills = await askCheckbox(
         prompter,
         'Which skills to install?',
         skillOptions
       );
     }
 
-    // free-will is mandatory for the autonomous flavor — its CLAUDE.md
-    // depends on it for high-stakes decisions; autonomy without deliberate
-    // choice is just reflex.
-    if (variant === 'atlas-autonomous' && !selectedSkills.includes('free-will')) {
-      selectedSkills.push('free-will');
-      print(`${DIM}    free-will skill added (required by the autonomous flavor)${RESET}`);
+    // The autonomous flavor works without a partner-approval loop, so it
+    // ships with the skills that stand in for that judgment: free-will
+    // (deliberate decisions at high-stakes forks), super-product-owner
+    // (scope and priority calls) and super-ui-ux-design (design calls).
+    if (variant === 'atlas-autonomous') {
+      for (const skill of ['free-will', 'super-product-owner', 'super-ui-ux-design']) {
+        if (!selectedSkills.includes(skill)) {
+          selectedSkills.push(skill);
+          print(`${DIM}    ${skill} skill added (required by the autonomous flavor)${RESET}`);
+        }
+      }
     }
+
+    // 5. DESIGN.md template — visual identity skeleton in .claude/rules/
+    const designAnswer = await prompter.ask(
+      'Include the DESIGN.md template (visual identity rule in .claude/rules/)? (Y/n)'
+    );
+    const includeDesignMd = !['n', 'no'].includes(designAnswer.toLowerCase());
 
     // 6. Browser automation — Playwright via MCP server or via CLI skill
     const browser = await askChoice(prompter, 'Browser automation?', [
@@ -498,9 +577,9 @@ async function scaffold(targetDir) {
     const selfDir = wrapInAtlas
       ? path.join(resolvedDir, 'atlas', 'misc', 'self')
       : path.join(resolvedDir, 'misc', 'self');
-    const ctDir = wrapInAtlas
-      ? path.join(resolvedDir, 'atlas', 'misc', 'context-templates')
-      : path.join(resolvedDir, 'misc', 'context-templates');
+    const archiveDir = wrapInAtlas
+      ? path.join(resolvedDir, 'atlas', 'misc', 'archive')
+      : path.join(resolvedDir, 'misc', 'archive');
     const claudeDir = path.join(resolvedDir, '.claude');
 
     // CLAUDE.md — copied from the chosen variant template
@@ -547,16 +626,16 @@ async function scaffold(targetDir) {
       }
     }
 
-    // Context templates — copy all
-    const ctTemplateDir = path.join(TEMPLATES_DIR, 'misc', 'context-templates');
-    if (fs.existsSync(ctTemplateDir)) {
-      copyDirSync(ctTemplateDir, ctDir);
-      print(`  ${ORANGE}+${RESET} ${wrapInAtlas ? 'atlas/' : ''}misc/context-templates/`);
+    // Archive — retired material (old context templates) shipped for reference
+    // only; its README says don't use it, and nothing is activated from it.
+    const archiveTemplateDir = path.join(TEMPLATES_DIR, 'misc', 'archive');
+    if (fs.existsSync(archiveTemplateDir)) {
+      copyDirSync(archiveTemplateDir, archiveDir);
+      print(`  ${ORANGE}+${RESET} ${wrapInAtlas ? 'atlas/' : ''}misc/archive/ (reference only — don't use)`);
     }
 
     // .claude/ directory — agents, commands, hooks, rules are copied whole;
-    // skills are copied selectively below. rules/ ships the DESIGN.md
-    // skeleton; selected context templates are activated into it after.
+    // skills are copied selectively below. rules/ ships the DESIGN.md skeleton.
     const claudeTemplateDir = path.join(TEMPLATES_DIR, '.claude');
     if (fs.existsSync(claudeTemplateDir)) {
       const dirs = ['agents', 'commands', 'hooks', 'rules'];
@@ -567,6 +646,12 @@ async function scaffold(targetDir) {
           print(`  ${ORANGE}+${RESET} .claude/${dir}/`);
         }
       }
+    }
+
+    // rules/ ships DESIGN.md; drop it if Boss declined the template
+    if (!includeDesignMd) {
+      fs.rmSync(path.join(claudeDir, 'rules', 'DESIGN.md'), { force: true });
+      print(`  ${DIM}  .claude/rules/DESIGN.md — skipped${RESET}`);
     }
 
     // Skills — only the ones picked (plus playwright-cli if chosen as browser
@@ -581,19 +666,6 @@ async function scaffold(targetDir) {
       print(`  ${ORANGE}+${RESET} .claude/skills/ (${selectedSkills.length} selected)`);
     } else {
       print(`  ${DIM}  .claude/skills/ — none selected, skipped${RESET}`);
-    }
-
-    // Activate selected context templates as project rules in .claude/rules/
-    if (activeTemplates.length > 0) {
-      const rulesDir = path.join(claudeDir, 'rules');
-      ensureDir(rulesDir);
-      for (const tpl of activeTemplates) {
-        const src = path.join(ctTemplateDir, tpl);
-        if (fs.existsSync(src)) {
-          fs.copyFileSync(src, path.join(rulesDir, tpl));
-        }
-      }
-      print(`  ${ORANGE}+${RESET} .claude/rules/ (${activeTemplates.length} active)`);
     }
 
     // Browser/MCP options — playwright/postgres keys match server names in
@@ -756,11 +828,6 @@ async function scaffold(targetDir) {
     print(`  ${ORANGE}${BOLD}Location:${RESET}  ${resolvedDir}`);
     if (partnerName) {
       print(`  ${ORANGE}${BOLD}Partner:${RESET}   ${partnerName}`);
-    }
-    if (activeTemplates.length > 0) {
-      print(
-        `  ${ORANGE}${BOLD}Active:${RESET}    ${activeTemplates.map((t) => t.replace('.md', '')).join(', ')}`
-      );
     }
     print(`  ${ORANGE}${BOLD}Skills:${RESET}    ${selectedSkills.length > 0 ? `${selectedSkills.length} installed` : 'none'}`);
     print(`  ${ORANGE}${BOLD}Browser:${RESET}   ${browserLabel}`);

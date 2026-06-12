@@ -18,7 +18,7 @@
     ".claude/rules/",
     ".claude/skills/",
     "claude_md_variants/",
-    "misc/context-templates/",
+    "misc/archive/",
     "misc/images/",
     "docs/external-information/claude-hooks-guide.md",
     "docs/external-information/claude-hooks-reference.md",

@@ -115,14 +115,14 @@ npx swe-atlas@latest new-project
 npx swe-atlas@latest new-project my-workspace
 ```
 
-The CLI walks you through: **CLAUDE.md flavor**, your name, project type, context templates, **which skills to install** (checkbox list — none preselected, `*` installs all), **browser automation** (Playwright MCP or Playwright CLI, isolated or persistent profile), and PostgreSQL — then scaffolds everything, copying each file from this repo as the single source of truth.
+The CLI walks you through: **CLAUDE.md flavor**, your name, project type, **which skills to install** (interactive checkbox — ↑/↓ move, space toggles, `a` selects all; none preselected), the **DESIGN.md template**, **browser automation** (Playwright MCP or Playwright CLI, isolated or persistent profile), and PostgreSQL — then scaffolds everything, copying each file from this repo as the single source of truth. Piped input still works: the skills picker falls back to comma-separated numbers (`*` = all) when stdin isn't a terminal.
 
 ### Pick your CLAUDE.md flavor
 
 | Flavor | What you get |
 |---|---|
 | **Vanilla** | Minimal CLAUDE.md — just NOTES.md and `docs/decision_logs/`, no ATLAS identity |
-| **ATLAS — autonomous** | Full identity, no approval loop — built for unattended runs and one-shotting apps. The `free-will` skill is auto-installed and fires on medium-to-high-stakes forks: hold real alternatives open, ground them in evidence, refute the winner, log the decision |
+| **ATLAS — autonomous** | Full identity, no approval loop — built for unattended runs and one-shotting apps. Auto-installs `free-will`, `super-product-owner`, and `super-ui-ux-design` — the skills that stand in for the missing approval loop. `free-will` fires on medium-to-high-stakes forks: hold real alternatives open, ground them in evidence, refute the winner, log the decision |
 | **ATLAS — collaborative** *(default)* | Full identity with the partner review/commit loop — you stay in the driver's seat |
 
 Every flavor records important decisions (architecture, library choices, tradeoff calls) in `docs/decision_logs/` — ADR-style, with the rejected alternatives and the rationale — so future sessions know *why*, not just *what*.
@@ -154,7 +154,7 @@ Then run `/atlas:get-to-know` inside Claude Code.
 
 ### 17 Skills
 
-Installed à la carte — the scaffolder shows a checkbox list (none preselected; `*` installs all). Picking Playwright CLI as browser automation auto-adds `playwright-cli`; the autonomous flavor auto-adds `free-will`.
+Installed à la carte — the scaffolder shows an interactive checkbox list (none preselected; space toggles, `a` selects all). Picking Playwright CLI as browser automation auto-adds `playwright-cli`; the autonomous flavor auto-adds `free-will`, `super-product-owner`, and `super-ui-ux-design`.
 
 > Heavy document skills (`canvas-design`, `docx`, `pptx`, `xlsx` — ~8 MB of fonts and Office schemas) were dropped from ATLAS to keep `npx swe-atlas` under 1 MB. Scaffolded projects still get them: the [anthropics/skills](https://github.com/anthropics/skills) submodule at `docs/external-information/skills` carries the canonical versions.
 
@@ -264,7 +264,7 @@ Roughly a quarter of recent YC startups report 95%-AI-generated codebases. Witho
 │   ├── self/                        # ATLAS identity & principles (atlas.md, engineering.md)
 │   ├── prototypes/                  # Clickable React prototypes
 │   ├── test-runs/                   # QA test-run results
-│   └── context-templates/           # Convention templates
+│   └── archive/                     # Retired material (old context templates) — don't use
 ├── .playwright/cli.config.json     # Project-scoped Playwright CLI profile config
 └── .mcp.json                        # MCP server configuration
 ```
