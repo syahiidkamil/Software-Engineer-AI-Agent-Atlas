@@ -42,6 +42,10 @@ Implement slice by slice. After each slice: run it, exercise the new behavior (b
 
 For slices with a user-facing surface, invoke the **`super-ui-ux-design` skill** before writing the UI — its execution playbook (context reasoning, probability-bias breaking, HTML/CSS-first thinking, curate-and-verify) is how the frontend earns the same rigor the free-will skill gives the backend forks.
 
+Once the last user-facing slice lands and the UI/UX design is fixed, run a **standardization recheck** across every screen before leaving the build loop: one spacing scale, one typography hierarchy, one component language (buttons, cards, forms, empty states styled identically wherever they appear), consistent layout structure and navigation placement. Slice-by-slice building drifts by nature — this sweep converges the screens back into a single design system. If `.claude/rules/DESIGN.md` exists, audit each screen against its tokens — tokens win over local improvisation.
+
+The sharpest test is **same abstraction, same layout**: screens of the same kind must be structurally interchangeable. Walk all dashboard pages side by side — every table page puts its search/filter bar, column header treatment, row density, pagination, and page title + actions in the same places with the same fonts; every form page, every detail page, likewise. If two screens of the same kind solve the same problem two ways, pick one and migrate the other. Fix divergences now; a consistency bug surfacing in review is this step skipped.
+
 Mid-build, the free-will tripwires stay armed:
 
 - A fix fails for the **second time** → stop feeding the hypothesis; free-will the diagnosis.
