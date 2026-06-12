@@ -1,6 +1,6 @@
 {
   "name": "swe-atlas",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Turn Claude Code into a senior AI software engineer: skills, subagents, slash commands, and engineering conventions, scaffolded with one command. A pragmatic alternative to spec-driven development.",
   "bin": {
     "swe-atlas": "bin/install.js"
