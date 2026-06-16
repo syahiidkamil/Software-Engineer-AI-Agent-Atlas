@@ -1,8 +1,12 @@
 # SWE-ATLAS — a senior AI software engineer for Claude Code
 
+[![npm version](https://img.shields.io/npm/v/swe-atlas?logo=npm&color=cb3837)](https://www.npmjs.com/package/swe-atlas)
+[![npm downloads](https://img.shields.io/npm/dw/swe-atlas?logo=npm&color=cb3837)](https://www.npmjs.com/package/swe-atlas)
+[![license](https://img.shields.io/npm/l/swe-atlas?color=3b82f6)](https://www.npmjs.com/package/swe-atlas)
+
 ![SWE-ATLAS — turn Claude Code into a senior AI software engineer with skills, subagents, and engineering conventions](misc/images/swe-atlas.png)
 
-> The senior-engineer layer for Claude Code. Explore before you build, clarify only what matters, capture it in living HTML — then hand it to Claude Code's native plan / goal / workflow loop. Fewer tokens, less ceremony, faster to the thing people actually pictured.
+> The senior-engineer layer for Claude Code. Explore before you build, clarify only what matters, capture it in living HTML, then hand it to Claude Code's native plan / goal / workflow loop. Fewer tokens, less ceremony, faster to the thing people actually pictured.
 
 ```bash
 npx swe-atlas@latest new-project
@@ -10,13 +14,13 @@ npx swe-atlas@latest new-project
 
 One command. Full setup. No copy-pasting prompts every session.
 
-ATLAS is an open-source **Claude Code template** — a curated set of skills, subagents, slash commands, and engineering conventions that turn Claude Code into a production-grade AI software engineer, with a wireframe-and-prototype workflow in place of heavyweight spec-driven development.
+ATLAS is an open-source **Claude Code template**: a curated set of skills, subagents, slash commands, and engineering conventions that turn Claude Code into a production-grade AI software engineer, with a wireframe-and-prototype workflow in place of heavyweight spec-driven development.
 
 ---
 
 ## Claude Code already builds. ATLAS decides what to build.
 
-Claude Code now plans before it edits, works toward a goal across turns, runs autonomously with safety checks, and orchestrates fleets of subagents — natively, in the box:
+Claude Code now plans before it edits, works toward a goal across turns, runs autonomously with safety checks, and orchestrates fleets of subagents, natively, in the box:
 
 | Native capability | What it does |
 |---|---|
@@ -27,7 +31,7 @@ Claude Code now plans before it edits, works toward a goal across turns, runs au
 
 That is the execution loop, and it keeps getting better. So ATLAS doesn't try to rebuild it.
 
-What Claude Code still won't do for you is decide *what's worth building*, prove the shape works before you spend tokens generating it, and leave behind a document you can actually trust. That part is on you — and that part is ATLAS.
+What Claude Code still won't do for you is decide *what's worth building*, prove the shape works before you spend tokens generating it, and leave behind a document you can actually trust. That part is on you. And that part is ATLAS.
 
 <sub>Auto mode and dynamic workflows are in research preview at the time of writing; plan mode and `/goal` are generally available.</sub>
 
@@ -35,16 +39,16 @@ What Claude Code still won't do for you is decide *what's worth building*, prove
 
 ## Why not another spec framework
 
-The popular answer to "make the AI build the right thing" has been **Spec-Driven Development (SDD)**: write exhaustive specifications first, then generate the code from them. A constitution. A spec. A plan. A task breakdown. Five to seven Markdown files and a multi-phase pipeline — most of it produced *before a single screen has been seen*.
+The popular answer to "make the AI build the right thing" has been **Spec-Driven Development (SDD)**: write exhaustive specifications first, then generate the code from them. A constitution. A spec. A plan. A task breakdown. Five to seven Markdown files and a multi-phase pipeline, most of it produced *before a single screen has been seen*.
 
 Four things go wrong:
 
-- **You plan before you've learned.** The requirements, the task breakdown — most of it is a guess made before anyone has seen the thing work. You pay full freight to formalize guesses, build to them task by task, and find out at the end it isn't what anyone pictured. That's premature investment: detailed plans and guardrails poured around an idea nobody has validated yet.
-- **Text leaves room to disagree.** A written spec is open to interpretation — you and the model can read the same paragraph and picture two different screens, and the gap only surfaces once the code exists. Prose is the wrong medium for *"do we mean the same thing?"*
-- **Markdown drifts.** Keeping `spec.md`, `plan.md`, and `tasks.md` consistent with each other and with the code is its own tax — and plain `.md` can't even render the wireframe, flow, or matrix it's straining to describe.
-- **The loop is already native.** Spec → plan → tasks → implement is precisely what plan mode, `/goal`, and workflows now do on their own. Wrapping a framework around the model to make it loop reinvents what ships in the box — at a heavy token premium, and slower, because every step waits on ceremony.
+- **You plan before you've learned.** The requirements, the task breakdown: most of it is a guess made before anyone has seen the thing work. You pay full freight to formalize guesses, build to them task by task, and find out at the end it isn't what anyone pictured. That's premature investment: detailed plans and guardrails poured around an idea nobody has validated yet.
+- **Text leaves room to disagree.** A written spec is open to interpretation. You and the model can read the same paragraph and picture two different screens, and the gap only surfaces once the code exists. Prose is the wrong medium for *"do we mean the same thing?"*
+- **Markdown drifts.** Keeping `spec.md`, `plan.md`, and `tasks.md` consistent with each other and with the code is its own tax, and plain `.md` can't even render the wireframe, flow, or matrix it's straining to describe.
+- **The loop is already native.** Spec → plan → tasks → implement is precisely what plan mode, `/goal`, and workflows now do on their own. Wrapping a framework around the model to make it loop reinvents what ships in the box, at a heavy token premium, and slower, because every step waits on ceremony.
 
-ATLAS takes the opposite bet: do the *minimum* upfront thinking that actually de-risks the build, make it cheap, fast, and visual — so a human and the model can look at the same thing and agree before a line is written — then hand a clean artifact to the native loop.
+ATLAS takes the opposite bet: do the *minimum* upfront thinking that actually de-risks the build, make it cheap, fast, and visual, so a human and the model can look at the same thing and agree before a line is written, then hand a clean artifact to the native loop.
 
 ---
 
@@ -54,25 +58,25 @@ ATLAS takes the opposite bet: do the *minimum* upfront thinking that actually de
 
 Cheap, throwaway-friendly artifacts that let you *see* the thing before generating code for it:
 
-- **`/brainstorm:wireframe`** — a low-fi wireframe as one self-contained HTML file
-- **`/brainstorm:prototype`** — a clickable, multi-screen React prototype
-- **`/design:create-design-md`** — three real design variants you compare in a browser, then lock as `DESIGN.md`
+- **`/brainstorm:wireframe`**: a low-fi wireframe as one self-contained HTML file
+- **`/brainstorm:prototype`**: a clickable, multi-screen React prototype
+- **`/design:create-design-md`**: three real design variants you compare in a browser, then lock as `DESIGN.md`
 
-You validate the shape for the price of a sketch, not the price of a spec — in minutes, not phases. And a picture is the fastest way for a human and a model to agree on what to build: text invites interpretation, a wireframe pins it down.
+You validate the shape for the price of a sketch, not the price of a spec, in minutes, not phases. And a picture is the fastest way for a human and a model to agree on what to build: text invites interpretation, a wireframe pins it down.
 
 ### 2. Clarify only the essentials
 
-**`/plan:create-phase`** resolves the *load-bearing* unknowns through targeted Q&A — and stops there. No constitution, no task ledger. The ambiguity that would actually derail the build gets surfaced and answered; the rest stays out of your way.
+**`/plan:create-phase`** resolves the *load-bearing* unknowns through targeted Q&A, and stops there. No constitution, no task ledger. The ambiguity that would actually derail the build gets surfaced and answered; the rest stays out of your way.
 
 ### 3. Document in HTML, not Markdown sprawl
 
-A phase is captured as **one self-contained HTML document** — wireframe, data flow, clarifications, and decision matrices in a single file that opens in any browser. HTML is a far richer canvas than Markdown: real tables, SVG diagrams, annotated code, even sliders you tweak and copy back into a prompt. And people *actually read it* — a 100-line Markdown plan goes unopened; a shareable HTML link gets clicked. One robust artifact instead of a drift-prone pile of `.md`, and plan mode builds straight from it.
+A phase is captured as **one self-contained HTML document**: wireframe, data flow, clarifications, and decision matrices in a single file that opens in any browser. HTML is a far richer canvas than Markdown: real tables, SVG diagrams, annotated code, even sliders you tweak and copy back into a prompt. And people *actually read it*: a 100-line Markdown plan goes unopened; a shareable HTML link gets clicked. One robust artifact instead of a drift-prone pile of `.md`, and plan mode builds straight from it.
 
-The Claude Code team makes this exact case in [*The Unreasonable Effectiveness of HTML*](https://claude.com/blog/using-claude-code-the-unreasonable-effectiveness-of-html). The honest tradeoff — HTML costs more tokens and time to generate than `.md` — is one ATLAS takes gladly: spend it on the *one* document that matters, not on seven that drift.
+The Claude Code team makes this exact case in [*The Unreasonable Effectiveness of HTML*](https://claude.com/blog/using-claude-code-the-unreasonable-effectiveness-of-html). The honest tradeoff (HTML costs more tokens and time to generate than `.md`) is one ATLAS takes gladly: spend it on the *one* document that matters, not on seven that drift.
 
 ### 4. Bring senior judgment to every turn
 
-A persistent engineering identity — principles, roles, and conventions — plus a library of skills and agents that load automatically. The model stops reaching for generic defaults and starts behaving like someone who has shipped before.
+A persistent engineering identity (principles, roles, and conventions) plus a library of skills and agents that load automatically. The model stops reaching for generic defaults and starts behaving like someone who has shipped before.
 
 ---
 
@@ -115,17 +119,17 @@ npx swe-atlas@latest new-project
 npx swe-atlas@latest new-project my-workspace
 ```
 
-The CLI walks you through: **CLAUDE.md flavor**, your name, project type, **which skills to install** (interactive checkbox — ↑/↓ move, space toggles, `a` selects all; none preselected), the **DESIGN.md template**, **browser automation** (Playwright MCP or Playwright CLI, isolated or persistent profile), and PostgreSQL — then scaffolds everything, copying each file from this repo as the single source of truth. Piped input still works: the skills picker falls back to comma-separated numbers (`*` = all) when stdin isn't a terminal.
+The CLI walks you through: **CLAUDE.md flavor**, your name, project type, **which skills to install** (interactive checkbox: ↑/↓ move, space toggles, `a` selects all; none preselected), the **DESIGN.md template**, **browser automation** (Playwright MCP or Playwright CLI, isolated or persistent profile), and PostgreSQL, then scaffolds everything, copying each file from this repo as the single source of truth. Piped input still works: the skills picker falls back to comma-separated numbers (`*` = all) when stdin isn't a terminal.
 
 ### Pick your CLAUDE.md flavor
 
 | Flavor | What you get |
 |---|---|
-| **Vanilla** | Minimal CLAUDE.md — just NOTES.md and `docs/decision_logs/`, no ATLAS identity |
-| **ATLAS — autonomous** | Full identity, no approval loop — built for unattended runs and one-shotting apps. Auto-installs `free-will`, `super-product-owner`, and `super-ui-ux-design` — the skills that stand in for the missing approval loop. `free-will` fires on medium-to-high-stakes forks: hold real alternatives open, ground them in evidence, refute the winner, log the decision |
-| **ATLAS — collaborative** *(default)* | Full identity with the partner review/commit loop — you stay in the driver's seat |
+| **Vanilla** | Minimal CLAUDE.md: just NOTES.md and `docs/decision_logs/`, no ATLAS identity |
+| **ATLAS — autonomous** | Full identity, no approval loop, built for unattended runs and one-shotting apps. Auto-installs `free-will`, `super-product-owner`, and `super-ui-ux-design`: the skills that stand in for the missing approval loop. `free-will` fires on medium-to-high-stakes forks: hold real alternatives open, ground them in evidence, refute the winner, log the decision |
+| **ATLAS — collaborative** *(default)* | Full identity with the partner review/commit loop. You stay in the driver's seat |
 
-Every flavor records important decisions (architecture, library choices, tradeoff calls) in `docs/decision_logs/` — ADR-style, with the rejected alternatives and the rationale — so future sessions know *why*, not just *what*.
+Every flavor records important decisions (architecture, library choices, tradeoff calls) in `docs/decision_logs/`, ADR-style, with the rejected alternatives and the rationale, so future sessions know *why*, not just *what*.
 
 ### Manual setup
 
@@ -154,16 +158,16 @@ Then run `/atlas:get-to-know` inside Claude Code.
 
 ### 17 Skills
 
-Installed à la carte — the scaffolder shows an interactive checkbox list (none preselected; space toggles, `a` selects all). Picking Playwright CLI as browser automation auto-adds `playwright-cli`; the autonomous flavor auto-adds `free-will`, `super-product-owner`, and `super-ui-ux-design`.
+Installed à la carte. The scaffolder shows an interactive checkbox list (none preselected; space toggles, `a` selects all). Picking Playwright CLI as browser automation auto-adds `playwright-cli`; the autonomous flavor auto-adds `free-will`, `super-product-owner`, and `super-ui-ux-design`.
 
-> Heavy document skills (`canvas-design`, `docx`, `pptx`, `xlsx` — ~8 MB of fonts and Office schemas) were dropped from ATLAS to keep `npx swe-atlas` under 1 MB. Scaffolded projects still get them: the [anthropics/skills](https://github.com/anthropics/skills) submodule at `docs/external-information/skills` carries the canonical versions.
+> Heavy document skills (`canvas-design`, `docx`, `pptx`, `xlsx`: ~8 MB of fonts and Office schemas) were dropped from ATLAS to keep `npx swe-atlas` under 1 MB. Scaffolded projects still get them: the [anthropics/skills](https://github.com/anthropics/skills) submodule at `docs/external-information/skills` carries the canonical versions.
 
 | Skill | Command | What it does |
 |-------|---------|--------------|
-| Free Will | `/free-will` | Deliberate choice on medium-to-high-stakes engineering forks — branch (urge · contrarian · synthesis · secret · dots · precedent · first-principles), ground in evidence, simulate consequences, refute the winner, log the decision. Fires autonomously on mechanical triggers |
-| Abstraction Power | `/abstraction-power` | Pattern recognition — spot repetition, extract reusable abstractions |
+| Free Will | `/free-will` | Deliberate choice on medium-to-high-stakes engineering forks: branch (urge · contrarian · synthesis · secret · dots · precedent · first-principles), ground in evidence, simulate consequences, refute the winner, log the decision. Fires autonomously on mechanical triggers |
+| Abstraction Power | `/abstraction-power` | Pattern recognition: spot repetition, extract reusable abstractions |
 | Learning From Mistakes | `/learning-from-mistakes` | Record a hard-won lesson after a bug is cracked, so it's never relearned |
-| Playwright CLI | `/playwright-cli` | Token-efficient browser automation — drives the Playwright CLI through Bash instead of loading MCP tool schemas |
+| Playwright CLI | `/playwright-cli` | Token-efficient browser automation: drives the Playwright CLI through Bash instead of loading MCP tool schemas |
 | Frontend Design | `/frontend-design` | Production-grade web UI with anti-AI-slop methodology |
 | shadcn | `/shadcn` | shadcn/ui components, presets, registries, and project init |
 | Theme Factory | `/theme-factory` | 10 professional themes for any artifact |
@@ -176,7 +180,7 @@ Installed à la carte — the scaffolder shows an interactive checkbox list (non
 | MCP Builder | `/mcp-builder` | Guide for creating MCP servers |
 | Find Skills | `/find-skills` | Discover and install skills from the Anthropic library |
 | Skill Creator | `/skill-creator` | Scaffold a new skill following the canonical format |
-| Docs Anthropic | `/docs-anthropic` | On-demand index of official Claude Code / Anthropic docs — fetches the right page when you need it |
+| Docs Anthropic | `/docs-anthropic` | On-demand index of official Claude Code / Anthropic docs: fetches the right page when you need it |
 
 ### 6 Agents
 
@@ -191,15 +195,15 @@ Installed à la carte — the scaffolder shows an interactive checkbox list (non
 
 ### Commands
 
-Commands are namespaced by **domain folder** under `.claude/commands/` — a file at `brainstorm/prototype.md` becomes `/brainstorm:prototype`. The domains: `atlas:` (onboarding), `plan:` / `plandev:` (planning & building), `design:` / `brainstorm:` (UX & visuals), `qa:` (testing), `start:` (run), `git:` (version control).
+Commands are namespaced by **domain folder** under `.claude/commands/`: a file at `brainstorm/prototype.md` becomes `/brainstorm:prototype`. The domains: `atlas:` (onboarding), `plan:` / `plandev:` (planning & building), `design:` / `brainstorm:` (UX & visuals), `qa:` (testing), `start:` (run), `git:` (version control).
 
 | Command | What it does |
 |---------|--------------|
-| `/atlas:get-to-know` | Initialize project context — understand the project, configure conventions, set up project rules |
-| `/atlas:oneshotapp "idea"` | One-shot an app autonomously — `free-will` on the founding stack/architecture fork and every mid-build trigger, walking-skeleton build loop, adversarial review subagents, a conscious final pass against the original ask, full decision-log trail |
-| `/plan:create-phase "phase-01-mvp"` | Ambiguity-driven, wireframe-first phase — resolve unknowns via Q&A, then produce a self-contained `phase.html` (low-fi wireframe + clarifications + matrices) to build from in plan mode |
+| `/atlas:get-to-know` | Initialize project context: understand the project, configure conventions, set up project rules |
+| `/atlas:oneshotapp "idea"` | One-shot an app autonomously: `free-will` on the founding stack/architecture fork and every mid-build trigger, walking-skeleton build loop, adversarial review subagents, a conscious final pass against the original ask, full decision-log trail |
+| `/plan:create-phase "phase-01-mvp"` | Ambiguity-driven, wireframe-first phase: resolve unknowns via Q&A, then produce a self-contained `phase.html` (low-fi wireframe + clarifications + matrices) to build from in plan mode |
 | `/plandev:feature` | Guided feature development with codebase exploration |
-| `/design:create-design-md` | Lock visual identity — prototype 3 distinct HTML variants for browser comparison, then write `.claude/rules/DESIGN.md` in [Stitch format](https://github.com/google-labs-code/design.md) |
+| `/design:create-design-md` | Lock visual identity: prototype 3 distinct HTML variants for browser comparison, then write `.claude/rules/DESIGN.md` in [Stitch format](https://github.com/google-labs-code/design.md) |
 | `/brainstorm:wireframe` | Quick standalone low-fi wireframe as self-contained HTML (gray boxes, no framework) |
 | `/brainstorm:prototype` | Clickable multi-screen React prototype for idea validation (`misc/prototypes/`) |
 | `/qa:create-test-cases` | Author human-readable manual test cases (markdown) into `docs/living-test-cases/` |
@@ -211,11 +215,11 @@ Commands are namespaced by **domain folder** under `.claude/commands/` — a fil
 
 ### Integrations
 
-Browser automation is a scaffold-time choice — and either way you also choose the profile mode: **isolated** (fresh in-memory profile per session — the default, safe for concurrent/parallel testing) or **persistent** (profile saved to disk so logins survive restarts).
+Browser automation is a scaffold-time choice, and either way you also choose the profile mode: **isolated** (fresh in-memory profile per session, the default, safe for concurrent/parallel testing) or **persistent** (profile saved to disk so logins survive restarts).
 
-- **[Playwright MCP](https://github.com/microsoft/playwright-mcp)** — rich page snapshots via MCP tools; best when an agent reasons over page structure across a session. Configured in `.mcp.json`; persistent mode stores the profile in `misc/browser-storage/` (gitignored)
-- **[Playwright CLI](https://github.com/microsoft/playwright-cli)** — token-efficient alternative: ~50 purpose-built commands the agent calls directly via Bash (`playwright-cli click "#submit"`) instead of loading large tool schemas into context. The scaffolder writes a project-scoped `.playwright/cli.config.json` and installs the `playwright-cli` skill; just add the binary: `npm install -g @playwright/cli@latest`
-- **PostgreSQL MCP** — database access for queries and schema inspection (opt-in at scaffold time)
+- **[Playwright MCP](https://github.com/microsoft/playwright-mcp)**: rich page snapshots via MCP tools; best when an agent reasons over page structure across a session. Configured in `.mcp.json`; persistent mode stores the profile in `misc/browser-storage/` (gitignored)
+- **[Playwright CLI](https://github.com/microsoft/playwright-cli)**: token-efficient alternative, ~50 purpose-built commands the agent calls directly via Bash (`playwright-cli click "#submit"`) instead of loading large tool schemas into context. The scaffolder writes a project-scoped `.playwright/cli.config.json` and installs the `playwright-cli` skill; just add the binary: `npm install -g @playwright/cli@latest`
+- **PostgreSQL MCP**: database access for queries and schema inspection (opt-in at scaffold time)
 
 ---
 
@@ -223,17 +227,17 @@ Browser automation is a scaffold-time choice — and either way you also choose 
 
 ### Neuron activation through structure
 
-![Neuron activation — structured context fires Claude Code's latent senior-engineering capability](neuron-activation.gif)
+![Neuron activation: structured context fires Claude Code's latent senior-engineering capability](neuron-activation.gif)
 
-AI coding assistants keep deep engineering capability locked behind generic defaults. Ask "write a function" and you get code. Give the same model structured context, engineering principles, and a persistent identity, and you get architected solutions — proper abstractions, error handling, scalability considered. The difference is **neuron activation**: the right instructions firing the right capabilities. ATLAS supplies those patterns by default, every session.
+AI coding assistants keep deep engineering capability locked behind generic defaults. Ask "write a function" and you get code. Give the same model structured context, engineering principles, and a persistent identity, and you get architected solutions: proper abstractions, error handling, scalability considered. The difference is **neuron activation**: the right instructions firing the right capabilities. ATLAS supplies those patterns by default, every session.
 
 ### Ground truth over guesswork
 
-ATLAS treats its own output as something to verify, not assert. It reads the file before describing the code, runs the thing before calling it done, and looks at the screen before reporting the UI. A confidence hierarchy puts direct observation and your confirmation above inferred behavior and untested assumptions — so "it works" means it was checked, not hoped. It's the discipline a spec can't give you: you can't specify your way out of a wrong assumption, you can only test it.
+ATLAS treats its own output as something to verify, not assert. It reads the file before describing the code, runs the thing before calling it done, and looks at the screen before reporting the UI. A confidence hierarchy puts direct observation and your confirmation above inferred behavior and untested assumptions, so "it works" means it was checked, not hoped. It's the discipline a spec can't give you: you can't specify your way out of a wrong assumption, you can only test it.
 
 ### Vibecoding with guardrails
 
-Roughly a quarter of recent YC startups report 95%-AI-generated codebases. Without engineering discipline, that code turns unmaintainable fast. ATLAS keeps the conversational speed but anchors it to production-grade, industry-appropriate defaults — KISS, YAGNI, and DRY applied in balance, not as an excuse to under-build.
+Roughly a quarter of recent YC startups report 95%-AI-generated codebases. Without engineering discipline, that code turns unmaintainable fast. ATLAS keeps the conversational speed but anchors it to production-grade, industry-appropriate defaults: KISS, YAGNI, and DRY applied in balance, not as an excuse to under-build.
 
 ---
 
@@ -252,9 +256,9 @@ Roughly a quarter of recent YC startups report 95%-AI-generated codebases. Witho
 │   │   ├── plan/   plandev/     qa/
 │   │   └── git/    start/
 │   ├── hooks/                       # Task completion & input hooks
-│   └── rules/                       # Project rules — conventions + DESIGN.md (auto-loaded)
+│   └── rules/                       # Project rules: conventions + DESIGN.md (auto-loaded)
 ├── docs/
-│   ├── decision_logs/               # ADR-style decisions — choice, rejected branches, rationale
+│   ├── decision_logs/               # ADR-style decisions: choice, rejected branches, rationale
 │   ├── external-information/        # Git submodules (Anthropic plugins & skills)
 │   ├── phases/                      # Phase docs (self-contained HTML)
 │   ├── living-spec-docs/            # Living specs, maintained as the product evolves
@@ -264,7 +268,7 @@ Roughly a quarter of recent YC startups report 95%-AI-generated codebases. Witho
 │   ├── self/                        # ATLAS identity & principles (atlas.md, engineering.md)
 │   ├── prototypes/                  # Clickable React prototypes
 │   ├── test-runs/                   # QA test-run results
-│   └── archive/                     # Retired material (old context templates) — don't use
+│   └── archive/                     # Retired material (old context templates), don't use
 ├── .playwright/cli.config.json     # Project-scoped Playwright CLI profile config
 └── .mcp.json                        # MCP server configuration
 ```
