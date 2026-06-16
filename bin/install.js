@@ -133,23 +133,27 @@ async function askChoice(prompter, question, options, defaultIndex = 0) {
   return options[defaultIndex].value;
 }
 
-async function askMultiChoice(prompter, question, options) {
-  print(`${ORANGE}  ? ${RESET}${question} ${DIM}(comma-separated, e.g. 1,3 · * = all · Enter = none)${RESET}`);
+async function askMultiChoice(prompter, question, options, preselected = []) {
+  const chosen = new Set(preselected);
+  print(`${ORANGE}  ? ${RESET}${question} ${DIM}(comma-separated, e.g. 1,3 · * = all · Enter = keep pre-checked)${RESET}`);
   options.forEach((opt, i) => {
-    print(`    ${BOLD}${i + 1}${RESET}) ${opt.label} ${DIM}— ${opt.desc}${RESET}`);
+    const box = chosen.has(opt.value) ? `${ORANGE}[x]${RESET}` : '[ ]';
+    print(`    ${BOLD}${i + 1}${RESET}) ${box} ${opt.label} ${DIM}— ${opt.desc}${RESET}`);
   });
   const answer = await prompter.ask(`Choose:`);
-  if (!answer) return [];
   if (answer.trim() === '*') return options.map((o) => o.value);
-  const indices = answer.split(',').map((s) => parseInt(s.trim(), 10) - 1);
-  return indices
-    .filter((i) => i >= 0 && i < options.length)
-    .map((i) => options[i].value);
+  // Typed indices add to the pre-checked set; Enter alone keeps it as-is.
+  if (answer) {
+    for (const i of answer.split(',').map((s) => parseInt(s.trim(), 10) - 1)) {
+      if (i >= 0 && i < options.length) chosen.add(options[i].value);
+    }
+  }
+  return options.filter((o) => chosen.has(o.value)).map((o) => o.value);
 }
 
 // Interactive checkbox picker — ↑/↓ to move, space to toggle, a to toggle
 // all, enter to confirm. Zero-dependency raw-mode rendering.
-function askCheckboxInteractive(prompter, question, options) {
+function askCheckboxInteractive(prompter, question, options, preselected = []) {
   return new Promise((resolve) => {
     const stdin = process.stdin;
     prompter.detach();
@@ -160,7 +164,8 @@ function askCheckboxInteractive(prompter, question, options) {
 
     let cursor = 0;
     let rendered = false;
-    const checked = options.map(() => false);
+    const preset = new Set(preselected);
+    const checked = options.map((o) => preset.has(o.value));
     const lineCount = options.length + 1;
 
     function render() {
@@ -220,11 +225,11 @@ function askCheckboxInteractive(prompter, question, options) {
 
 // Checkbox UX on a real terminal; numeric askMultiChoice fallback keeps
 // piped/scripted input (printf 'a\nb\n' | swe-atlas ...) working.
-async function askCheckbox(prompter, question, options) {
+async function askCheckbox(prompter, question, options, preselected = []) {
   if (!process.stdin.isTTY) {
-    return askMultiChoice(prompter, question, options);
+    return askMultiChoice(prompter, question, options, preselected);
   }
-  const selected = await askCheckboxInteractive(prompter, question, options);
+  const selected = await askCheckboxInteractive(prompter, question, options, preselected);
   print(`${DIM}    ${selected.length} selected${RESET}`);
   return selected;
 }
@@ -486,37 +491,9 @@ async function scaffold(targetDir) {
       },
     ]);
 
-    // 4. Skills — interactive checkbox, all unchecked by default
-    const skillOptions = listSkills();
-    let selectedSkills = [];
-    if (skillOptions.length > 0) {
-      selectedSkills = await askCheckbox(
-        prompter,
-        'Which skills to install?',
-        skillOptions
-      );
-    }
-
-    // The autonomous flavor works without a partner-approval loop, so it
-    // ships with the skills that stand in for that judgment: free-will
-    // (deliberate decisions at high-stakes forks), super-product-owner
-    // (scope and priority calls) and super-ui-ux-design (design calls).
-    if (variant === 'atlas-autonomous') {
-      for (const skill of ['free-will', 'super-product-owner', 'super-ui-ux-design']) {
-        if (!selectedSkills.includes(skill)) {
-          selectedSkills.push(skill);
-          print(`${DIM}    ${skill} skill added (required by the autonomous flavor)${RESET}`);
-        }
-      }
-    }
-
-    // 5. DESIGN.md template — visual identity skeleton in .claude/rules/
-    const designAnswer = await prompter.ask(
-      'Include the DESIGN.md template (visual identity rule in .claude/rules/)? (Y/n)'
-    );
-    const includeDesignMd = !['n', 'no'].includes(designAnswer.toLowerCase());
-
-    // 6. Browser automation — Playwright via MCP server or via CLI skill
+    // 4. Browser automation — asked before skills so the picker can pre-check
+    // the playwright-cli skill when the CLI option is chosen. Playwright via
+    // MCP server or via the CLI skill.
     const browser = await askChoice(prompter, 'Browser automation?', [
       {
         label: 'None',
@@ -534,12 +511,8 @@ async function scaffold(targetDir) {
         value: 'cli',
       },
     ]);
-    if (browser === 'cli' && !selectedSkills.includes('playwright-cli')) {
-      selectedSkills.push('playwright-cli');
-      print(`${DIM}    playwright-cli skill added to your selection${RESET}`);
-    }
 
-    // 6b. Browser profile — isolated keeps the profile in memory (fresh state
+    // 4b. Browser profile — isolated keeps the profile in memory (fresh state
     // per session, safe for concurrent/parallel testing); persistent saves it
     // to disk so logins survive restarts.
     let browserProfile = 'isolated';
@@ -558,6 +531,42 @@ async function scaffold(targetDir) {
       ]);
     }
     const isolatedBrowser = browserProfile === 'isolated';
+
+    // 5. Skills — interactive checkbox. Some skills are pre-checked from the
+    // choices above; the user can still toggle any off:
+    //   • super-product-owner, super-ui-ux-design, human-writing,
+    //     frontend-design, adversarial-review — pre-checked for every flavor
+    //     (product, design, writing, UI, and self-review work)
+    //   • free-will — added for the autonomous flavor, which drops the
+    //     partner-approval loop and leans on deliberate decisions instead
+    //   • playwright-cli — added when Playwright CLI is the browser option
+    const skillOptions = listSkills();
+    let selectedSkills = [];
+    if (skillOptions.length > 0) {
+      const available = new Set(skillOptions.map((o) => o.value));
+      const autoSkills = new Set([
+        'super-product-owner',
+        'super-ui-ux-design',
+        'human-writing',
+        'frontend-design',
+        'adversarial-review',
+      ]);
+      if (variant === 'atlas-autonomous') autoSkills.add('free-will');
+      if (browser === 'cli') autoSkills.add('playwright-cli');
+      const preselected = [...autoSkills].filter((s) => available.has(s));
+      selectedSkills = await askCheckbox(
+        prompter,
+        'Which skills to install?',
+        skillOptions,
+        preselected
+      );
+    }
+
+    // 6. DESIGN.md template — visual identity skeleton in .claude/rules/
+    const designAnswer = await prompter.ask(
+      'Include the DESIGN.md template (visual identity rule in .claude/rules/)? (Y/n)'
+    );
+    const includeDesignMd = !['n', 'no'].includes(designAnswer.toLowerCase());
 
     // 7. PostgreSQL MCP server
     const postgresAnswer = await prompter.ask('Enable PostgreSQL MCP server? (y/N)');
