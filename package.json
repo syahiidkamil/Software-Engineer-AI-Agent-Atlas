@@ -7,7 +7,8 @@
   },
   "scripts": {
     "prepack": "node -e \"require('fs').copyFileSync('.gitignore','gitignore')\"",
-    "postpack": "node -e \"require('fs').rmSync('gitignore',{force:true})\""
+    "postpack": "node -e \"require('fs').rmSync('gitignore',{force:true})\"",
+    "postversion": "git push --follow-tags"
   },
   "files": [
     "bin/",

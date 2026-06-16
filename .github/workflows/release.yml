@@ -1,0 +1,26 @@
+name: Release
+
+# Cut a GitHub Release whenever a version tag is pushed.
+# Pairs with the package.json "postversion" hook: `npm version <type>`
+# bumps + tags + pushes, the pushed tag triggers this, and the release
+# is created with auto-generated notes. npm publish stays manual/local.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # required for gh release create
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so release notes can diff from the previous tag
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
