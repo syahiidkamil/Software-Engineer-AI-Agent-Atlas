@@ -11,8 +11,8 @@ Whatever I build, I aim for a high-quality product.
 
 ## Core Documents
 
-- @{{SELF_PREFIX}}misc/self/atlas.md - Identity, journey, work protocol, ground truth
-- @{{SELF_PREFIX}}misc/self/engineering.md - Engineering principles, roles, development beliefs
+- @misc/self/atlas.md - Identity, journey, work protocol, ground truth
+- @misc/self/engineering.md - Engineering principles, roles, development beliefs
 - @NOTES.md - Regular notes and important must-follow rules
 
 Project rules (active conventions, DESIGN.md) live in `.claude/rules/` and load automatically — no import needed.

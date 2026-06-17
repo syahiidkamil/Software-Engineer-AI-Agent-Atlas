@@ -301,10 +301,9 @@ function readTemplate(...segments) {
 }
 
 // variant maps 1:1 to a complete template file in claude_md_variants/
-function generateClaudeMd(variant, partnerName, wrapInAtlas) {
+function generateClaudeMd(variant, partnerName) {
   return readTemplate('claude_md_variants', `${variant}.md`)
-    .replaceAll('{{PARTNER_NAME}}', partnerName)
-    .replaceAll('{{SELF_PREFIX}}', wrapInAtlas ? 'atlas/' : '');
+    .replaceAll('{{PARTNER_NAME}}', partnerName);
 }
 
 // Root .mcp.json defines every supported server; keep only the selected ones.
@@ -481,7 +480,7 @@ async function scaffold(targetDir) {
     const mode = await askChoice(prompter, 'Project type?', [
       {
         label: 'Single repo',
-        desc: 'One project, ATLAS identity wrapped in atlas/ folder',
+        desc: 'One project — everything at the project root',
         value: 'single',
       },
       {
@@ -580,21 +579,17 @@ async function scaffold(targetDir) {
 
     ensureDir(resolvedDir);
 
-    // Single-repo mode wraps the ATLAS identity in atlas/; vanilla has no
-    // identity to wrap, so everything stays at the project root.
-    const wrapInAtlas = variant !== 'vanilla' && mode === 'single';
-    const selfDir = wrapInAtlas
-      ? path.join(resolvedDir, 'atlas', 'misc', 'self')
-      : path.join(resolvedDir, 'misc', 'self');
-    const archiveDir = wrapInAtlas
-      ? path.join(resolvedDir, 'atlas', 'misc', 'archive')
-      : path.join(resolvedDir, 'misc', 'archive');
+    // ATLAS identity always lives at the project root, mirroring this repo's own
+    // structure — no atlas/ wrapper subfolder, for any flavor or mode. Single vs
+    // multi differs only in whether the repos/ workspace folder is created.
+    const selfDir = path.join(resolvedDir, 'misc', 'self');
+    const archiveDir = path.join(resolvedDir, 'misc', 'archive');
     const claudeDir = path.join(resolvedDir, '.claude');
 
     // CLAUDE.md — copied from the chosen variant template
     writeFileSync(
       path.join(resolvedDir, 'CLAUDE.md'),
-      generateClaudeMd(variant, partnerName, wrapInAtlas)
+      generateClaudeMd(variant, partnerName)
     );
     print(`  ${ORANGE}+${RESET} CLAUDE.md (${variant})`);
 
@@ -631,7 +626,7 @@ async function scaffold(targetDir) {
             .replace(/\bboss\b/g, 'partner');
           fs.writeFileSync(filePath, content, 'utf-8');
         }
-        print(`  ${ORANGE}+${RESET} ${wrapInAtlas ? 'atlas/' : ''}misc/self/`);
+        print(`  ${ORANGE}+${RESET} misc/self/`);
       }
     }
 
@@ -640,7 +635,7 @@ async function scaffold(targetDir) {
     const archiveTemplateDir = path.join(TEMPLATES_DIR, 'misc', 'archive');
     if (fs.existsSync(archiveTemplateDir)) {
       copyDirSync(archiveTemplateDir, archiveDir);
-      print(`  ${ORANGE}+${RESET} ${wrapInAtlas ? 'atlas/' : ''}misc/archive/ (reference only — don't use)`);
+      print(`  ${ORANGE}+${RESET} misc/archive/ (reference only — don't use)`);
     }
 
     // .claude/ directory — agents, commands, hooks, rules are copied whole;
@@ -760,9 +755,7 @@ async function scaffold(targetDir) {
 
     // External information (reference docs + skills submodule)
     const { execSync } = require('child_process');
-    const eiDir = wrapInAtlas
-      ? path.join(resolvedDir, 'atlas', 'docs', 'external-information')
-      : path.join(resolvedDir, 'docs', 'external-information');
+    const eiDir = path.join(resolvedDir, 'docs', 'external-information');
     const eiRelative = path.relative(resolvedDir, eiDir);
 
     // Reference docs shipped with the package (Claude hooks guide + reference)
