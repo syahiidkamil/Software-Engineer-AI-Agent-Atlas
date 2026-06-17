@@ -180,7 +180,7 @@ Installed à la carte. The scaffolder shows an interactive checkbox list (none p
 | MCP Builder | `/mcp-builder` | Guide for creating MCP servers |
 | Find Skills | `/find-skills` | Discover and install skills from the Anthropic library |
 | Skill Creator | `/skill-creator` | Scaffold a new skill following the canonical format |
-| Docs Anthropic | `/docs-anthropic` | On-demand index of official Claude Code / Anthropic docs: fetches the right page when you need it |
+| Anthropic Product Knowledge | `/anthropic-product-knowledge` | Verified facts on Claude Code, Claude API, and Claude.ai — auto-consulted before stating Anthropic product details |
 
 ### 6 Agents
 
