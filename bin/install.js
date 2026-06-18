@@ -389,7 +389,7 @@ function generateSettingsJson(options = {}) {
           hooks: [
             {
               type: 'command',
-              command: hookCmd('task-complete.js'),
+              command: hookCmd('task-complete.cjs'),
             },
           ],
         },
@@ -400,7 +400,7 @@ function generateSettingsJson(options = {}) {
           hooks: [
             {
               type: 'command',
-              command: hookCmd('ask-user-input.js'),
+              command: hookCmd('ask-user-input.cjs'),
             },
           ],
         },
