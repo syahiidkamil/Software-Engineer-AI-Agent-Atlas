@@ -9,25 +9,36 @@
 > The senior-engineer layer for Claude Code. Explore before you build, clarify only what matters, capture it in living HTML, then hand it to Claude Code's native plan / goal / workflow loop. Fewer tokens, less ceremony, faster to the thing people actually pictured.
 
 ```bash
-npx swe-atlas@latest new-project
+npx swe-atlas@latest new-project                 # in your current project
+npx swe-atlas@latest new-project my-workspace    # …or scaffold a new folder
 ```
 
 One command. Full setup. No copy-pasting prompts every session.
 
 ATLAS is an open-source **Claude Code template**: a curated set of skills, subagents, slash commands, and engineering conventions that turn Claude Code into a production-grade AI software engineer, with a wireframe-and-prototype workflow in place of heavyweight spec-driven development.
 
+It ships in **three CLAUDE.md modes**, so you choose how much of the wheel to hand over:
+
+- **Vanilla** — minimal footprint, no ATLAS identity.
+- **Collaborative** *(default)* — the full senior-engineer identity with a review-and-commit loop; you stay in the driver's seat.
+- **Autonomous** — the approval loop removed and **`free-will`** wired in (alongside `super-product-owner` and `super-ui-ux-design`): the skill that lets ATLAS **decide for itself** on the high-stakes forks — hold real alternatives open, ground each in evidence, refute the winner, then log the call in `docs/decision_logs/`. That's what lets it **one-shot an app** and run unattended without going off the rails.
+
+The innovation isn't another spec pipeline — it's giving the agent **engineered judgment**: a way to make the calls a senior engineer would, on its own, and leave a trail you can audit. ([Jump to the full mode comparison →](#pick-your-claudemd-flavor))
+
 ---
 
-## Claude Code already builds. ATLAS decides what to build.
+## Claude Code already has the engine. ATLAS helps you discover what to build.
 
 Claude Code now plans before it edits, works toward a goal across turns, runs autonomously with safety checks, and orchestrates fleets of subagents, natively, in the box:
 
 | Native capability | What it does |
 |---|---|
 | **Plan mode** | Reads the codebase and proposes a plan; touches no files until you approve |
-| **`/goal`** | Keeps working across turns until a checked completion condition holds |
-| **Auto mode** | Approves its own safe tool calls, blocks destructive ones |
-| **Dynamic workflows** | Writes a script that fans out dozens of subagents and cross-checks their findings |
+| **[`/goal`](https://code.claude.com/docs/en/goal)** | Keeps working across turns until a checked completion condition holds |
+| **[Auto mode](https://code.claude.com/docs/en/auto-mode-config)** | Approves its own safe tool calls, blocks destructive ones |
+| **[Dynamic workflows](https://code.claude.com/docs/en/workflows)** | Writes a script that fans out dozens of subagents and cross-checks their findings |
+
+> **Kick off a workflow** — describe the task and ask for a workflow in your own words, or include the keyword **`ultracode`**, and Claude writes one for it. Want it always-on? Set **`/effort ultracode`** and Claude plans a workflow for *every* substantive task in the session. ([How workflows work →](https://code.claude.com/docs/en/workflows))
 
 That is the execution loop, and it keeps getting better. So ATLAS doesn't try to rebuild it.
 
@@ -39,7 +50,7 @@ What Claude Code still won't do for you is decide *what's worth building*, prove
 
 ## Why not another spec framework
 
-The popular answer to "make the AI build the right thing" has been **Spec-Driven Development (SDD)**: write exhaustive specifications first, then generate the code from them. A constitution. A spec. A plan. A task breakdown. Five to seven Markdown files and a multi-phase pipeline, most of it produced *before a single screen has been seen*.
+The popular answer to "make the AI build the right thing" has been to bolt a process framework onto the model — **Spec-Driven Development (SDD)** and the agent frameworks in the same vein (spec-kit, BMAD, Get Shit Done, and the rest): write exhaustive specifications first, then generate the code from them. A constitution. A spec. A plan. A task breakdown. Five to seven Markdown files and a multi-phase pipeline, most of it produced *before a single screen has been seen*.
 
 Four things go wrong:
 
@@ -61,6 +72,7 @@ Cheap, throwaway-friendly artifacts that let you *see* the thing before generati
 - **`/brainstorm:wireframe`**: a low-fi wireframe as one self-contained HTML file
 - **`/brainstorm:prototype`**: a clickable, multi-screen React prototype
 - **`/design:create-design-md`**: three real design variants you compare in a browser, then lock as `DESIGN.md`
+- or **`/plan:visual`**: any non-UI change (refactor, migration, architecture call) as a visual HTML plan — Mermaid diagrams, change map, decision matrices
 
 You validate the shape for the price of a sketch, not the price of a spec, in minutes, not phases. And a picture is the fastest way for a human and a model to agree on what to build: text invites interpretation, a wireframe pins it down.
 
@@ -77,6 +89,8 @@ The Claude Code team makes this exact case in [*The Unreasonable Effectiveness o
 ### 4. Bring senior judgment to every turn
 
 A persistent engineering identity (principles, roles, and conventions) plus a library of skills and agents that load automatically. The model stops reaching for generic defaults and starts behaving like someone who has shipped before.
+
+At the center of that judgment is **`free-will`**. On any medium-to-high-stakes fork — picking a stack, designing a schema, deprecating something others depend on — it refuses the first plausible answer: it holds real alternatives open (urge · contrarian · synthesis · precedent · first-principles), grounds each in evidence from the codebase or docs, simulates the blast radius, tries to *refute* the winner before committing, then logs the call in `docs/decision_logs/`. And it fires **autonomously** on mechanical triggers — a fix that failed twice, a new dependency, a migration — so the judgment shows up whether or not you remember to ask for it.
 
 ---
 
@@ -150,6 +164,15 @@ Then run `/atlas:get-to-know` inside Claude Code.
 # → switch to plan mode and let Claude Code build from it
 ```
 
+### Going autonomous
+
+ATLAS is built to hand you the wheel — or take it. When you want it running hands-off:
+
+- **Scaffold the autonomous flavor** — full ATLAS identity with no approval gate, tuned for unattended runs. Auto-installs `free-will`, `super-product-owner`, and `super-ui-ux-design`, the skills that stand in for the missing review loop.
+- **`/atlas:oneshotapp "idea"`** — idea to working app in one shot: `free-will` on the founding fork and every mid-build trigger, a walking-skeleton build loop, adversarial-review subagents, and a final conscious pass against the original ask, with the full decision trail in `docs/decision_logs/`.
+- **Let `free-will` do the deciding** — it fires on the forks that matter without prompting, so quality holds while you're away from the keyboard.
+- **Pair it with Claude Code's native loop** — drop the phase doc into plan mode, then let `/goal` and auto mode run it to completion across turns.
+
 ---
 
 ## What's in the Box
@@ -202,6 +225,7 @@ Commands are namespaced by **domain folder** under `.claude/commands/`: a file a
 | `/atlas:get-to-know` | Initialize project context: understand the project, configure conventions, set up project rules |
 | `/atlas:oneshotapp "idea"` | One-shot an app autonomously: `free-will` on the founding stack/architecture fork and every mid-build trigger, walking-skeleton build loop, adversarial review subagents, a conscious final pass against the original ask, full decision-log trail |
 | `/plan:create-phase "phase-01-mvp"` | Ambiguity-driven, wireframe-first phase: resolve unknowns via Q&A, then produce a self-contained `phase.html` (low-fi wireframe + clarifications + matrices) to build from in plan mode |
+| `/plan:visual "what to plan"` | General-purpose sibling of `create-phase`: resolve unknowns via Q&A, then capture any change (refactor, migration, architecture call) as a self-contained, visual `plan.html` — Mermaid diagrams, change map, decision matrices — to build from in plan mode |
 | `/plandev:feature` | Guided feature development with codebase exploration |
 | `/design:create-design-md` | Lock visual identity: prototype 3 distinct HTML variants for browser comparison, then write `.claude/rules/DESIGN.md` in [Stitch format](https://github.com/google-labs-code/design.md) |
 | `/brainstorm:wireframe` | Quick standalone low-fi wireframe as self-contained HTML (gray boxes, no framework) |

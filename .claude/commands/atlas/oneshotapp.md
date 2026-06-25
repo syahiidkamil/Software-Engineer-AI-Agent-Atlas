@@ -17,6 +17,7 @@ If no idea is provided, use AskUserQuestion once: "What app should I one-shot? (
 - **Every product decision goes through the `super-product-owner` skill.** Load it when decompressing the ask and whenever scope, order, or "is this worth building" is in question: outcomes before features, vertical slices, explicit cut lines — and the end-to-end user flows and journeys, which are PO/PM territory, not a design afterthought.
 - **Every user-facing surface goes through the `super-ui-ux-design` skill.** Load it before designing or building any UI: derive the design from domain/audience/tone, stay conventional in interaction (Jakob's Law), be distinctive in aesthetics, and never ship the default next-token look. The two super-skills split cleanly: `super-product-owner` decides what gets built and how the journey flows; `super-ui-ux-design` decides how each screen on that journey looks and behaves.
 - **Verify empirically, continuously.** Nothing is "done" because the code looks right — it's done when you ran it and watched it behave.
+- **Use `ultracode` (dynamic workflows) for the parallelizable phases.** A one-shot runs unattended and is judged on thoroughness, not token thrift — so when the work fans out (multi-lens adversarial review, broad codebase exploration, verifying several slices at once), author a workflow that spawns the subagents and cross-checks their findings instead of grinding through it serially. The execution loop is Claude Code's; you orchestrate it well.
 
 ## Phase 0 — Understand the ask
 
@@ -57,7 +58,7 @@ Each invocation appends to `docs/decision_logs/`.
 
 ## Phase 4 — Adversarial review
 
-The build believes in itself; now attack it. Spawn reviewer subagents with **opposing mandates and clean contexts** — they get the diff/codebase and one instruction: *"this was just built and is presumed broken; find out where"*. Run lenses appropriate to the app, typically:
+The build believes in itself; now attack it — this is the phase to run as an **`ultracode` workflow**. Fan out reviewer subagents with **opposing mandates and clean contexts** — they get the diff/codebase and one instruction: *"this was just built and is presumed broken; find out where"* — then adversarially verify each finding before you believe it. Run lenses appropriate to the app, typically:
 
 - **Correctness** — edge cases, race conditions, broken flows, state that lies
 - **Security** — injection, authz holes, secrets in code, unvalidated input
