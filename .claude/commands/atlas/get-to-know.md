@@ -16,96 +16,85 @@ Before asking, drafting, or interpreting an answer, model what's in the other pe
 
 This is a load-bearing accuracy tool, not empathy theatre. Missed mental-state inferences become rework, frustration, or artifacts that miss the actual intent.
 
+## Phase 0: Which project
+
+Read `.atlas/config.json` (or run `node .claude/scripts/mode.cjs current`). In repo and project
+mode the workspace holds one project at the root and its map is `PROJECT.md`. In multi mode, ask
+which project this is about (or whether it is a new one: then run `/atlas:project add <name>`
+first); its map is `projects/<name>/CLAUDE.md`. Call the project root `<P>` below.
+
 ## Phase 1: Who and What
 
-Use AskUserQuestion to gather context. Ask in batches, not one by one.
+Use AskUserQuestion to gather context. Ask in batches, not one by one, and only what the files
+don't already answer.
 
-**Batch 1 — Identity:**
-- "Who is my Boss? (name for Git Discipline references)"
-- "What is this project? (one sentence — what problem does it solve?)"
+**Batch 1 — What:**
+- "What is this project? (one sentence — what problem does it solve, for whom?)"
+- "What stage is it? toy (simplest thing that works) / mvp (sound core, honest shortcuts) / production (full engineering bar)"
 
 **Batch 2 — Shape:**
 - "Who uses this? (audience/users)"
-- "What scale are we targeting? (prototype, MVP, production, enterprise)"
-- "Single dev or team? (affects code review, conventions depth)"
+- "Single dev or team? (affects review and conventions depth)"
 
 ## Phase 2: Explore Existing Code
 
-If the project already has code, launch a **code-explorer** agent to deeply analyze the codebase:
+If the project already has code, hand the scan to the built-in **Explore** subagent so the file
+dumps stay in its context and only the conclusion comes back:
 
-Spawn the code-explorer agent with this prompt:
-"Analyze this project. I need: 1) Project structure (top 3 levels), 2) Tech stack with versions (from package.json, go.mod, requirements.txt, etc.), 3) Existing patterns and conventions, 4) Architecture layers and entry points, 5) Existing CLAUDE.md, README.md, or documentation, 6) Tests, CI/CD, database configs. Provide a concise summary."
+"Analyze the code under <P> (and its repos/ if any). Report: 1) structure (top 3 levels),
+2) tech stack with versions (package.json, go.mod, requirements.txt, ...), 3) patterns and
+conventions in use, 4) entry points and how to run, test, and build it, with ports,
+5) existing CLAUDE.md, README.md, docs, 6) tests, CI/CD, database and migration setup.
+Be concise."
 
-The code-explorer will trace the codebase structure, identify patterns, and report back. Use its findings to:
-- Inform convention selection in Phase 3
-- Pre-fill the tech stack in the PROJECT.md
-- Detect existing patterns that should be preserved
-
-Summarize the code-explorer's findings to Boss: "Here's what I found in the codebase: [tech stack, structure, patterns]"
-
+Summarize the findings to Boss: "Here's what I found: [stack, structure, patterns, how to run]".
 If no code exists, skip to Phase 3.
 
 ## Phase 3: Configure Conventions
 
-1. Ask Boss: "Want me to generate project conventions based on the tech stack and what I found in the code?"
-2. If yes, write a `project-conventions.md` in `.claude/rules/` tailored to the detected stack and patterns — it auto-loads as a project rule every session
+1. Ask Boss: "Want me to record project conventions based on the stack and what I found?"
+2. If yes, put the few non-obvious ones in the map's **Conventions** section. Only when they are
+   long, write a path-scoped rule instead: `.claude/rules/<project>-conventions.md` with
+   `paths:` frontmatter matching that project's files (for multi mode,
+   `projects/<name>/**`), so it loads only when that project's code is touched.
 
-Do not use `misc/archive/` (or `atlas/misc/archive/`) — it holds retired material (old context templates) kept for reference only.
+Do not use `misc/archive/` — it holds retired material kept for reference only.
 
-## Phase 4: Configure Workspace
+## Phase 4: Configure the Workspace
 
-### Update Boss Name
-- Edit CLAUDE.md: Replace "Boss Kamil" with "Boss {bossName}" in Git Discipline section
+- **Repos** (project and multi mode): list `<P>/repos/`. For each repo, ask its port and start
+  command (suggest defaults from the detected stack), and record them in the map's "Run and test".
+- **Env contract**: if the code reads env vars, list their names (never values) in
+  `<P>/.env.example`. The user stores each value once, themselves
+  (`node .claude/scripts/secrets.cjs set KEY` in their terminal, or `! pbpaste | node .claude/scripts/secrets.cjs set KEY`
+  after copying it), and `node .claude/scripts/secrets.cjs link` fills `.env.local`.
+- **Databases**: if the project uses Postgres, register the dev connection by name:
+  `node .claude/scripts/db.cjs add <project>-dev --project <project> --env dev --url-env <KEY>`.
+  The URL itself goes in the secret store, not in any file you write.
+- Don't re-ask about browser automation; the scaffolder already asked.
 
-### Configure Repos (multi-repo mode only)
-If `repos/` directory exists:
-1. List directories in `repos/`
-2. For each repo, use AskUserQuestion:
-   - "What port does {repo} run on?"
-   - "What is the startup command?" (suggest defaults based on detected tech stack)
-3. Update `repos/CLAUDE.md` with repo info
-4. Update `.claude/commands/start/be-fe.md` with actual commands
+## Phase 5: Write the Project Map
 
-### Configure MCP (if .mcp.json exists)
-Don't re-ask about Playwright — the scaffolder already asked the browser automation choice (none / Playwright MCP / Playwright CLI) during `new-project`.
-- If PostgreSQL MCP is configured, ask: "Update the connection string?"
+Write the map (`PROJECT.md`, or `projects/<name>/CLAUDE.md` in multi mode) from
+`.claude/templates/project/CLAUDE.md`, 60 to 100 lines:
 
-## Phase 5: Generate Project Context
+- `Stage:` and `One line:` at the top (the stage line sets how much rigor applies)
+- **Stack and layout** — framework, database, hosting; where things live
+- **Run and test** — dev, test, build commands with ports
+- **Read before working on...** — which deep document to read for which job (point at them; never
+  `@import` deep documents, imports load in full every session)
+- **Conventions** — only the non-obvious ones
 
-Write `.claude/rules/PROJECT.md` with this structure:
-
-```markdown
-# {Project Name}
-
-## What This Is
-{One paragraph — what the project does and why it exists}
-
-## Who Uses It
-{Target audience and their needs}
-
-## Scale & Constraints
-- **Scale target**: {prototype/MVP/production/enterprise}
-- **Team size**: {solo/small team/large team}
-- **Key constraints**: {deadlines, tech limitations, business rules}
-
-## Tech Stack
-{Detected or declared tech stack with versions}
-
-## Architecture Decisions
-{Key decisions made so far — framework choices, database, deployment}
-
-## What's Next
-{Current priorities or next features to build}
-```
+Then set `STATUS.md` (Now / Next / Blocked / Last session). If a legacy `.claude/rules/PROJECT.md`
+exists from an older ATLAS, fold its content into the map and delete it.
 
 ## Phase 6: Summary
 
 Report what was configured:
-- Boss: {name}
-- Project: {one-liner}
+- Project: {one-liner}, stage {stage}
 - Tech stack: {detected/declared}
-- Conventions activated: {list}
-- Repos configured: {list with ports, if applicable}
+- Conventions: {where they were recorded}
+- Repos: {list with ports, if any}
 - Files created/updated: {list}
 
 Remind Boss: "Run `git diff` to review changes. When ready, I'll commit."

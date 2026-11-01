@@ -38,14 +38,23 @@ This is a load-bearing accuracy tool, not empathy theatre.
 
 ## Step 0: Setup & locate prep
 
-1. Determine next exploration number from `design-explore/` directory. If the directory doesn't exist, create it.
+0. Resolve the project root `<P>` and the **design scope**: which files this design governs. The locked design becomes a path-scoped rule, `.claude/rules/design/{name}.md`, that loads only when Claude touches a matching file, so backend work and other projects never pay for it:
+
+   | Mode | `{name}` | `paths:` scope |
+   |---|---|---|
+   | repo | the app | the frontend folder, e.g. `src/**/*.{tsx,jsx,css,scss,sass,less,html,astro,vue,svelte,mdx}` (or `**/*.{...}` when the whole repo is the frontend) |
+   | project | the frontend repo | `repos/{frontend}/**/*.{...}` |
+   | multi | the project | `projects/{project}/**/*.{...}` |
+
+   Leave plain `.ts`/`.js` out of the extension list so API and script edits don't load design tokens. Confirm the scope with Boss when there is more than one frontend.
+1. Determine next exploration number from `<P>/misc/design-explore/`. If the directory doesn't exist, create it.
 2. Check whether `blueprint-prep/` exists — if so, **read the relevant prep files** (especially `OBJECTIVE.md`, `VISION.md`, `USERS.md`, `UX-INTENT.md`, `boss-artifacts/sketches/`) before asking Boss anything. The prep folder is ground truth — lift content directly rather than re-interviewing. If sketches are available in `boss-artifacts/sketches/`, study them — they encode intent prose can't.
-3. Check whether a non-empty `.claude/rules/DESIGN.md` already exists. If yes:
-   - Ask Boss whether to **refine** the existing DESIGN.md (treat it as starting point, only iterate where Boss isn't satisfied) or **start fresh** (replace it; archive the existing file under `design-explore/{NN}-{app-name}/PREVIOUS-DESIGN.md`).
+3. Check whether `.claude/rules/design/{name}.md` already exists (or a legacy `.claude/rules/DESIGN.md` from an older ATLAS, which loads in every session). If yes:
+   - Ask Boss whether to **refine** the existing DESIGN.md (treat it as starting point, only iterate where Boss isn't satisfied) or **start fresh** (replace it; archive the existing file under `<P>/misc/design-explore/{NN}-{app-name}/PREVIOUS-DESIGN.md`).
 4. Create the working folder:
 
 ```
-design-explore/{NN}-{app-name}/
+<P>/misc/design-explore/{NN}-{app-name}/
 ├── README.md                       # Index + how-to-compare
 ├── BRIEF.md                        # Synthesized discovery answers (Boss's words preserved)
 ├── variants/
@@ -93,7 +102,7 @@ Use AskUserQuestion in **focused batches**. Don't dump 12 questions at once — 
 
 If Boss says "you decide" for any question, **propose** with a one-sentence reason and lock the choice. Don't keep asking — variant generation is the next step, not perpetual interrogation.
 
-Write all answers to `design-explore/{NN}-{app-name}/BRIEF.md`. Preserve Boss's verbatim phrases for "how it should feel" and "how it must NOT feel" — those carry signal that paraphrasing strips out.
+Write all answers to `<P>/misc/design-explore/{NN}-{app-name}/BRIEF.md`. Preserve Boss's verbatim phrases for "how it should feel" and "how it must NOT feel" — those carry signal that paraphrasing strips out.
 
 ## Step 2: Plan three distinct variants
 
@@ -110,7 +119,7 @@ Before generating, decide what each variant represents. Variants must differ on 
 
 Slugs should describe the personality, not the axis number — e.g. `variant-a-quiet-archive`, `variant-b-warm-clinic`, `variant-c-bold-launch`. Boss reads these in the folder structure, so make them evocative.
 
-Write `design-explore/{NN}-{app-name}/variants/README.md` with:
+Write `<P>/misc/design-explore/{NN}-{app-name}/variants/README.md` with:
 - One short paragraph per variant — the personality, target feeling, and reference points it leans on
 - Comparison rubric — what to look at when reviewing (palette feeling, typography hierarchy, density, "does this feel like our product?")
 
@@ -133,7 +142,6 @@ Each variant folder gets the same set of pages, in the same order, so Boss can f
 ### Tooling tips
 
 - `frontend-design` skill is well-suited here — invoke it for distinctive, production-grade HTML that avoids the generic AI aesthetic.
-- `theme-factory` skill provides 10 pre-set themes you can use as inspiration for a variant's mood, but don't apply a theme verbatim — variants are bespoke to this product.
 - Use one of your variants to leverage `shadcn` skill primitives translated to plain HTML+Tailwind, if Boss's stack will use shadcn — gives Boss a feel for the eventual real components.
 
 ### Generate in parallel
@@ -145,7 +153,7 @@ Generating three variants × two-three pages each is parallelizable. Spawn three
 Tell Boss exactly how to look at the variants. Don't just say "open the folder" — give explicit instructions:
 
 ```
-Variants ready at design-explore/{NN}-{app-name}/variants/
+Variants ready at <P>/misc/design-explore/{NN}-{app-name}/variants/
 
 To compare:
 1. Open three browser tabs side-by-side, one per variant:
@@ -164,7 +172,7 @@ To compare:
 
 Use AskUserQuestion to gather feedback. Phrase it open: *"Walk me through your reactions. What landed, what didn't, what would you blend across variants?"*
 
-Save Boss's feedback verbatim to `design-explore/{NN}-{app-name}/feedback/ROUND-01.md`. Do not paraphrase — the raw reaction is the artifact.
+Save Boss's feedback verbatim to `<P>/misc/design-explore/{NN}-{app-name}/feedback/ROUND-01.md`. Do not paraphrase — the raw reaction is the artifact.
 
 Then: **propose a refined plan**. This is usually one of:
 - **Pick one variant outright** — Boss says "B is right, ship it." Move to Step 6.
@@ -175,7 +183,7 @@ Iterate until Boss says it's locked. Each round writes a new `ROUND-{NN}.md`. Ca
 
 ## Step 6: Lock in & write DESIGN.md
 
-Once Boss locks the direction, write `DECISION.md` summarizing what was chosen (which variant, which blends, the key feedback that drove the choice). Then generate the final `.claude/rules/DESIGN.md`.
+Once Boss locks the direction, write `DECISION.md` summarizing what was chosen (which variant, which blends, the key feedback that drove the choice). Then generate the final design rule, `.claude/rules/design/{name}.md`.
 
 ### Format: Stitch DESIGN.md spec
 
@@ -193,7 +201,7 @@ DESIGN.md has two parts:
    8. Do's and Don'ts
    - (Extended, optional) Iconography, Tone & Voice, Responsive Behavior, Accessibility, Open Gaps
 
-Use the template at `.claude/rules/DESIGN.md` (which already exists with placeholders) as the structural starting point — don't reinvent the section order or token shape. Replace every `{{PLACEHOLDER}}` with the values derived from the locked-in variant.
+Use the template at `.claude/templates/DESIGN.md` as the structural starting point — don't reinvent the section order or token shape. Replace every `{{PLACEHOLDER}}` with the values derived from the locked-in variant.
 
 ### Token derivation
 
@@ -226,7 +234,29 @@ Each markdown section should be **2–4 sentences of rationale + bullets for app
 
 ### Final write
 
-Output to `.claude/rules/DESIGN.md`, replacing the placeholder template. Update the `Last updated` date.
+Write `.claude/rules/design/{name}.md` in two layers:
+
+```
+---
+paths:
+  - "{scope from Step 0}"
+---
+
+---
+version: alpha
+name: ...
+colors: ...          <- the Stitch YAML tokens, verbatim
+---
+
+# DESIGN.md — {Project}
+...the markdown sections...
+```
+
+The first block is the rule's own frontmatter: Claude Code reads `paths:` from it and strips it
+before loading, so it must hold nothing else. The Stitch token block sits directly under it, in
+the body, where the model actually sees it. Update the `Last updated` date. If a legacy
+`.claude/rules/DESIGN.md` existed, delete it once its content is carried over (it loads in every
+session, for every project).
 
 If a previous DESIGN.md was archived in Step 0, leave the archived copy in place — useful for reviewing what changed.
 
@@ -241,7 +271,7 @@ Before reporting to Boss, run the **Generator–Discriminator Loop** discriminat
 5. **Section discipline** — sections appear in canonical order; no `## Components` before `## Colors`?
 6. **Specificity** — every Do/Don't is concrete and testable, not vague?
 7. **Self-sufficiency** — could a fresh agent build a new screen using only this DESIGN.md and produce something that feels like the locked-in variant? Read it cold and check.
-8. **Stitch compliance** — does the front matter parse as valid YAML? Tokens use `{path.to.token}` reference syntax?
+8. **Stitch compliance** — does the token block parse as valid YAML? Tokens use `{path.to.token}` reference syntax? Does the rule's own frontmatter hold only `paths:`, and does a pattern actually match the project's UI files?
 
 Fix every gap. The final DESIGN.md is frozen — it should not need a Round 2 from this discriminator.
 
@@ -252,28 +282,28 @@ Report what was created:
 ```
 Design exploration complete: {NN}-{app-name}
 
-design-explore/{NN}-{app-name}/
+<P>/misc/design-explore/{NN}-{app-name}/
 ├── BRIEF.md                — Boss's discovery answers
 ├── variants/               — {N} variants × {N} pages each
 ├── feedback/               — {N} rounds of iteration captured
 └── DECISION.md             — final choice + rationale
 
-.claude/rules/DESIGN.md  — locked design system, Stitch format
+.claude/rules/design/{name}.md  — locked design system, Stitch format, loads for {scope}
                                  ({N} colors, {N} typography levels,
                                   {N} spacing steps, {N} components)
 
 How AI agents on this project will use it:
-- DESIGN.md is read before generating any UI
+- The rule loads whenever Claude reads or edits a UI file in scope
 - YAML tokens are normative; prose is rationale
 - Future feature work: new screens reuse these tokens, no exceptions
 - Drift policy: any new color, type size, or component variant is added
   to DESIGN.md *first*, then implemented. Never the other way around.
 
 Next steps:
-- Review the locked DESIGN.md: .claude/rules/DESIGN.md
-- (Optional) review the variant comparison: design-explore/{NN}-{app-name}/variants/
+- Review the locked design rule: .claude/rules/design/{name}.md
+- (Optional) review the variant comparison: <P>/misc/design-explore/{NN}-{app-name}/variants/
 - When ready, I'll commit.
-- New screens can now reference tokens directly — see .claude/rules/DESIGN.md before implementing.
+- New screens can now reference tokens directly; the rule loads by itself whenever a matching UI file is read or edited.
 ```
 
 Remind Boss: "DESIGN.md is the source of truth from now on. If a future screen feels off, it's usually because someone bypassed the tokens — point them back here."

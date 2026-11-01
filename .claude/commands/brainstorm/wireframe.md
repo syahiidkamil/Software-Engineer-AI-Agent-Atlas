@@ -11,7 +11,7 @@ If none is provided, use AskUserQuestion: "What screen or flow should I wirefram
 
 **Where this sits among siblings** (don't duplicate their job):
 - `/brainstorm:wireframe` *(this)* — a quick **static** low-fi wireframe. No interactivity, no phase doc. Just the layout sketch.
-- `/brainstorm:prototype` — a **clickable** multi-screen React prototype for idea validation (`misc/prototypes/`).
+- `/brainstorm:prototype` — a **clickable** multi-screen React prototype for idea validation (`<P>/misc/prototypes/`).
 - `/plan:create-phase` — the full **phase document** (`phase.html`): wireframe **plus** clarifications, matrices, and intent. Use that when you're scoping a phase to build, not just sketching a screen.
 
 ## Step 1: Understand the screen (brief)
@@ -25,7 +25,9 @@ Keep it short. The wireframe is the thinking, not the interview.
 
 ## Step 2: Build the wireframe HTML
 
-Write to `misc/wireframes/{slug}.html` (single file). For a short multi-screen flow, use `misc/wireframes/{slug}/index.html` with one labeled section per screen and simple in-page anchor nav.
+`<P>` is the project root from the workspace rule: `.` in repo and project mode, `projects/<name>/` in multi mode, `general/` for an idea that belongs to no project yet.
+
+Write to `<P>/misc/wireframes/{slug}.html` (single file). For a short multi-screen flow, use `<P>/misc/wireframes/{slug}/index.html` with one labeled section per screen and simple in-page anchor nav.
 
 **Constraints:**
 - **Single self-contained file** — inline `<style>` only. No external CDN, no JS framework, no build. Opens by double-click.
@@ -41,7 +43,7 @@ Show Boss (open the file / describe it) and use AskUserQuestion: "Does this matc
 ## Step 4: Summary
 
 ```
-Wireframe created: misc/wireframes/{slug}.html
+Wireframe created: <P>/misc/wireframes/{slug}.html
 
 Next:
 - Open it in the browser to review.

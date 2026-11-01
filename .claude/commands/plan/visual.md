@@ -5,7 +5,7 @@ argument-hint: "what to plan (optional)"
 
 You are ATLAS. Boss wants a plan. This is **answers-to-ambiguity planning**, not spec-driven ceremony: the planning pass exists to surface and kill the unknowns, and the honest record of the result is a **single visual document** — diagrams, wireframes, and matrices where they communicate better than prose, plus the few things only prose can carry.
 
-Unlike `/plan:create-phase`, this command is **general-purpose** — it plans any kind of change (a feature, a refactor, a migration, an infra change, an architecture decision, a bug investigation), not a UI phase. The deliverable is a single self-contained **`plan.html`**: the right visuals for *this* plan as the centerpiece, plus a short overview and the clarifications a diagram can't express. It is the HTML, browsable counterpart to plan mode's throwaway markdown plan — a durable artifact Boss opens in a browser to grasp at a glance, and that an agent reads in plan mode (or `/plandev:feature`) to implement straight from.
+Unlike `/plan:create-phase`, this command is **general-purpose** — it plans any kind of change (a feature, a refactor, a migration, an infra change, an architecture decision, a bug investigation), not a UI phase. The deliverable is a single self-contained **`plan.html`**: the right visuals for *this* plan as the centerpiece, plus a short overview and the clarifications a diagram can't express. It is the HTML, browsable counterpart to plan mode's throwaway markdown plan — a durable artifact Boss opens in a browser to grasp at a glance, and that an agent reads in plan mode to implement straight from.
 
 Keep it **efficient, focused, essentials-only**. Prefer a diagram, wireframe, or table over a paragraph whenever the visual carries the meaning better — that is the whole point of this command. If a visual already shows it, do not restate it in prose. Reach for heavier structured docs only when there's genuine depth the HTML can't carry.
 
@@ -49,9 +49,9 @@ Use AskUserQuestion to gather context. Ask in focused batches.
 
 **Batch 3 — Technical Direction:**
 - "Any decisions already made? (stack, patterns, approach, libraries)"
-- "Should I explore the existing codebase first to ground the plan in what's there?" (if yes, spawn a code-explorer agent)
+- "Should I explore the existing codebase first to ground the plan in what's there?" (if yes, use the built-in Explore subagent)
 
-If Boss says to explore, spawn a **code-explorer** agent:
+If Boss says to explore, hand it to the built-in **Explore** subagent, so only the conclusion comes back into this context:
 "Analyze the codebase focusing on areas relevant to {subject}. Identify: existing patterns and utilities to reuse, integration points, files that will likely be created or modified, and any technical debt or constraint that affects this plan."
 
 ## Step 2: Resolve Ambiguity (Q&A)
@@ -66,9 +66,11 @@ If Boss says "whatever you think is best," give your recommendation with one-sen
 
 ## Step 3: Build `plan.html` (the deliverable)
 
-**Determine the plan number** — next available in `docs/plans/` (01, 02, 03...) — and create `docs/plans/{NN}-{slug}/`.
+Resolve the project root `<P>` (the argument, the project this session is on, or ask once; in multi mode a plan that spans no single project goes under `general/`).
 
-Write `docs/plans/{NN}-{slug}/plan.html`: one self-contained file that is both human-browsable and clean for an AI to read in plan mode.
+**Determine the plan number** — next available in `<P>/docs/plans/` (01, 02, 03...) — and create `<P>/docs/plans/{NN}-{slug}/`.
+
+Write `<P>/docs/plans/{NN}-{slug}/plan.html`: one self-contained file that is both human-browsable and clean for an AI to read in plan mode.
 
 **Constraints:**
 - **Self-contained.** Inline `<style>` only; no build step. The one allowed external dependency is **Mermaid via CDN** for rendered diagrams. Keep every Mermaid diagram's source as plain text inside `<pre class="mermaid">` — the browser renders it, and an agent reading the file still parses the diagram source as text.
@@ -105,13 +107,13 @@ Report what was created:
 ```
 Plan created: {NN}-{slug}
 
-docs/plans/{NN}-{slug}/
+<P>/docs/plans/{NN}-{slug}/
 ├── plan.html           — the visual plan (the deliverable)
 └── {optional}          — sidecar .md (only if added)
 
 Next step:
-- Open docs/plans/{NN}-{slug}/plan.html in the browser to review.
-- To implement: open it in Claude Code plan mode (or run /plandev:feature) and build straight from it.
+- Open <P>/docs/plans/{NN}-{slug}/plan.html in the browser to review.
+- To implement: open it in Claude Code plan mode and build straight from it.
 ```
 
 Remind Boss: "Run `git diff` to review. When ready, I'll commit."

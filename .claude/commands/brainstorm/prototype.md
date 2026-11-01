@@ -1,5 +1,5 @@
 ---
-description: Brainstorm an idea into a clickable multi-screen React prototype — model the mind (Theory of Mind), interview to kill ambiguity, build a no-build CDN-React prototype under misc/prototypes/, run it, iterate until it matches Boss's vision.
+description: Brainstorm an idea into a clickable multi-screen React prototype — model the mind (Theory of Mind), interview to kill ambiguity, build a no-build CDN-React prototype under the project's misc/prototypes/, run it, iterate until it matches Boss's vision.
 argument-hint: "what to prototype (optional)"
 ---
 
@@ -20,7 +20,7 @@ There are two moves that break this:
 
 This command does both, in that order, with a hard interview in between to kill ambiguity.
 
-This is **not** `/design:create-design-md` — that command produces *design direction* and locks `DESIGN.md`. This command produces *one throwaway product/feature prototype* for idea validation, under `misc/prototypes/`. Different job.
+This is **not** `/design:create-design-md` — that command produces *design direction* and locks `DESIGN.md`. This command produces *one throwaway product/feature prototype* for idea validation, under `<P>/misc/prototypes/`. Different job.
 
 ---
 
@@ -106,8 +106,10 @@ Save Boss's answers — verbatim where the wording carries signal (the feeling a
 
 ### Folder
 
-1. Determine the next number from existing `misc/prototypes/{NN}-*` folders (start at `01`).
-2. Create `misc/prototypes/{NN}-{slug}/` where `{slug}` describes the idea (e.g. `01-habit-tracker`, `02-invoice-dashboard`).
+`<P>` is the project root from the workspace rule: `.` in repo and project mode, `projects/<name>/` in multi mode, `general/` for an idea that belongs to no project yet.
+
+1. Determine the next number from existing `<P>/misc/prototypes/{NN}-*` folders (start at `01`).
+2. Create `<P>/misc/prototypes/{NN}-{slug}/` where `{slug}` describes the idea (e.g. `01-habit-tracker`, `02-invoice-dashboard`).
 3. This folder holds: `index.html`, `tokens.css`, `components.css`, `App.jsx`, one `Screen*.jsx` per screen, `assets/` (if needed), `README.md`, `BRIEF.md`, `THEORY-OF-MIND.md`.
 
 ### Stack — no-build, browser-native React (exact)
@@ -140,7 +142,7 @@ The prototype must be served over HTTP — `<script type="text/babel" src=...>` 
 Start a static server **in the background** from the prototype folder, using Node — no Python:
 
 ```bash
-cd misc/prototypes/{NN}-{slug} && npx serve -l {PORT}
+cd <P>/misc/prototypes/{NN}-{slug} && npx serve -l {PORT}
 ```
 
 `npx serve` needs no install and no `package.json` — it fetches the `serve` package on first run and serves the current directory. Pick an unused port (e.g. `4173`, `8123`). Then tell Boss exactly how to look:
@@ -179,7 +181,7 @@ When Boss says it matches, report:
 ```
 Prototype complete: {NN}-{slug}
 
-misc/prototypes/{NN}-{slug}/
+<P>/misc/prototypes/{NN}-{slug}/
 ├── THEORY-OF-MIND.md   — the mind-model this was built against
 ├── BRIEF.md            — Boss's interview answers
 ├── feedback/           — {N} rounds of reactions captured
@@ -190,7 +192,7 @@ misc/prototypes/{NN}-{slug}/
 └── components.css      — shared component styles
 
 Run it again any time:
-  cd misc/prototypes/{NN}-{slug} && npx serve -l {PORT}
+  cd <P>/misc/prototypes/{NN}-{slug} && npx serve -l {PORT}
   → http://localhost:{PORT}
 
 Next steps:

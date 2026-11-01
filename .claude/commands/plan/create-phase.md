@@ -5,13 +5,15 @@ argument-hint: "phase-name"
 
 You are ATLAS. Boss wants to create a new development phase. This is **answers-to-ambiguity development**, not spec-driven development: the planning pass exists to surface and kill the unknowns, and the honest, minimal record of the result is a **low-fidelity wireframe** plus the few things a wireframe can't show.
 
-The decisive end product of a phase is the wireframe — that is what actually drives implementation. So the deliverable is a single self-contained **`phase.html`**: the low-fi wireframe(s) as the centerpiece, plus a short overview, the clarifications a wireframe can't express, and any matrices that capture a requirement better than prose. Boss opens that HTML in Claude Code **plan mode** (or `/plandev:feature`) and implements straight from it.
+The decisive end product of a phase is the wireframe — that is what actually drives implementation. So the deliverable is a single self-contained **`phase.html`**: the low-fi wireframe(s) as the centerpiece, plus a short overview, the clarifications a wireframe can't express, and any matrices that capture a requirement better than prose. Boss opens that HTML in Claude Code **plan mode** and implements straight from it.
 
 Keep it **efficient, focused, essentials-only**. If the wireframe already shows it, do not restate it in prose. Heavier structured docs (data model, data flow, roadmap, decisions) are written **only when** there's genuine depth the HTML can't carry — never by default.
 
 The phase name is provided as argument: $ARGUMENTS
 
 If no phase name is provided, use AskUserQuestion to ask: "What is the phase name? (short, descriptive, e.g. 'user-auth', 'payment-integration', 'dashboard-ui')"
+
+Resolve the project root `<P>` first (see the workspace rule: the argument, the project this session is on, or ask once). Everything below is written under `<P>`.
 
 ## Roles in Play
 
@@ -35,7 +37,7 @@ This is a load-bearing accuracy tool, not empathy theatre. Missed mental-state i
 
 ## Step 1: Understand the Phase
 
-Use AskUserQuestion to gather context. Ask in focused batches.
+If the `super-product-owner` skill is installed, run its interview here instead of the batches below: one question at a time, only what the answers so far leave open, stopping as soon as the brief can be written. Its brief (problem, who, riskiest assumption, smallest test, not-building, done, how we'll know) becomes the phase's Overview and Essentials. Otherwise, use AskUserQuestion to gather context in focused batches:
 
 **Batch 1 — What and Why:**
 - "What does this phase deliver? (one sentence — the user-visible outcome)"
@@ -48,9 +50,9 @@ Use AskUserQuestion to gather context. Ask in focused batches.
 
 **Batch 3 — Technical Direction:**
 - "Any architectural decisions already made? (framework, patterns, database schema)"
-- "Should I explore the existing codebase first to understand the current state?" (if yes, spawn code-explorer agent)
+- "Should I explore the existing codebase first to understand the current state?" (if yes, use the built-in Explore subagent)
 
-If Boss says to explore the codebase, spawn a **code-explorer** agent:
+If Boss says to explore the codebase, hand it to the built-in **Explore** subagent, so the file dumps stay in its context and only the conclusion comes back:
 "Analyze the codebase focusing on areas relevant to {phase-name}. Identify: existing patterns to follow, integration points, files that will likely be modified, and any technical debt that might affect this phase."
 
 ## Step 2: Resolve Ambiguity (Q&A)
@@ -65,9 +67,9 @@ If Boss says "whatever you think is best," give your recommendation with one-sen
 
 ## Step 3: Build `phase.html` (the deliverable)
 
-**Determine the phase number** — next available in `docs/phases/` (01, 02, 03...) — and create `docs/phases/{NN}-{phase-name}/`.
+**Determine the phase number** — next available in `<P>/docs/phases/` (01, 02, 03...) — and create `<P>/docs/phases/{NN}-{phase-name}/`.
 
-Write `docs/phases/{NN}-{phase-name}/phase.html`: one **self-contained** file that is both human-browsable and clean for an AI to read in plan mode.
+Write `<P>/docs/phases/{NN}-{phase-name}/phase.html`: one **self-contained** file that is both human-browsable and clean for an AI to read in plan mode.
 
 **Constraints:**
 - **Single file, no dependencies.** Inline `<style>` only. No external CDN, no JS framework, no build step. It must open by double-click and read as plain text.
@@ -80,7 +82,7 @@ Write `docs/phases/{NN}-{phase-name}/phase.html`: one **self-contained** file th
 2. **Wireframe(s)** *(the centerpiece)* — bordered low-fi blocks with labeled regions and the primary action(s). One block per screen for multi-screen phases, with simple in-page anchor nav between them. Put non-default states (loading, empty, error, success) in `<details>` blocks so the default view stays clean. Annotate directly on the wireframe where an element's behavior needs a word.
 3. **Clarifications** — only the things the wireframe **can't** show: business rules, validation, what-happens-on-error, ordering/timing, permissions in prose. If the wireframe already says it, don't repeat it here.
 4. **Matrices** — an HTML `<table>` wherever a matrix captures a requirement better than prose: role × permission, state × transition, plan × feature. These remove ambiguity that paragraphs blur.
-5. **Essentials / what "done" looks like** — a short, non-rigid bullet list of the conditions that make this phase complete (observable user behavior / product outcomes). Not step-by-step test cases.
+5. **Essentials / what "done" looks like** — a short list of **acceptance checks**: observable behaviors a QA runner can verify in the browser ("an empty cart shows the browse link", "a declined card keeps the form filled"). Not user stories, not step-by-step test cases. For an AI feature, add a small eval set: a few inputs and what a good output looks like.
 
 Show Boss the wireframe (open the file / describe it) and use AskUserQuestion: "Does this match what you pictured? What's missing or wrong?" Iterate until it lands. The wireframe is the artifact that matters most — get it right before anything else.
 
@@ -104,13 +106,14 @@ Report what was created:
 ```
 Phase created: {NN}-{phase-name}
 
-docs/phases/{NN}-{phase-name}/
+<P>/docs/phases/{NN}-{phase-name}/
 ├── phase.html          — wireframe + overview + clarifications + matrices (the deliverable)
 └── {optional}          — DATA-MODEL.md / DATA-FLOW.md / ROADMAP.md / DECISIONS.md (only if added)
 
 Next step:
-- Open docs/phases/{NN}-{phase-name}/phase.html in the browser to review the wireframe.
-- To implement: open it in Claude Code plan mode (or run /plandev:feature) and build straight from it.
+- Open <P>/docs/phases/{NN}-{phase-name}/phase.html in the browser to review the wireframe.
+- To implement: open it in Claude Code plan mode and build straight from it.
+- To verify: turn the acceptance checks into living test cases with /qa:create-test-cases.
 ```
 
 Remind Boss: "Run `git diff` to review. When ready, I'll commit."
