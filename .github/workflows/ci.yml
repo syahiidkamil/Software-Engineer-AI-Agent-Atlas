@@ -1,0 +1,53 @@
+name: CI
+
+# Scaffold every workspace mode and exercise the scripts and hooks on all three
+# operating systems. The suite is plain node:test with no dependencies.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [18, 22]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Configure git for the scaffold commits
+        run: |
+          git config --global user.name "ci"
+          git config --global user.email "ci@example.com"
+          git config --global init.defaultBranch main
+
+      - name: Test
+        run: npm test
+        env:
+          ATLAS_SKIP_SUBMODULE: "1"
+          ATLAS_NOTIFY: "off"
+
+      - name: Pack contents stay small and complete
+        shell: bash
+        run: |
+          npm pack --dry-run --json > pack.json
+          node -e '
+            const [p] = require("./pack.json");
+            const files = p.files.map((f) => f.path);
+            const must = [".claude/scripts/secrets.cjs", ".claude/hooks/notify.cjs", ".claude/templates/index.md", ".claude/rules/workspace.md", "bin/install.js"];
+            const missing = must.filter((m) => !files.includes(m));
+            if (missing.length) { console.error("missing from package:", missing); process.exit(1); }
+            if (files.some((f) => f.endsWith(".wav") || f.startsWith("test/") || f.startsWith("gitignored/"))) { console.error("unexpected files in package"); process.exit(1); }
+            console.log(`${files.length} files, ${(p.unpackedSize / 1024).toFixed(0)} KB unpacked`);
+            if (p.size > 1024 * 1024) { console.error("package over 1 MB"); process.exit(1); }
+          '
