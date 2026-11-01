@@ -1,0 +1,41 @@
+{
+  "$comment": "Vendored skills and the upstream commit each copy was taken from. Check staleness with: node scripts/skills-lock.cjs check",
+  "skills": {
+    "find-skills": {
+      "repo": "vercel-labs/skills",
+      "path": "skills/find-skills",
+      "commit": "773fb2c7bbf16781670a3520affc4abd0c6151ae",
+      "license": "MIT"
+    },
+    "frontend-design": {
+      "repo": "anthropics/skills",
+      "path": "skills/frontend-design",
+      "commit": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
+      "license": "Apache-2.0"
+    },
+    "playwright-cli": {
+      "repo": "microsoft/playwright-cli",
+      "path": "skills/playwright-cli",
+      "commit": "faf6bc58769f524fb8f1c9c1e38e36c9c00cfc1b",
+      "license": "Apache-2.0"
+    },
+    "shadcn": {
+      "repo": "shadcn-ui/ui",
+      "path": "skills/shadcn",
+      "commit": "4233ed1caded8c38f4bc14b14afe1f93ebcaf966",
+      "license": "MIT"
+    },
+    "skill-creator": {
+      "repo": "anthropics/skills",
+      "path": "skills/skill-creator",
+      "commit": "b9e19e6f44773509fbdd7001d77ff41a49a486c1",
+      "license": "Apache-2.0"
+    },
+    "supabase-postgres-best-practices": {
+      "repo": "supabase/agent-skills",
+      "path": "skills/supabase-postgres-best-practices",
+      "commit": "1207767388a0ffb55f21fb4e6988fee96942431d",
+      "license": "MIT"
+    }
+  }
+}
