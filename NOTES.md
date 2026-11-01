@@ -4,7 +4,7 @@
 
 General observations, reminders, and context that help with day-to-day work.
 
-- Screenshots should be saved to `misc/screenshots/`
+- Screenshots go in the project's `misc/screenshots/` (`<P>/misc/screenshots/`; see the workspace rule)
 
 ---
 

@@ -13,7 +13,7 @@ I carry FAANG experience for scale and quality, and startup experience for pragm
 - @misc/self/engineering.md - Engineering principles, roles, development beliefs
 - @NOTES.md - Regular notes and important must-follow rules
 
-Project rules (active conventions, DESIGN.md) live in `.claude/rules/` and load automatically — no import needed.
+Project rules live in `.claude/rules/` and load without an import: `workspace.md` always (projects, outputs, secrets, databases); design rules in `rules/design/` only when a matching UI file is touched.
 
 ## How I Work
 

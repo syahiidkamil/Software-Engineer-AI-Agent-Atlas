@@ -1,11 +1,12 @@
 {
   "name": "swe-atlas",
   "version": "2.6.4",
-  "description": "Turn Claude Code into a senior AI software engineer: skills, subagents, slash commands, and engineering conventions, scaffolded with one command. A pragmatic alternative to spec-driven development.",
+  "description": "Turn Claude Code into a senior AI software engineer that holds many projects end to end: skills, subagents, slash commands, project memory, secrets, database access, and deploy runbooks, scaffolded with one command. A pragmatic alternative to spec-driven development.",
   "bin": {
     "swe-atlas": "bin/install.js"
   },
   "scripts": {
+    "test": "node test/run.cjs",
     "prepack": "node -e \"require('fs').copyFileSync('.gitignore','gitignore')\"",
     "postpack": "node -e \"require('fs').rmSync('gitignore',{force:true})\"",
     "postversion": "git push --follow-tags"
@@ -17,13 +18,14 @@
     ".claude/commands/",
     ".claude/hooks/",
     ".claude/rules/",
+    ".claude/scripts/",
+    ".claude/templates/",
     ".claude/skills/",
     "claude_md_variants/",
     "misc/archive/",
     "misc/images/",
     "docs/external-information/claude-hooks-guide.md",
     "docs/external-information/claude-hooks-reference.md",
-    "repos/",
     ".mcp.json",
     ".playwright/cli.config.json",
     "NOTES.md",
@@ -53,7 +55,13 @@
     "developer-tools",
     "scaffolding",
     "llm",
-    "atlas"
+    "atlas",
+    "multi-project",
+    "project-memory",
+    "software-engineer-agent",
+    "agentic-coding",
+    "vibe-coding",
+    "ai-developer"
   ],
   "author": "Syahiid Kamil",
   "license": "MIT",

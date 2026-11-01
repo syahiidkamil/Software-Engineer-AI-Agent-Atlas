@@ -1,6 +1,21 @@
 .DS_Store
 misc/screenshots/*
 !misc/screenshots/.gitkeep
-misc/browser-storage
-.playwright/profile/
+
+# ATLAS: personal settings, secrets, env files
+.claude/settings.local.json
+.atlas/secrets/
+**/.env
+**/.env.local
+**/.env.*.local
+**/.env.production
+!**/.env.example
+# ATLAS: browser state and screenshots
+**/misc/.playwright/
+**/misc/screenshots/
 .playwright-cli/
+.playwright/profile/
+misc/browser-storage/
+
+# ATLAS: local-only notes, at any depth (gitignored/, projects/<p>/gitignored/, ...)
+gitignored/

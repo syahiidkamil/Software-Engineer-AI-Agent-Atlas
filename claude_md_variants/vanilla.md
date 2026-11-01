@@ -3,6 +3,9 @@
 ## Core Documents
 
 - @NOTES.md - Regular notes and important must-follow rules
+{{WORKSPACE_BLOCK}}
+
+Rules in `.claude/rules/` load without an import: `workspace.md` always; design rules in `rules/design/` only when a matching UI file is touched.
 
 ## Debugging
 
@@ -14,4 +17,4 @@ The same applies to plans: when work hits an unexpected obstacle, step back and 
 
 ## Decision Logs
 
-Every important decision (architecture, library choice, tradeoff call) is saved in `docs/decision_logs/` with its context and rationale, so future sessions know why, not just what.
+Every important decision (architecture, library choice, tradeoff call) is saved in the project's `docs/decision_logs/` with its context and rationale, so future sessions know why, not just what.

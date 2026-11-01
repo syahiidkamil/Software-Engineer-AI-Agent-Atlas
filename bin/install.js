@@ -50,6 +50,11 @@ function printUsage() {
   print(`${BOLD}  Usage:${RESET}`);
   print(`    swe-atlas new-project ${DIM}[folder-name]${RESET}`);
   print();
+  print(`${BOLD}  Workspace modes${RESET} ${DIM}(asked during setup, switchable later with /atlas:mode):${RESET}`);
+  print(`    repo     ${DIM}ATLAS inside one code repo${RESET}`);
+  print(`    project  ${DIM}one project wrapping its repos in repos/${RESET}`);
+  print(`    multi    ${DIM}many projects in projects/, plus general/ and index.md${RESET}`);
+  print();
   print(`${BOLD}  Arguments:${RESET}`);
   print(`    ${DIM}folder-name${RESET}  Target directory ${DIM}(default: current directory)${RESET}`);
   print();
@@ -290,20 +295,27 @@ function gitkeep(dirPath) {
   }
 }
 
+const { spawnSync } = require('child_process');
+
 // ─── Templates ───────────────────────────────────────────────────────────────
 // The package root is the single source of truth: the CLI copies files from
-// it and substitutes tokens — it never regenerates content. The only inline
-// generator left is settings.local.json, whose shape depends on answers and
-// has no stable root counterpart (root's copy is untracked and personal).
+// it and substitutes tokens; it never regenerates content. Layout knowledge
+// (project skeleton, CLAUDE.md workspace block, index.md, .gitignore lines) is
+// shared with the workspace scripts through .claude/scripts/lib/workspace.cjs.
+// Only the settings files are generated inline, because their shape depends
+// on the answers.
+
+const workspace = require(path.join(TEMPLATES_DIR, '.claude', 'scripts', 'lib', 'workspace.cjs'));
+const atlasLib = require(path.join(TEMPLATES_DIR, '.claude', 'scripts', 'lib', 'atlas.cjs'));
 
 function readTemplate(...segments) {
   return fs.readFileSync(path.join(TEMPLATES_DIR, ...segments), 'utf-8');
 }
 
 // variant maps 1:1 to a complete template file in claude_md_variants/
-function generateClaudeMd(variant, partnerName) {
-  return readTemplate('claude_md_variants', `${variant}.md`)
-    .replaceAll('{{PARTNER_NAME}}', partnerName);
+function generateClaudeMd(variant, partnerName, mode) {
+  const text = readTemplate('claude_md_variants', `${variant}.md`).replaceAll('{{PARTNER_NAME}}', partnerName);
+  return workspace.setWorkspaceBlock(text, mode);
 }
 
 // Root .mcp.json defines every supported server; keep only the selected ones.
@@ -335,20 +347,52 @@ function generatePlaywrightCliConfig(isolated) {
   return JSON.stringify(config, null, 2) + '\n';
 }
 
-function generateSettingsJson(options = {}) {
+// ${CLAUDE_PROJECT_DIR} is substituted by Claude Code and exported to the hook,
+// so the command works under sh, Git Bash and PowerShell alike; no POSIX
+// ${VAR:-default} fallbacks, which PowerShell does not understand.
+const hookCmd = (script, ...args) =>
+  [`node "\${CLAUDE_PROJECT_DIR}/.claude/hooks/${script}"`, ...args].join(' ');
+
+const hook = (matcher, command) => ({ matcher, hooks: [{ type: 'command', command }] });
+
+/**
+ * Shared, committed guardrails: secrets stay out of reach of the Read/Edit tools
+ * (permission rules) and of the shell (the guard hook).
+ */
+function sharedSettings() {
+  return {
+    permissions: {
+      deny: [
+        'Read(/.atlas/secrets/**)',
+        'Edit(/.atlas/secrets/**)',
+        'Read(**/.env)',
+        'Read(**/.env.local)',
+        'Read(**/.env.*.local)',
+        'Read(**/.env.production)',
+      ],
+    },
+    hooks: {
+      PreToolUse: [hook('Bash', hookCmd('guard-secrets.cjs'))],
+    },
+  };
+}
+
+/** Personal settings: allow-list, MCP enablement, spoken notifications. */
+function personalSettings(options = {}) {
   const allow = [
     'Bash(git log:*)',
-    'Bash(lsof:*)',
     'Bash(mkdir:*)',
-    'Bash(xargs ls:*)',
     'Bash(find:*)',
+    'Bash(node .claude/scripts/port.cjs:*)',
+    'Bash(node .claude/scripts/mode.cjs current)',
+    'Bash(node .claude/scripts/project.cjs:*)',
+    'Bash(node .claude/scripts/secrets.cjs keys:*)',
+    'Bash(node .claude/scripts/secrets.cjs check:*)',
+    'Bash(node .claude/scripts/secrets.cjs link:*)',
+    'Bash(node .claude/scripts/db.cjs list)',
     'WebFetch(domain:www.anthropic.com)',
   ];
-
-  if (options.playwrightCli) {
-    allow.push('Bash(playwright-cli:*)');
-  }
-
+  if (options.playwrightCli) allow.push('Bash(playwright-cli:*)');
   if (options.playwright) {
     allow.push(
       'mcp__playwright__browser_navigate',
@@ -368,57 +412,161 @@ function generateSettingsJson(options = {}) {
       'mcp__playwright__browser_network_requests',
     );
   }
-
-  // ${CLAUDE_PROJECT_DIR} resolves at hook-execution time, so the file stays
-  // valid if the project is moved or shared — never bake in absolute paths.
-  const hookCmd = (script) =>
-    `node "\${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/${script}"`;
-
   const settings = {
-    permissions: {
-      allow,
-      deny: [],
-      ask: [],
-      defaultMode: 'acceptEdits',
-    },
-    enableAllProjectMcpServers: true,
+    permissions: { allow, deny: [], ask: [], defaultMode: 'acceptEdits' },
     hooks: {
-      Stop: [
-        {
-          matcher: '',
-          hooks: [
-            {
-              type: 'command',
-              command: hookCmd('task-complete.cjs'),
-            },
-          ],
-        },
-      ],
-      PreToolUse: [
-        {
-          matcher: 'AskUserQuestion',
-          hooks: [
-            {
-              type: 'command',
-              command: hookCmd('ask-user-input.cjs'),
-            },
-          ],
-        },
-      ],
+      Stop: [hook('', hookCmd('notify.cjs', 'done'))],
+      PreToolUse: [hook('AskUserQuestion', hookCmd('notify.cjs', 'ask input'))],
+      Notification: [hook('permission_prompt', hookCmd('notify.cjs', 'ask permission'))],
     },
   };
-
-  const enabledServers = [];
-  if (options.playwright) enabledServers.push('playwright');
-  if (options.postgres) enabledServers.push('postgres');
-  if (enabledServers.length > 0) {
-    settings.enabledMcpjsonServers = enabledServers;
+  if (options.playwright) {
+    settings.enableAllProjectMcpServers = true;
+    settings.enabledMcpjsonServers = ['playwright'];
   }
+  return settings;
+}
 
-  return JSON.stringify(settings, null, 2) + '\n';
+/** Compaction threshold and advisor model, written into whichever file the user picked. */
+function contextSettings({ compactPct, advisor }) {
+  const out = {};
+  if (compactPct) out.env = { CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: String(compactPct) };
+  if (advisor) out.advisorModel = advisor;
+  return out;
+}
+
+/**
+ * Merge settings into an existing file instead of overwriting it: arrays are
+ * unioned, hook groups are added unless a group with the same command exists,
+ * objects merge, and scalars from `add` win (the user just chose them).
+ */
+function mergeSettings(base, add) {
+  const out = { ...base };
+  for (const [key, value] of Object.entries(add)) {
+    if (key === 'hooks') {
+      out.hooks = { ...(base.hooks || {}) };
+      for (const [event, groups] of Object.entries(value)) {
+        const existing = Array.isArray(out.hooks[event]) ? [...out.hooks[event]] : [];
+        const commands = new Set(existing.flatMap((g) => (g.hooks || []).map((h) => h.command)));
+        for (const g of groups) if (!g.hooks.some((h) => commands.has(h.command))) existing.push(g);
+        out.hooks[event] = existing;
+      }
+    } else if (Array.isArray(value)) {
+      out[key] = [...new Set([...(Array.isArray(base[key]) ? base[key] : []), ...value])];
+    } else if (value && typeof value === 'object') {
+      out[key] = mergeSettings(base[key] && typeof base[key] === 'object' ? base[key] : {}, value);
+    } else if (!(key === 'defaultMode' && base[key])) {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+// Hooks and files an older ATLAS scaffolded that this release replaced. Left in
+// place they double every notification and keep loading removed agents.
+const LEGACY_HOOK_SCRIPTS = /[\\/](task-complete|ask-user-input)\.cjs/;
+const LEGACY_FILES = [
+  ['.claude', 'hooks', 'task-complete.cjs'], ['.claude', 'hooks', 'task-complete.wav'], ['.claude', 'hooks', 'ask-user-input.cjs'],
+  ['.claude', 'agents', 'code-explorer.md'], ['.claude', 'agents', 'code-architect.md'], ['.claude', 'agents', 'code-review.md'],
+  ['.claude', 'agents', 'code-simplifier.md'], ['.claude', 'agents', 'qa-manual-tester.md'], ['.claude', 'commands', 'plandev'],
+];
+
+function dropLegacyHooks(settings) {
+  if (!settings.hooks || typeof settings.hooks !== 'object') return settings;
+  const hooks = {};
+  for (const [event, groups] of Object.entries(settings.hooks)) {
+    if (!Array.isArray(groups)) continue;
+    const kept = groups
+      .map((g) => ({ ...g, hooks: (g.hooks || []).filter((h) => !LEGACY_HOOK_SCRIPTS.test(h.command || '')) }))
+      .filter((g) => g.hooks.length);
+    if (kept.length) hooks[event] = kept;
+  }
+  return { ...settings, hooks };
+}
+
+/** Remove what an older scaffold left behind; a customized DESIGN.md is kept and reported. */
+function removeLegacy(dir, report) {
+  for (const parts of LEGACY_FILES) {
+    const p = path.join(dir, ...parts);
+    if (fs.existsSync(p)) {
+      fs.rmSync(p, { recursive: true, force: true });
+      report(`removed ${parts.join('/')} (replaced in this release)`);
+    }
+  }
+  const design = path.join(dir, '.claude', 'rules', 'DESIGN.md');
+  if (fs.existsSync(design)) {
+    if (fs.readFileSync(design, 'utf-8').includes('{{PROJECT_NAME}}')) {
+      fs.rmSync(design);
+      report('removed the unfilled .claude/rules/DESIGN.md template (it loaded in every session)');
+    } else {
+      report('kept your .claude/rules/DESIGN.md; make it path-scoped with /design:create-design-md or /atlas:mode');
+    }
+  }
+}
+
+function writeSettings(file, ...parts) {
+  let current = {};
+  if (fs.existsSync(file)) {
+    try {
+      current = dropLegacyHooks(JSON.parse(fs.readFileSync(file, 'utf-8')));
+    } catch {
+      throw new Error(`${file} is not valid JSON; fix or remove it and run again`);
+    }
+  }
+  const merged = parts.reduce((acc, p) => mergeSettings(acc, p), current);
+  writeFileSync(file, JSON.stringify(merged, null, 2) + '\n');
+}
+
+// Line endings for ATLAS's own files only: a repo-mode install must not change
+// how the host repo normalizes its code.
+const GITATTRIBUTES_LINES = [
+  '# ATLAS: keep scripts and docs LF on every OS',
+  '.claude/** text=auto eol=lf',
+  '.atlas/*.json text eol=lf',
+  '*.md text eol=lf',
+];
+
+function mergeLines(existing, lines) {
+  const have = new Set((existing || '').split(/\r?\n/).map((l) => l.trim()));
+  const missing = lines.filter((l) => !l.startsWith('#') && !have.has(l));
+  if (!missing.length) return existing;
+  const block = lines.filter((l) => l.startsWith('#') || missing.includes(l));
+  const base = (existing || '').replace(/\s*$/, '');
+  return `${base ? `${base}\n\n` : ''}${block.join('\n')}\n`;
+}
+
+/** Guess the mode: an existing code repo means repo mode, a fresh folder means multi. */
+function detectMode(dir) {
+  if (!fs.existsSync(dir)) return 'multi';
+  const markers = ['.git', 'package.json', 'go.mod', 'pyproject.toml', 'requirements.txt', 'Cargo.toml', 'pom.xml', 'Gemfile', 'composer.json', 'src'];
+  return markers.some((m) => fs.existsSync(path.join(dir, m))) ? 'repo' : 'multi';
+}
+
+function git(args, cwd) {
+  return spawnSync('git', args, { cwd, stdio: 'ignore' });
 }
 
 // ─── Scaffold ────────────────────────────────────────────────────────────────
+
+const MODE_OPTIONS = [
+  { label: 'Repo', desc: 'ATLAS inside one code repo, at its root', value: 'repo' },
+  { label: 'Project', desc: 'one project; its code repos live in repos/<name>/', value: 'project' },
+  { label: 'Multi', desc: 'many projects in projects/<name>/, plus general/ and index.md', value: 'multi' },
+];
+
+async function askProjectBasics(prompter, defaultName, { optional = false } = {}) {
+  const hint = optional ? 'Enter to skip' : `default: ${defaultName}`;
+  const raw = (await prompter.ask(`Project name? (${hint})`)).trim();
+  const name = raw ? atlasLib.slugify(raw) : optional ? '' : defaultName;
+  if (!name) return null;
+  atlasLib.validateProjectName(name);
+  const stage = await askChoice(prompter, `Stage of ${name}?`, [
+    { label: 'toy', desc: 'simplest thing that works', value: 'toy' },
+    { label: 'mvp', desc: 'sound core, honest shortcuts', value: 'mvp' },
+    { label: 'production', desc: 'the full engineering bar', value: 'production' },
+  ], 1);
+  return { name, stage };
+}
 
 async function scaffold(targetDir) {
   printHeader();
@@ -447,21 +595,9 @@ async function scaffold(targetDir) {
       prompter,
       'CLAUDE.md flavor?',
       [
-        {
-          label: 'Vanilla',
-          desc: 'minimal CLAUDE.md — just NOTES.md + decision logs, no ATLAS identity',
-          value: 'vanilla',
-        },
-        {
-          label: 'ATLAS — autonomous',
-          desc: 'ATLAS identity, works independently, no partner-approval loop',
-          value: 'atlas-autonomous',
-        },
-        {
-          label: 'ATLAS — collaborative',
-          desc: 'ATLAS identity with partner review/commit loop (classic)',
-          value: 'atlas-collaborative',
-        },
+        { label: 'Vanilla', desc: 'minimal CLAUDE.md — just NOTES.md + decision logs, no ATLAS identity', value: 'vanilla' },
+        { label: 'ATLAS — autonomous', desc: 'ATLAS identity, works independently, no partner-approval loop', value: 'atlas-autonomous' },
+        { label: 'ATLAS — collaborative', desc: 'ATLAS identity with partner review/commit loop (classic)', value: 'atlas-collaborative' },
       ],
       2
     );
@@ -476,100 +612,70 @@ async function scaffold(targetDir) {
       }
     }
 
-    // 3. Project type
-    const mode = await askChoice(prompter, 'Project type?', [
-      {
-        label: 'Single repo',
-        desc: 'One project — everything at the project root',
-        value: 'single',
-      },
-      {
-        label: 'Multi repo',
-        desc: 'Workspace with repos/ folder for multiple projects',
-        value: 'multi',
-      },
-    ]);
+    // 3. Workspace mode, defaulting from what the folder already holds
+    const guessed = detectMode(resolvedDir);
+    const mode = await askChoice(prompter, 'Workspace mode?', MODE_OPTIONS, MODE_OPTIONS.findIndex((o) => o.value === guessed));
 
-    // 4. Browser automation — asked before skills so the picker can pre-check
-    // the playwright-cli skill when the CLI option is chosen. Playwright via
-    // MCP server or via the CLI skill.
+    // 4. The project (repo/project mode: the one project; multi: an optional first one)
+    const defaultName = atlasLib.defaultProjectName(resolvedDir);
+    const project = await askProjectBasics(prompter, defaultName, { optional: mode === 'multi' });
+
+    // 5. Browser automation — asked before skills so the picker can pre-check
+    // the playwright-cli skill when the CLI option is chosen.
     const browser = await askChoice(prompter, 'Browser automation?', [
-      {
-        label: 'None',
-        desc: 'skip browser automation',
-        value: 'none',
-      },
-      {
-        label: 'Playwright MCP',
-        desc: 'MCP server in .mcp.json (mcp__playwright__* tools)',
-        value: 'mcp',
-      },
-      {
-        label: 'Playwright CLI',
-        desc: 'playwright-cli skill driving the Playwright CLI via Bash',
-        value: 'cli',
-      },
+      { label: 'None', desc: 'skip browser automation', value: 'none' },
+      { label: 'Playwright MCP', desc: 'MCP server in .mcp.json (mcp__playwright__* tools)', value: 'mcp' },
+      { label: 'Playwright CLI', desc: 'playwright-cli skill driving the Playwright CLI via Bash', value: 'cli' },
     ]);
 
-    // 4b. Browser profile — isolated keeps the profile in memory (fresh state
-    // per session, safe for concurrent/parallel testing); persistent saves it
-    // to disk so logins survive restarts.
+    // 5b. Browser profile. Multi mode is always isolated: parallel sessions on
+    // different projects cannot share one persistent profile. Per-project
+    // persistent profiles live in projects/<p>/misc/.playwright/ when needed.
     let browserProfile = 'isolated';
-    if (browser !== 'none') {
+    if (browser !== 'none' && mode !== 'multi') {
       browserProfile = await askChoice(prompter, 'Browser profile?', [
-        {
-          label: 'Isolated',
-          desc: 'fresh in-memory profile per session — enables concurrent/parallel testing',
-          value: 'isolated',
-        },
-        {
-          label: 'Persistent',
-          desc: 'profile saved to disk — logins survive browser restarts',
-          value: 'persistent',
-        },
+        { label: 'Isolated', desc: 'fresh in-memory profile per session — enables concurrent/parallel testing', value: 'isolated' },
+        { label: 'Persistent', desc: 'profile saved to disk — logins survive browser restarts', value: 'persistent' },
       ]);
     }
     const isolatedBrowser = browserProfile === 'isolated';
 
-    // 5. Skills — interactive checkbox. Some skills are pre-checked from the
-    // choices above; the user can still toggle any off:
-    //   • super-product-owner, super-ui-ux-design, human-writing,
-    //     frontend-design, adversarial-review — pre-checked for every flavor
-    //     (product, design, writing, UI, and self-review work)
-    //   • free-will — added for the autonomous flavor, which drops the
-    //     partner-approval loop and leans on deliberate decisions instead
-    //   • playwright-cli — added when Playwright CLI is the browser option
+    // 6. Skills — interactive checkbox; some are pre-checked from the answers above:
+    //   • super-product-owner, super-ui-ux-design, human-writing, frontend-design,
+    //     adversarial-review, deploy — for every flavor
+    //   • free-will — the autonomous flavor, which replaces the approval loop with
+    //     deliberate decisions
+    //   • playwright-cli — when Playwright CLI is the browser option
     const skillOptions = listSkills();
     let selectedSkills = [];
     if (skillOptions.length > 0) {
       const available = new Set(skillOptions.map((o) => o.value));
-      const autoSkills = new Set([
-        'super-product-owner',
-        'super-ui-ux-design',
-        'human-writing',
-        'frontend-design',
-        'adversarial-review',
-      ]);
+      const autoSkills = new Set(['super-product-owner', 'super-ui-ux-design', 'human-writing', 'frontend-design', 'adversarial-review', 'deploy']);
       if (variant === 'atlas-autonomous') autoSkills.add('free-will');
       if (browser === 'cli') autoSkills.add('playwright-cli');
       const preselected = [...autoSkills].filter((s) => available.has(s));
-      selectedSkills = await askCheckbox(
-        prompter,
-        'Which skills to install?',
-        skillOptions,
-        preselected
-      );
+      selectedSkills = await askCheckbox(prompter, 'Which skills to install?', skillOptions, preselected);
     }
 
-    // 6. DESIGN.md template — visual identity skeleton in .claude/rules/
-    const designAnswer = await prompter.ask(
-      'Include the DESIGN.md template (visual identity rule in .claude/rules/)? (Y/n)'
-    );
-    const includeDesignMd = !['n', 'no'].includes(designAnswer.toLowerCase());
-
-    // 7. PostgreSQL MCP server
-    const postgresAnswer = await prompter.ask('Enable PostgreSQL MCP server? (y/N)');
-    const postgres = ['y', 'yes'].includes(postgresAnswer.toLowerCase());
+    // 7. Context: compaction threshold and advisor, per workspace
+    const compactPct = await askChoice(prompter, 'Auto-compact earlier than Claude Code\'s default?', [
+      { label: '50%', desc: 'recommended: quality holds better, and project memory makes a fresh context cheap', value: 50 },
+      { label: '70%', desc: 'a little earlier than default', value: 70 },
+      { label: 'Default', desc: 'leave Claude Code\'s threshold alone', value: 0 },
+    ]);
+    const advisor = await askChoice(prompter, 'Advisor model for this workspace? (second opinion on hard calls; uses extra usage)', [
+      { label: 'None', desc: 'off', value: '' },
+      { label: 'Opus', desc: 'advisorModel: opus', value: 'opus' },
+      { label: 'Fable', desc: 'advisorModel: fable (may need /model fable consent first)', value: 'fable' },
+      { label: 'Sonnet', desc: 'advisorModel: sonnet (only if your main model is not more capable)', value: 'sonnet' },
+    ], variant === 'atlas-autonomous' ? 1 : 0);
+    let contextFile = 'local';
+    if (compactPct || advisor) {
+      contextFile = await askChoice(prompter, 'Save the compaction/advisor choice where?', [
+        { label: 'Personal', desc: '.claude/settings.local.json (gitignored, just you)', value: 'local' },
+        { label: 'Shared', desc: '.claude/settings.json (committed, everyone on this workspace)', value: 'shared' },
+      ]);
+    }
 
     // ─── Write Files ──────────────────────────────────────────────────────
 
@@ -578,277 +684,188 @@ async function scaffold(targetDir) {
     print();
 
     ensureDir(resolvedDir);
-
-    // ATLAS identity always lives at the project root, mirroring this repo's own
-    // structure — no atlas/ wrapper subfolder, for any flavor or mode. Single vs
-    // multi differs only in whether the repos/ workspace folder is created.
-    const selfDir = path.join(resolvedDir, 'misc', 'self');
-    const archiveDir = path.join(resolvedDir, 'misc', 'archive');
     const claudeDir = path.join(resolvedDir, '.claude');
+    const added = (label) => print(`  ${ORANGE}+${RESET} ${label}`);
+    const skipped = (label) => print(`  ${DIM}  ${label}${RESET}`);
+    removeLegacy(resolvedDir, (msg) => print(`  ${YELLOW}-${RESET} ${msg}`));
 
-    // CLAUDE.md — copied from the chosen variant template
-    writeFileSync(
-      path.join(resolvedDir, 'CLAUDE.md'),
-      generateClaudeMd(variant, partnerName)
-    );
-    print(`  ${ORANGE}+${RESET} CLAUDE.md (${variant})`);
+    // CLAUDE.md — the chosen variant, with the mode's workspace block
+    writeFileSync(path.join(resolvedDir, 'CLAUDE.md'), generateClaudeMd(variant, partnerName, mode));
+    added(`CLAUDE.md (${variant}, ${mode} mode)`);
 
-    // NOTES.md — straight copy from the package root
     writeFileSync(path.join(resolvedDir, 'NOTES.md'), readTemplate('NOTES.md'));
-    print(`  ${ORANGE}+${RESET} NOTES.md`);
+    added('NOTES.md');
 
-    // .gitignore — root .gitignore is the source; the published tarball ships
-    // it as `gitignore` (npm strips dotted .gitignore files; see prepack).
-    // Don't overwrite an existing one — preserve user-managed entries.
+    // .gitignore — the root .gitignore is the source; the published tarball
+    // ships it as `gitignore` (npm strips dotted .gitignore files; see prepack).
+    // An existing file is kept and only gains the ATLAS lines it lacks: secrets
+    // must be ignored even in a repo that already has its own .gitignore.
     const gitignorePath = path.join(resolvedDir, '.gitignore');
-    if (!fs.existsSync(gitignorePath)) {
-      const gitignoreSource = fs.existsSync(path.join(TEMPLATES_DIR, '.gitignore'))
-        ? '.gitignore'
-        : 'gitignore';
-      writeFileSync(gitignorePath, readTemplate(gitignoreSource));
-      print(`  ${ORANGE}+${RESET} .gitignore`);
+    if (fs.existsSync(gitignorePath)) {
+      writeFileSync(gitignorePath, workspace.mergeGitignore(fs.readFileSync(gitignorePath, 'utf-8'), mode));
+      added('.gitignore (ATLAS lines merged)');
     } else {
-      print(`  ${DIM}  .gitignore already exists — skipped${RESET}`);
+      const source = fs.existsSync(path.join(TEMPLATES_DIR, '.gitignore')) ? '.gitignore' : 'gitignore';
+      writeFileSync(gitignorePath, workspace.mergeGitignore(readTemplate(source), mode));
+      added('.gitignore');
     }
+    const gitattributesPath = path.join(resolvedDir, '.gitattributes');
+    const attrs = fs.existsSync(gitattributesPath) ? fs.readFileSync(gitattributesPath, 'utf-8') : '';
+    writeFileSync(gitattributesPath, mergeLines(attrs, GITATTRIBUTES_LINES));
+    added('.gitattributes (LF for ATLAS files)');
 
     // misc/self/ — ATLAS identity docs (vanilla has no identity, skip).
     // Renamed Boss -> Partner at copy time per the partner naming.
     if (variant !== 'vanilla') {
-      const selfTemplateDir = path.join(TEMPLATES_DIR, 'misc', 'self');
-      if (fs.existsSync(selfTemplateDir)) {
-        copyDirSync(selfTemplateDir, selfDir);
-        for (const file of fs.readdirSync(selfDir)) {
-          if (!file.endsWith('.md')) continue;
-          const filePath = path.join(selfDir, file);
-          const content = fs
-            .readFileSync(filePath, 'utf-8')
-            .replace(/\bBoss\b/g, 'Partner')
-            .replace(/\bboss\b/g, 'partner');
-          fs.writeFileSync(filePath, content, 'utf-8');
-        }
-        print(`  ${ORANGE}+${RESET} misc/self/`);
+      const selfDir = path.join(resolvedDir, 'misc', 'self');
+      copyDirSync(path.join(TEMPLATES_DIR, 'misc', 'self'), selfDir);
+      for (const file of fs.readdirSync(selfDir)) {
+        if (!file.endsWith('.md')) continue;
+        const filePath = path.join(selfDir, file);
+        const content = fs.readFileSync(filePath, 'utf-8').replace(/\bBoss\b/g, 'Partner').replace(/\bboss\b/g, 'partner');
+        fs.writeFileSync(filePath, content, 'utf-8');
       }
+      added('misc/self/');
     }
 
-    // Archive — retired material (old context templates) shipped for reference
-    // only; its README says don't use it, and nothing is activated from it.
+    // Archive — retired material shipped for reference only; nothing activates it.
     const archiveTemplateDir = path.join(TEMPLATES_DIR, 'misc', 'archive');
     if (fs.existsSync(archiveTemplateDir)) {
-      copyDirSync(archiveTemplateDir, archiveDir);
-      print(`  ${ORANGE}+${RESET} misc/archive/ (reference only — don't use)`);
+      copyDirSync(archiveTemplateDir, path.join(resolvedDir, 'misc', 'archive'));
+      added('misc/archive/ (reference only — don\'t use)');
     }
 
-    // .claude/ directory — agents, commands, hooks, rules are copied whole;
-    // skills are copied selectively below. rules/ ships the DESIGN.md skeleton.
-    const claudeTemplateDir = path.join(TEMPLATES_DIR, '.claude');
-    if (fs.existsSync(claudeTemplateDir)) {
-      const dirs = ['agents', 'commands', 'hooks', 'rules'];
-      for (const dir of dirs) {
-        const src = path.join(claudeTemplateDir, dir);
-        if (fs.existsSync(src)) {
-          copyDirSync(src, path.join(claudeDir, dir));
-          print(`  ${ORANGE}+${RESET} .claude/${dir}/`);
-        }
+    // .claude/ — agents, commands, hooks, rules, scripts, templates copied whole;
+    // skills copied selectively below.
+    for (const dir of ['agents', 'commands', 'hooks', 'rules', 'scripts', 'templates']) {
+      const src = path.join(TEMPLATES_DIR, '.claude', dir);
+      if (fs.existsSync(src)) {
+        copyDirSync(src, path.join(claudeDir, dir));
+        added(`.claude/${dir}/`);
       }
     }
 
-    // rules/ ships DESIGN.md; drop it if Boss declined the template
-    if (!includeDesignMd) {
-      fs.rmSync(path.join(claudeDir, 'rules', 'DESIGN.md'), { force: true });
-      print(`  ${DIM}  .claude/rules/DESIGN.md — skipped${RESET}`);
-    }
-
-    // Skills — only the ones picked (plus playwright-cli if chosen as browser
-    // automation)
     if (selectedSkills.length > 0) {
       for (const skill of selectedSkills) {
-        copyDirSync(
-          path.join(claudeTemplateDir, 'skills', skill),
-          path.join(claudeDir, 'skills', skill)
-        );
+        copyDirSync(path.join(TEMPLATES_DIR, '.claude', 'skills', skill), path.join(claudeDir, 'skills', skill));
       }
-      print(`  ${ORANGE}+${RESET} .claude/skills/ (${selectedSkills.length} selected)`);
+      added(`.claude/skills/ (${selectedSkills.length} selected)`);
     } else {
-      print(`  ${DIM}  .claude/skills/ — none selected, skipped${RESET}`);
+      skipped('.claude/skills/ — none selected, skipped');
     }
 
-    // Browser/MCP options — playwright/postgres keys match server names in
-    // the root .mcp.json; playwrightCli only affects settings permissions.
-    const mcpOptions = {
-      playwright: browser === 'mcp',
-      postgres,
-      playwrightCli: browser === 'cli',
-      isolatedBrowser,
-    };
+    // Settings: shared guardrails (committed) and personal comfort (gitignored).
+    const options = { playwright: browser === 'mcp', playwrightCli: browser === 'cli', isolatedBrowser };
+    const context = contextSettings({ compactPct, advisor });
+    writeSettings(path.join(claudeDir, 'settings.json'), sharedSettings(), contextFile === 'shared' ? context : {});
+    added('.claude/settings.json (secret guardrails, shared)');
+    writeSettings(path.join(claudeDir, 'settings.local.json'), personalSettings(options), contextFile === 'local' ? context : {});
+    added('.claude/settings.local.json (permissions, notifications, personal)');
 
-    // settings.local.json only — mirrors the root repo. A committed
-    // settings.json would force one machine's permission set on every clone;
-    // local settings stay personal.
-    writeFileSync(
-      path.join(claudeDir, 'settings.local.json'),
-      generateSettingsJson(mcpOptions)
-    );
-    print(`  ${ORANGE}+${RESET} .claude/settings.local.json`);
-
-    // .claude/worktrees/ — used by worktree-isolated agent runs
     gitkeep(path.join(claudeDir, 'worktrees'));
-    print(`  ${ORANGE}+${RESET} .claude/worktrees/`);
 
-    // .mcp.json — root .mcp.json filtered down to the selected servers
-    if (mcpOptions.playwright || mcpOptions.postgres) {
-      writeFileSync(
-        path.join(resolvedDir, '.mcp.json'),
-        generateMcpJson(mcpOptions)
-      );
-      print(`  ${ORANGE}+${RESET} .mcp.json`);
-    }
+    // .atlas/config.json — the workspace mode; secrets/ appears on first use (gitignored)
+    const pkg = require(path.join(TEMPLATES_DIR, 'package.json'));
+    const config = { mode, version: pkg.version };
+    if (mode !== 'multi') config.project = project.name;
+    writeFileSync(path.join(resolvedDir, '.atlas', 'config.json'), JSON.stringify(config, null, 2) + '\n');
+    added(`.atlas/config.json (mode: ${mode})`);
 
-    // Playwright CLI config — project-scoped profile, auto-loaded by the CLI
-    // from .playwright/cli.config.json
-    if (browser === 'cli') {
-      writeFileSync(
-        path.join(resolvedDir, '.playwright', 'cli.config.json'),
-        generatePlaywrightCliConfig(isolatedBrowser)
-      );
-      print(`  ${ORANGE}+${RESET} .playwright/cli.config.json (${browserProfile})`);
-    }
-
-    // Common directories (both modes) — mirror the root repo layout
-    gitkeep(path.join(resolvedDir, 'docs'));
-    gitkeep(path.join(resolvedDir, 'docs', 'decision_logs'));
-    gitkeep(path.join(resolvedDir, 'docs', 'learning-from-mistakes'));
-    gitkeep(path.join(resolvedDir, 'docs', 'phases'));
-    gitkeep(path.join(resolvedDir, 'docs', 'living-spec-docs'));
-    gitkeep(path.join(resolvedDir, 'docs', 'living-test-cases'));
-    print(`  ${ORANGE}+${RESET} docs/ (decision_logs, learning-from-mistakes, phases, living-spec-docs, living-test-cases)`);
-
-    gitkeep(path.join(resolvedDir, 'misc', 'goals'));
-    gitkeep(path.join(resolvedDir, 'misc', 'prompts'));
-    gitkeep(path.join(resolvedDir, 'misc', 'prototypes'));
-    gitkeep(path.join(resolvedDir, 'misc', 'screenshots'));
-    gitkeep(path.join(resolvedDir, 'misc', 'test-runs'));
-    // Empty starters that show the naming convention, same as the root repo
-    writeFileSync(path.join(resolvedDir, 'misc', 'goals', 'develop-phase-01.md'), '');
-    writeFileSync(path.join(resolvedDir, 'misc', 'prompts', 'prompt_01.md'), '');
-    print(`  ${ORANGE}+${RESET} misc/ (goals, prompts, prototypes, screenshots, test-runs)`);
-
-    // Persistent MCP profile lives in misc/browser-storage (gitignored);
-    // isolated mode keeps the profile in memory, so no dir is needed.
-    if (mcpOptions.playwright && !isolatedBrowser) {
-      gitkeep(path.join(resolvedDir, 'misc', 'browser-storage'));
-      print(`  ${ORANGE}+${RESET} misc/browser-storage/`);
-    }
-
-    // Multi-repo specific directories — CLAUDE.md placeholders copied from root
+    // Project memory: a map, a status, an env contract. Nothing else up front:
+    // docs/ folders appear when the first decision, phase, or spec does.
+    const writeIfAbsent = (file, content, label) => {
+      if (fs.existsSync(file)) return skipped(`${label} already exists — kept`);
+      writeFileSync(file, content);
+      added(label);
+    };
     if (mode === 'multi') {
-      gitkeep(path.join(resolvedDir, 'repos', 'backend'));
-      gitkeep(path.join(resolvedDir, 'repos', 'frontend'));
-      for (const rel of [
-        ['repos', 'CLAUDE.md'],
-        ['repos', 'backend', 'CLAUDE.md'],
-        ['repos', 'frontend', 'CLAUDE.md'],
-      ]) {
-        writeFileSync(path.join(resolvedDir, ...rel), readTemplate(...rel));
+      let index = workspace.template('index.md');
+      if (project) {
+        const files = workspace.projectFiles('multi', { name: project.name, stage: project.stage });
+        for (const [file, content] of Object.entries(files)) {
+          writeIfAbsent(path.join(resolvedDir, 'projects', project.name, file), content, `projects/${project.name}/${file}`);
+        }
+        index = workspace.upsertIndexRow(index, {
+          Project: project.name, Stage: project.stage, Path: `projects/${project.name}`, Deploy: 'none', Status: 'nothing started yet',
+        });
+      } else {
+        gitkeep(path.join(resolvedDir, 'projects'));
       }
-      print(`  ${ORANGE}+${RESET} repos/ (CLAUDE.md placeholders for backend + frontend)`);
+      writeIfAbsent(path.join(resolvedDir, 'index.md'), index, 'index.md (project registry)');
+      gitkeep(path.join(resolvedDir, 'general'));
+      added('general/ (work that belongs to no project)');
+    } else {
+      const files = workspace.projectFiles(mode, { name: project.name, stage: project.stage });
+      for (const [file, content] of Object.entries(files)) writeIfAbsent(path.join(resolvedDir, file), content, file);
+      if (mode === 'project') {
+        gitkeep(path.join(resolvedDir, 'repos'));
+        added('repos/ (clone each code repo into repos/<name>/)');
+      }
     }
 
-    // External information (reference docs + skills submodule)
-    const { execSync } = require('child_process');
-    const eiDir = path.join(resolvedDir, 'docs', 'external-information');
-    const eiRelative = path.relative(resolvedDir, eiDir);
+    // Browser automation files
+    if (options.playwright) {
+      writeFileSync(path.join(resolvedDir, '.mcp.json'), generateMcpJson(options));
+      added('.mcp.json');
+      if (!isolatedBrowser) gitkeep(path.join(resolvedDir, 'misc', 'browser-storage'));
+    }
+    if (options.playwrightCli) {
+      writeFileSync(path.join(resolvedDir, '.playwright', 'cli.config.json'), generatePlaywrightCliConfig(isolatedBrowser));
+      added(`.playwright/cli.config.json (${browserProfile})`);
+    }
 
-    // Reference docs shipped with the package (Claude hooks guide + reference)
+    // External information: reference docs + the anthropics/skills submodule
+    const eiDir = path.join(resolvedDir, 'docs', 'external-information');
+    const eiRelative = path.relative(resolvedDir, eiDir).split(path.sep).join('/');
     const eiTemplateDir = path.join(TEMPLATES_DIR, 'docs', 'external-information');
     if (fs.existsSync(eiTemplateDir)) {
       ensureDir(eiDir);
       for (const file of fs.readdirSync(eiTemplateDir)) {
         const src = path.join(eiTemplateDir, file);
-        if (fs.statSync(src).isFile() && file.endsWith('.md')) {
-          fs.copyFileSync(src, path.join(eiDir, file));
-        }
+        if (fs.statSync(src).isFile() && file.endsWith('.md')) fs.copyFileSync(src, path.join(eiDir, file));
       }
-      print(`  ${ORANGE}+${RESET} ${eiRelative}/ (reference docs)`);
+      added(`${eiRelative}/ (reference docs)`);
     }
 
-    try {
-      // Init git if not already
-      if (!fs.existsSync(path.join(resolvedDir, '.git'))) {
-        execSync('git init', { cwd: resolvedDir, stdio: 'ignore' });
-        print(`  ${ORANGE}+${RESET} git init`);
+    if (!fs.existsSync(path.join(resolvedDir, '.git'))) {
+      if (git(['init'], resolvedDir).status === 0) added('git init');
+    }
+    if (process.env.ATLAS_SKIP_SUBMODULE) {
+      skipped(`${eiRelative}/skills submodule — skipped (ATLAS_SKIP_SUBMODULE)`);
+    } else {
+      // SSH first (matches the root repo), HTTPS as fallback for machines without GitHub SSH keys.
+      const urls = ['git@github.com:anthropics/skills.git', 'https://github.com/anthropics/skills.git'];
+      const ok = urls.some((url) => git(['submodule', 'add', '-b', 'main', url, `${eiRelative}/skills`], resolvedDir).status === 0);
+      if (ok) added(`${eiRelative}/skills (submodule, tracks main)`);
+      else {
+        print(`  ${YELLOW}⚠${RESET} Could not add the skills submodule. Run manually:`);
+        print(`  ${DIM}  git submodule add https://github.com/anthropics/skills.git ${eiRelative}/skills${RESET}`);
       }
-
-      // Only add skills submodule (claude-plugins-official is commented out).
-      // SSH first (matches the root repo), HTTPS as fallback for machines
-      // without GitHub SSH keys.
-      const submoduleUrls = [
-        'git@github.com:anthropics/skills.git',
-        'https://github.com/anthropics/skills.git',
-      ];
-      let added = false;
-      let lastErr;
-      for (const url of submoduleUrls) {
-        try {
-          execSync(
-            `git submodule add -b main ${url} "${eiRelative}/skills"`,
-            { cwd: resolvedDir, stdio: 'ignore' }
-          );
-          added = true;
-          break;
-        } catch (err) {
-          lastErr = err;
-        }
-      }
-      if (!added) throw lastErr;
-      print(`  ${ORANGE}+${RESET} ${eiRelative}/skills (submodule, tracks main)`);
-
-      // Append commented-out claude-plugins-official to .gitmodules
-      const gitmodulesPath = path.join(resolvedDir, '.gitmodules');
-      const commentBlock = `# [submodule "${eiRelative}/claude-plugins-official"]\n# \tpath = ${eiRelative}/claude-plugins-official\n# \turl = git@github.com:anthropics/claude-plugins-official.git\n`;
-      const existing = fs.readFileSync(gitmodulesPath, 'utf-8');
-      fs.writeFileSync(gitmodulesPath, commentBlock + existing, 'utf-8');
-      print(`  ${DIM}  ${eiRelative}/claude-plugins-official (commented out)${RESET}`);
-    } catch (err) {
-      print(`  ${YELLOW}⚠${RESET} Could not add git submodules (${err.message})`);
-      print(`  ${DIM}  Run manually:${RESET}`);
-      print(`  ${DIM}  git submodule add https://github.com/anthropics/skills.git ${eiRelative}/skills${RESET}`);
     }
 
     // ─── Summary ──────────────────────────────────────────────────────────
 
-    const enabledMcp = ['playwright', 'postgres'].filter((k) => mcpOptions[k]);
-    const browserLabel =
-      browser === 'none'
-        ? 'none'
-        : `${browser === 'mcp' ? 'Playwright MCP' : 'Playwright CLI'} (${browserProfile})`;
-
+    const browserLabel = browser === 'none' ? 'none' : `${browser === 'mcp' ? 'Playwright MCP' : 'Playwright CLI'} (${browserProfile})`;
     print();
     print(`${BRIGHT_ORANGE}${BOLD}  ${variant === 'vanilla' ? 'Project' : 'ATLAS'} scaffolded successfully!${RESET}`);
     print();
     print(`  ${ORANGE}${BOLD}CLAUDE.md:${RESET} ${variant}`);
-    print(`  ${ORANGE}${BOLD}Mode:${RESET}      ${mode === 'single' ? 'Single repo' : 'Multi repo'}`);
+    print(`  ${ORANGE}${BOLD}Mode:${RESET}      ${mode}${project ? ` (project: ${project.name}, ${project.stage})` : ''}`);
     print(`  ${ORANGE}${BOLD}Location:${RESET}  ${resolvedDir}`);
-    if (partnerName) {
-      print(`  ${ORANGE}${BOLD}Partner:${RESET}   ${partnerName}`);
-    }
+    if (partnerName) print(`  ${ORANGE}${BOLD}Partner:${RESET}   ${partnerName}`);
     print(`  ${ORANGE}${BOLD}Skills:${RESET}    ${selectedSkills.length > 0 ? `${selectedSkills.length} installed` : 'none'}`);
     print(`  ${ORANGE}${BOLD}Browser:${RESET}   ${browserLabel}`);
-    if (enabledMcp.length > 0) {
-      print(`  ${ORANGE}${BOLD}MCP:${RESET}       ${enabledMcp.join(', ')}`);
-    }
+    print(`  ${ORANGE}${BOLD}Context:${RESET}   compact ${compactPct ? `at ${compactPct}%` : 'at default'}, advisor ${advisor || 'off'}`);
     print();
     print(`${DIM}  Next steps:${RESET}`);
     let step = 1;
     if (resolvedDir !== process.cwd()) {
       print(`  ${DIM}  ${step++}. cd ${path.relative(process.cwd(), resolvedDir) || '.'}${RESET}`);
     }
-    if (browser === 'cli') {
-      print(`  ${DIM}  ${step++}. Install Playwright CLI: npm install -g @playwright/cli@latest${RESET}`);
-    }
-    print(`  ${DIM}  ${step++}. Open in Claude Code and start building${RESET}`);
-    if (variant !== 'vanilla') {
-      print(`  ${DIM}  ${step++}. Ask: "Who are you?" to activate ATLAS${RESET}`);
-    }
+    if (browser === 'cli') print(`  ${DIM}  ${step++}. Install Playwright CLI: npm install -g @playwright/cli@latest${RESET}`);
+    print(`  ${DIM}  ${step++}. Store API keys once, in your own terminal: node .claude/scripts/secrets.cjs set KEY${RESET}`);
+    print(`  ${DIM}  ${step++}. Open in Claude Code${mode === 'multi' ? ' and run /atlas:project add <name>' : ' and run /atlas:get-to-know'}${RESET}`);
+    if (variant !== 'vanilla') print(`  ${DIM}  ${step++}. Ask: "Who are you?" to activate ATLAS${RESET}`);
     print();
 
     // ─── Commit Prompt ────────────────────────────────────────────────────
@@ -856,23 +873,11 @@ async function scaffold(targetDir) {
     const commitAnswer = await prompter.ask('Would you like to commit these changes? (Y/n)');
     prompter.close();
 
-    const declined = ['n', 'no'].includes(commitAnswer.toLowerCase());
-    const shouldCommit = !declined;
-
-    if (shouldCommit) {
-      try {
-        const { execSync: exec } = require('child_process');
-        exec('git add -A', { cwd: resolvedDir, stdio: 'ignore' });
-        exec('git commit -m "feat: scaffold ATLAS project structure"', {
-          cwd: resolvedDir,
-          stdio: 'ignore',
-        });
-        print(`  ${ORANGE}${BOLD}✓${RESET} Changes committed!`);
-        print();
-      } catch (commitErr) {
-        print(`  ${YELLOW}⚠${RESET} Could not commit (${commitErr.message})`);
-        print();
-      }
+    if (!['n', 'no'].includes(commitAnswer.toLowerCase())) {
+      const addOk = git(['add', '-A'], resolvedDir).status === 0;
+      const commitOk = addOk && git(['commit', '-m', 'feat: scaffold ATLAS workspace'], resolvedDir).status === 0;
+      print(commitOk ? `  ${ORANGE}${BOLD}✓${RESET} Changes committed!` : `  ${YELLOW}⚠${RESET} Could not commit (is git user.name/email set?)`);
+      print();
     }
   } catch (err) {
     prompter.close();
@@ -901,18 +906,17 @@ function main() {
 
   if (command === 'new-project') {
     const folderArg = args[1];
-    const targetDir = folderArg
-      ? path.resolve(process.cwd(), folderArg)
-      : process.cwd();
+    const targetDir = folderArg ? path.resolve(process.cwd(), folderArg) : process.cwd();
     scaffold(targetDir);
     return;
   }
 
-  // Unknown command
   print();
   print(`${RED}  Unknown command: ${BOLD}${command}${RESET}`);
   printUsage();
   process.exit(1);
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = { dropLegacyHooks, mergeSettings, sharedSettings, personalSettings, contextSettings, mergeLines, detectMode };
