@@ -45,7 +45,7 @@ Claude Code plans before it edits, works toward a goal across turns, runs autono
 
 That is the execution loop, and it keeps getting better, so ATLAS doesn't rebuild it. This release removed the ATLAS agents that the box now covers (explorer, architect, reviewer, simplifier).
 
-What Claude Code still won't do for you: decide *what's worth building*, prove the shape works before you spend tokens generating it, remember ten projects across sessions, keep your keys out of the transcript, and carry a project all the way to production. That part is ATLAS.
+What Claude Code still won't do for you: decide *what's worth building*, prove the shape works before you spend tokens generating it, remember ten projects across sessions, keep your keys out of the transcript, tell a test that can fail from one that only pads a suite, carry a project all the way to production, and keep what all of that costs in proportion to the work. That part is ATLAS.
 
 <sub>Auto mode and dynamic workflows are in research preview at the time of writing; plan mode and `/goal` are generally available.</sub>
 
@@ -100,11 +100,35 @@ Memory grows with the project: a new project starts with the map, the status, an
 
 A persistent engineering identity (principles, roles, conventions) plus skills that load when the work calls for them. At the center is **`free-will`**: at a fork that is costly to get wrong it refuses the first plausible answer and chooses on purpose. It is sized to the fork: a decision that is cheap to undo (a new dependency, a fix that failed twice) gets a quick pass in its own reasoning, and one that is not (a stack, a schema, deprecating something others depend on) gets real alternatives, each grounded in evidence, the blast radius worked out, an attempt to *refute* the winner, and a logged decision. It fires **autonomously** on countable triggers. **`adversarial-review`** then attacks what was built: clean-context reviewers with opposing mandates, and every finding reproduced against the running app before anyone believes it.
 
-### 5. Carry it to production
+### 5. Test what can fail
+
+Left alone, a coding agent writes tests the way it writes code: many, and fast. Two traps follow. A unit suite written after the code restates the code (getters, framework behaviour, mocks that assert on mocks), so it is green the day it is written and goes red later only because a refactor moved a line. A scripted end-to-end suite tied to selectors and timing breaks when a button is renamed, and a session goes into repairing tests instead of the product. Both cost tokens to write and again on every later change, and neither says much about whether the feature works.
+
+ATLAS counts a test by one thing: it fails when the behaviour it guards breaks.
+
+- **From the acceptance checks, not from the code.** The checks agreed in the phase doc before coding become the test cases (**`/qa:create-test-cases`**), critical path first. Getters, framework behaviour and mocks of mocks get none.
+- **Seen red.** For a fix or a rule that matters, ATLAS breaks it on purpose and confirms a test fails. A test that cannot fail is deleted, not kept for the count.
+- **Through the real thing.** **`/qa:manual-test-run`** hands the written cases to a Haiku runner that executes them against the running app (a real browser for a web UI, HTTP calls or the shell otherwise) and reports PASS, FAIL or UNSURE with evidence per step. The cases are plain steps with an expected result each, kept in `docs/living-test-cases/`, so there is no selector script to maintain and the model doing the clicking is the cheapest one.
+- **The stage sets how many.** A toy gets the one path that must work. An mvp gets the critical paths and whatever is hard to undo. Production adds failure modes and a regression test for each bug fixed.
+
+This is not a rule against automated tests: logic with real branches gets one, and so does a bug that must not come back. Coverage is not the target, and a suite is not grown for its count.
+
+### 6. Carry it to production
 
 `/deploy:plan` writes the project's `DEPLOY.md` runbook, `/deploy:check` gates the release (tests, missing secrets, migration safety, build), and `/deploy:run` ships it: through your **existing CI/CD pipeline** (PR, green checks, merge with your yes), through the provider's CLI, or as exact steps you run. Then it health-checks, smoke-tests the live URL, and logs the deploy. Provider notes ship for Coolify, Vercel, Netlify, Fly.io, Railway, and Docker Compose over SSH. Production always asks first.
 
 Not everything is a hosted deploy. For a package published to a registry, a store submission, signed binaries, or an infrastructure apply, the same runbook, gate, and check apply with different meanings: the health check becomes "install the published version and run it", and the rollback line says what recovery really is, because a published version number or an approved store build cannot be taken back. Those always ask first, in every mode.
+
+### 7. Stay efficient while doing it
+
+Tokens, time and context are a budget, and ATLAS treats spending them as an engineering decision like any other. The saving comes from dropping ceremony, never from dropping verification:
+
+- **The cheapest model that can do the job.** Haiku runs written test cases and commits, Sonnet takes a scoped task against a clear spec, and the strongest model keeps the work that needs the whole conversation ([which model for which job](#which-model-for-which-job)).
+- **Deliberation sized to the decision.** `free-will` spends a few lines of reasoning on a choice that is cheap to undo and keeps its full pass for the ones that are not. Skills hold their reference material back until a task needs it.
+- **Rigor sized to the stage.** A toy, an mvp and a production system get different amounts of error handling, tests and review, read from the project's stage line.
+- **Reviews with a number.** The count of review rounds is set before the first one: fix what blocks, report the rest, stop.
+- **Context that lasts.** A project is loaded from its small memory, not from a scan of the repo; a compaction is told what to keep; long command output goes to a file and only the lines that answer the question are read back ([context](#context-compaction-and-advisor-per-workspace)).
+- **Tests that earn their place**, as in section 5: no suite written to be counted.
 
 ---
 
