@@ -14,8 +14,8 @@ If no idea is provided, use AskUserQuestion once: "What app should I one-shot? (
 ## Operating rules
 
 - **Autonomous means autonomous.** Do not pause to ask "should I…?". Decide, record why, keep moving. Escalate only for genuinely destructive actions outside the workspace or decisions that are contractually the partner's (budget, publishing, external services needing their credentials).
-- **Every medium-to-high-stakes fork goes through the `free-will` skill.** Its mechanical triggers are your tripwires: choosing architecture/stack, adding a dependency, schema design, a fix failing for the 2nd–3rd time, deleting or changing something load-bearing.
-- **Every free-will collapse is logged** in `<P>/docs/decision_logs/` — choice, rejected branches, evidence, rationale. The decision log is the paper trail that replaces the partner watching over your shoulder.
+- **Every fork that is costly to get wrong goes through the `free-will` skill.** Its triggers are your tripwires: choosing architecture or stack, adding a dependency, schema design, a fix failing for the second time, deleting or changing something load-bearing. The skill is sized to the fork: a light pass in your own reasoning for a decision that is cheap to undo, the full pass for one that is not.
+- **Every full-pass decision is logged** in `<P>/docs/decision_logs/`: the choice, the options rejected, the evidence, what it gives up. Light-pass decisions go in the final report, a line each. This is the paper trail that replaces the partner watching over your shoulder.
 - **Every product decision goes through the `super-product-owner` skill.** Load it when decompressing the ask and whenever scope, order, or "is this worth building" is in question: outcomes before features, vertical slices, explicit cut lines — and the end-to-end user flows and journeys, which are PO/PM territory, not a design afterthought.
 - **Every graphical surface goes through the `super-ui-ux-design` skill.** An app without one (a CLI, a library, a service, a pipeline) still has an interface: its commands, flags, help and errors, its public API, its contract. Design that with the same care, following the platform's conventions (`.claude/reference/kinds.md`), and skip the visual skill. For a UI, load it before designing or building any of it: derive the design from domain/audience/tone, stay conventional in interaction (Jakob's Law), be distinctive in aesthetics, and never ship the default next-token look. The two super-skills split cleanly: `super-product-owner` decides what gets built and how the journey flows; `super-ui-ux-design` decides how each screen on that journey looks and behaves.
 - **Verify empirically, continuously.** Nothing is "done" because the code looks right — it's done when you ran it and watched it behave.
@@ -29,11 +29,11 @@ This phase is Product Owner work — invoke the **`super-product-owner` skill** 
 
 Write the one-page brief to `<P>/docs/brief.md`, answering the skill's questions yourself since the partner is away: the problem and who exactly has it, what they do today, the 3–5 capabilities that ARE the app, the user journey connecting them, the riskiest assumption, what is explicitly NOT being built in a one-shot, and what done looks like. End it with **acceptance checks**: observable behaviors in the running app ("a new user reaches the first saved item in under a minute", "an empty list shows how to add one"), not user stories. Assumptions are decisions — list them in the brief, made consciously, not by drift.
 
-## Phase 1 — The founding fork (free-will, mandatory)
+## Phase 1 — The founding fork (free-will, full pass)
 
-Invoke the **`free-will` skill** on the founding decision: stack, architecture, and core data model. This is the fork that decides all later forks — the one place where the urge (the default stack you always reach for) deserves the full treatment: contrarian, synthesis, precedent (what do battle-tested apps of this exact shape use?), first principles (what do the actual requirements — users, data volume, realtime or not — dictate?).
+Invoke the **`free-will` skill** on the founding decision: stack, architecture, and core data model. This fork decides all the later ones, so the default stack you always reach for gets the full pass here, with both outside sources: precedent (what do battle-tested apps of this exact shape use?) and first principles (what do the actual requirements, users, data volume, realtime or not, dictate?).
 
-Weigh branches for a **one-shot context**: favor boring, well-trodden, fast-to-verify technology; a one-shot app earns novelty nowhere. Collapse, refute the winner once, then write the founding ADR to `<P>/docs/decision_logs/`.
+Weigh the options for a **one-shot context**: favor boring, well-trodden, fast-to-verify technology; a one-shot app earns novelty nowhere. Choose, try once to refute the choice, then write the founding ADR to `<P>/docs/decision_logs/`.
 
 ## Phase 2 — Plan lean, initiate
 
@@ -51,9 +51,9 @@ The sharpest test is **same abstraction, same layout**: screens of the same kind
 
 Mid-build, the free-will tripwires stay armed:
 
-- A fix fails for the **second time** → stop feeding the hypothesis; free-will the diagnosis.
-- A **new dependency** tempts you → free-will it (precedent vs. stdlib vs. write-it).
-- The **schema or a public contract** needs changing → free-will it; migrations are one-way doors.
+- A fix fails for the **second time** → stop feeding the hypothesis; light pass on the diagnosis.
+- A **new dependency** tempts you → light pass (precedent vs. stdlib vs. write-it).
+- The **schema or a public contract** needs changing → full pass; migrations are one-way doors.
 - Routine calls (naming, file layout, an obvious helper) do **not** trigger — deliberating everything ships nothing.
 
 Each invocation appends to `<P>/docs/decision_logs/`.
@@ -75,7 +75,7 @@ Different from the adversarial pass: that one attacked correctness; this one ste
 1. **Re-read the original ask** — the literal $ARGUMENTS — with fresh eyes, next to the finished app. Where did the build drift from what was pictured?
 2. **Walk the app as the end user** — the journey from the brief, start to finish, in the running app, ticking off every acceptance check (the `manual-qa-haiku` runner can execute them; use `manual-qa-sonnet` for the visual judgment). Not "do the endpoints respond" but "does this feel like the thing." Judge each screen with the `super-ui-ux-design` lens (squint test: is the primary action the most prominent element? is hierarchy, contrast, and spacing deliberate?). Screenshot the key screens as evidence; where there are no screens, keep the commands you ran and their output.
 3. **Check the experience seams** — empty states, error messages, loading, the README/run instructions a stranger would need. One-shot apps die at the seams, not the core.
-4. **Audit the paper trail** — every free-will collapse has its decision-log entry; assumptions from Phase 0 are stated, not buried.
+4. **Audit the paper trail** — every full-pass decision has its decision-log entry, and the light-pass ones are listed; assumptions from Phase 0 are stated, not buried.
 5. **The honest gap list** — what you'd do next, what you knowingly cut, what is weaker than it looks. Naming the gaps is what makes the rest of the report trustworthy.
 
 Fix what this pass surfaces while you're still here; what you choose not to fix goes on the gap list, deliberately.

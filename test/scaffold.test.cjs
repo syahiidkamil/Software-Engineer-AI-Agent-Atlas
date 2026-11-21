@@ -21,7 +21,7 @@ function commonChecks(dir) {
     'CLAUDE.md', 'NOTES.md', '.gitignore', '.gitattributes', '.atlas/config.json', '.atlas/installed.json', '.claude/atlas-manifest.json',
     '.claude/settings.json', '.claude/settings.local.json', '.claude/rules/workspace.md',
     '.claude/agents/manual-qa-haiku.md', '.claude/agents/manual-qa-sonnet.md', '.claude/agents/commit.md',
-    '.claude/hooks/notify.cjs', '.claude/hooks/guard-secrets.cjs', '.claude/scripts/lib/atlas.cjs',
+    '.claude/hooks/notify.cjs', '.claude/hooks/guard-secrets.cjs', '.claude/hooks/compact-keep.cjs', '.claude/scripts/lib/atlas.cjs',
     '.claude/scripts/secrets.cjs', '.claude/scripts/db.cjs', '.claude/templates/DESIGN.md',
     '.claude/commands/atlas/mode.md', '.claude/commands/deploy/run.md',
   ]) assert.ok(exists(dir, f), `missing ${f}`);
@@ -29,6 +29,10 @@ function commonChecks(dir) {
   const shared = JSON.parse(read(dir, '.claude/settings.json'));
   assert.ok(shared.permissions.deny.includes('Read(/.atlas/secrets/**)'));
   assert.match(shared.hooks.PreToolUse[0].hooks[0].command, /guard-secrets\.cjs"$/);
+  assert.equal(shared.hooks.PreCompact[0].hooks[0].command, 'node "${CLAUDE_PROJECT_DIR}/.claude/hooks/compact-keep.cjs"');
+  const kept = spawnSync(process.execPath, [path.join(dir, '.claude', 'hooks', 'compact-keep.cjs')], { encoding: 'utf-8', input: '{"trigger":"auto"}' });
+  assert.equal(kept.status, 0, kept.stderr);
+  assert.match(kept.stdout, /Keep these in the summary/);
   const personal = JSON.parse(read(dir, '.claude/settings.local.json'));
   const commands = Object.values(personal.hooks).flat().map((g) => g.hooks[0].command);
   assert.ok(commands.every((c) => c.startsWith('node "${CLAUDE_PROJECT_DIR}/.claude/hooks/notify.cjs"')), commands.join('\n'));

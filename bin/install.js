@@ -378,7 +378,8 @@ const hook = (matcher, command) => ({ matcher, hooks: [{ type: 'command', comman
 
 /**
  * Shared, committed guardrails: secrets stay out of reach of the Read/Edit tools
- * (permission rules) and of the shell (the guard hook).
+ * (permission rules) and of the shell (the guard hook), and a compaction is told
+ * what its summary has to keep.
  */
 function sharedSettings() {
   return {
@@ -399,6 +400,8 @@ function sharedSettings() {
     },
     hooks: {
       PreToolUse: [hook('Bash', hookCmd('guard-secrets.cjs'))],
+      // Its stdout becomes instructions for the compaction summary: approvals, constraints and progress survive it.
+      PreCompact: [hook('', hookCmd('compact-keep.cjs'))],
     },
   };
 }
@@ -1031,7 +1034,7 @@ async function scaffold(targetDir) {
       if (contextFile === 'shared' && (compactPct || advisor)) print(`  ${YELLOW}⚠${RESET} so the compaction/advisor choice was not saved; add it to .claude/settings.json yourself`);
     } else {
       settle('.claude/settings.json', writeSettings(path.join(claudeDir, 'settings.json'), retired, sharedSettings(), contextFile === 'shared' ? context : {}));
-      added('.claude/settings.json (secret guardrails, shared)');
+      added('.claude/settings.json (secret guardrails, compaction instructions; shared)');
     }
     settle('.claude/settings.local.json', writeSettings(path.join(claudeDir, 'settings.local.json'), retired, personalSettings(options), contextFile === 'local' ? context : {}));
     added('.claude/settings.local.json (permissions, notifications, personal)');
@@ -1236,7 +1239,7 @@ function additiveMergers() {
       return {
         text: jsonLike(current, after),
         changed: JSON.stringify(after) !== JSON.stringify(before),
-        note: 'adds the secret guardrails that are missing (deny rules, the guard hook); your own settings and hooks stay',
+        note: 'adds the ATLAS lines that are missing (secret deny rules, the guard hook, the compaction hook); your own settings and hooks stay',
       };
     },
   };

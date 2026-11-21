@@ -98,7 +98,7 @@ Memory grows with the project: a new project starts with the map, the status, an
 
 ### 4. Bring senior judgment to every turn
 
-A persistent engineering identity (principles, roles, conventions) plus skills that load when the work calls for them. At the center is **`free-will`**: on a medium-to-high-stakes fork (a stack, a schema, deprecating something others depend on) it refuses the first plausible answer, holds real alternatives open, grounds each in evidence, simulates the blast radius, tries to *refute* the winner, then logs the decision. It fires **autonomously** on mechanical triggers, like a fix that failed twice, a new dependency, or a migration. **`adversarial-review`** then attacks what was built: clean-context reviewers with opposing mandates, and every finding reproduced against the running app before anyone believes it.
+A persistent engineering identity (principles, roles, conventions) plus skills that load when the work calls for them. At the center is **`free-will`**: at a fork that is costly to get wrong it refuses the first plausible answer and chooses on purpose. It is sized to the fork: a decision that is cheap to undo (a new dependency, a fix that failed twice) gets a quick pass in its own reasoning, and one that is not (a stack, a schema, deprecating something others depend on) gets real alternatives, each grounded in evidence, the blast radius worked out, an attempt to *refute* the winner, and a logged decision. It fires **autonomously** on countable triggers. **`adversarial-review`** then attacks what was built: clean-context reviewers with opposing mandates, and every finding reproduced against the running app before anyone believes it.
 
 ### 5. Carry it to production
 
@@ -240,7 +240,7 @@ Installed à la carte. The scaffolder pre-checks `super-product-owner`, `super-u
 
 | Skill | Command | What it does |
 |-------|---------|--------------|
-| Free Will | `/free-will` | Deliberate choice on medium-to-high-stakes forks: branch, ground in evidence, simulate consequences, refute the winner, log the decision. Fires autonomously on mechanical triggers |
+| Free Will | `/free-will` | Deliberate choice at a fork that is costly to get wrong, sized to the fork: a quick pass in its own reasoning when the decision is cheap to undo; options, evidence, consequences, an attempt to refute the winner and a logged decision when it is not. Fires autonomously on countable triggers |
 | Super Product Owner | `/super-product-owner` | Decide what is worth building: one-question-at-a-time interview, a one-page brief, a prototype hand-off, a taste review, and acceptance checks instead of user stories |
 | Super UI/UX Design | `/super-ui-ux-design` | Design theory (UX laws, heuristics, hierarchy, WCAG) fused with an execution playbook for distinctive, production-grade interfaces |
 | Adversarial Review | `/adversarial-review` | Presume what was just built is broken: clean-context reviewers with opposing lenses, every finding reproduced against the running app |
@@ -357,6 +357,12 @@ The scaffolder asks two questions and writes the answers into the workspace's ow
 
 Change either later with `/atlas:settings`.
 
+Three more things keep a long session cheap, and they need no setting:
+
+- **A compaction is told what to keep.** A `PreCompact` hook (`.claude/hooks/compact-keep.cjs`, in the shared `settings.json`) hands every compaction, `/compact` or automatic, a short list: what you approved and what you ruled out, your standing instructions, what is done and verified against what is left, the decisions and the files touched. In multi mode it also names the project the session is on. What you type after `/compact` is passed along and comes first.
+- **Review rounds have a number.** `adversarial-review` sets the number of rounds before the first one (one for a feature, two for a release), because a fresh reviewer always finds something and "review until clean" never ends. After the last round it fixes what blocks, lists the rest as known gaps, and leaves another round to you.
+- **Long output stays out of the conversation.** The workspace rule tells ATLAS to use a failures-only test reporter, a `--stat` before a full diff, a line range of a large file, and to put a long log in `gitignored/` and read from there, since everything a command prints is paid for again on every later turn.
+
 ### Agent teams (recommended)
 
 Claude Code can run a team of sessions instead of one: a lead that hands out work, and teammates that each have their own context window, share a task list, and message each other directly. A subagent only reports back to the session that started it. The feature is experimental and off by default, so ATLAS does not switch it on for you. We recommend setting it to `1`:
@@ -470,7 +476,7 @@ Your main session runs whatever model you pick (Opus or Fable for the hardest wo
 │   ├── skills/                  # 14 skills, installed à la carte
 │   ├── agents/                  # 4 agents (QA runners, commit, knowledge-dream)
 │   ├── commands/                # Slash commands: atlas/ brainstorm/ deploy/ design/ git/ plan/ qa/ start/
-│   ├── hooks/                   # notify.cjs (spoken notices), guard-secrets.cjs (secret guard)
+│   ├── hooks/                   # notify.cjs (spoken notices), guard-secrets.cjs (secret guard), compact-keep.cjs (what a compaction keeps)
 │   ├── reference/               # kinds.md: what run, verify, QA and release mean per kind of software (read on demand)
 │   ├── rules/                   # workspace.md (always loaded); design/<project>.md (path-scoped)
 │   ├── scripts/                 # secrets.cjs, db.cjs, project.cjs, knowledge.cjs, mode.cjs, port.cjs, lib/

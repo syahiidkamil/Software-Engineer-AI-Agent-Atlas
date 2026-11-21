@@ -178,4 +178,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { spokenName, lastProjectIn };
+module.exports = { spokenName, lastProjectIn, inferMultiProject };

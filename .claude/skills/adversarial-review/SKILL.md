@@ -43,7 +43,8 @@ building anything non-trivial, before shipping, or when handed unfamiliar code t
 
 1. **Frame the target and scale.** Name what's under review (a diff, a feature, a running app, a whole
    codebase) and how to exercise it (commands to run, URLs/flows to walk, entry points). Pick reviewer
-   count by stakes: 1 for a small change, 3–5 lenses for a feature or build.
+   count by stakes: 1 for a small change, 3–5 lenses for a feature or build. Set the number of
+   review rounds now as well (step 5).
 
 2. **Fan out hostile reviewers in clean contexts.** Spawn subagents, each with the presumed-broken
    mandate and **one lens**, blind to each other. Choose lenses that fit the target — typically:
@@ -62,6 +63,14 @@ building anything non-trivial, before shipping, or when handed unfamiliar code t
 4. **Triage like a senior.** Fix what reproduced, re-run to confirm the fix closed it (and opened
    nothing new), and record what looked like a bug but wasn't. If a fix opens a real design fork,
    invoke `free-will`.
+
+5. **Stop at the number of rounds you set.** A fresh reviewer always finds something, so "review
+   until a round comes back clean" never ends, and each round costs more than the one before: the
+   reviewers, the fixes, and re-verifying everything the fixes touched. Decide the rounds in step 1
+   and say the number: one for a feature, two for a release or anything hard to undo. A second round
+   reviews the fixes and what the first could not exercise, not the whole target again. After the
+   last round, fix what blocks shipping, move the rest to "Confirmed & deferred", and report. One more
+   round is the user's decision, made with that report in hand, not the reviewer's.
 
 ## Output — the report
 

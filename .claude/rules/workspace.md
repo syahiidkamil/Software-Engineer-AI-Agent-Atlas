@@ -40,6 +40,20 @@ the note to update instead). A fact true for several projects goes in the root `
 touched before, or when something behaves oddly, run `knowledge.cjs list <project>` and read the
 notes that match.
 
+## Context
+
+What a command prints stays in the conversation and is paid for again on every later turn, so ask
+for the part that answers the question: a failures-only or quiet reporter for a test run, `git diff
+--stat` before a full diff, a count before a listing, a line range of a large file. Output worth
+searching later (a full test run, a build log) goes to a file under `gitignored/`, and you read the
+lines you need from there.
+
+A fresh session that reads `STATUS.md` is cheaper and sharper than a long one that was compacted.
+When a task is finished and the next one is unrelated, update `STATUS.md` and suggest `/clear`. A
+compaction summary is a lossy copy: after one, an approval or a limit the summary does not state
+is confirmed with the user again, not assumed. (`.claude/hooks/compact-keep.cjs` tells every
+compaction what to keep.)
+
 ## Template files and yours
 
 `.claude/atlas-manifest.json` says which paths swe-atlas ships and which are the user's. An update

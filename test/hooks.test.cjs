@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { decide } = require('../.claude/hooks/guard-secrets.cjs');
 const { spokenName } = require('../.claude/hooks/notify.cjs');
+const { instructions } = require('../.claude/hooks/compact-keep.cjs');
 const { workspace, write, hook } = require('./helpers.cjs');
 
 test('guard: blocks commands that touch secrets or real env files', () => {
@@ -103,4 +104,40 @@ test('notify: never fails, even with garbage input or opted out', () => {
   const root = workspace({ mode: 'multi' });
   assert.equal(hook('notify.cjs', ['done', '--dry-run'], { root, input: '{{{' }).status, 0);
   assert.equal(hook('notify.cjs', ['done'], { root, env: { ATLAS_NOTIFY: 'off' } }).status, 0);
+});
+
+test('compact-keep: the summary is told to keep approvals, constraints and progress', () => {
+  const out = hook('compact-keep.cjs', [], { input: JSON.stringify({ hook_event_name: 'PreCompact', trigger: 'auto', custom_instructions: null }) });
+  assert.equal(out.status, 0);
+  for (const kept of [/approved/, /rejected or said to leave alone/, /Standing instructions/, /done and verified/, /what is left/, /Decisions made/, /Paths of the files/]) assert.match(out.stdout, kept);
+  assert.doesNotMatch(out.stdout, /The user's own instructions/, 'nothing is invented when the user gave none');
+  assert.ok(out.stdout.length < 2000, 'instructions stay short: they are read on every compaction');
+});
+
+test('compact-keep: what the user typed after /compact is repeated, and wins', () => {
+  const text = instructions({ trigger: 'manual', custom_instructions: '  focus on the migration  ' }, null);
+  assert.match(text, /The user's own instructions for this compaction, which come first where the two disagree:\nfocus on the migration$/);
+  assert.doesNotMatch(instructions({ custom_instructions: '   ' }, null), /The user's own instructions/);
+  assert.doesNotMatch(instructions({ custom_instructions: { not: 'a string' } }, null), /The user's own instructions/);
+});
+
+test('compact-keep: never blocks a compaction, whatever arrives on stdin', () => {
+  // exit code 2 from a PreCompact hook blocks the compaction, so no input may produce it
+  for (const input of ['not json', '', 'null', '[]', '{"custom_instructions":5}']) {
+    const out = hook('compact-keep.cjs', [], { input });
+    assert.equal(out.status, 0, JSON.stringify(input));
+    assert.match(out.stdout, /Keep these in the summary/, JSON.stringify(input));
+    assert.equal(out.stderr, '');
+  }
+});
+
+test('compact-keep: in a multi-mode workspace it names the project the session is on', () => {
+  const root = workspace({ mode: 'multi' }, { 'projects/shop/CLAUDE.md': '', 'projects/blog/CLAUDE.md': '' });
+  const run = (input, at = root) => hook('compact-keep.cjs', [], { root: at, input: JSON.stringify(input) });
+  assert.match(run({ cwd: `${root}/projects/shop/src` }).stdout, /working on the project "shop" \(projects\/shop\/\)/);
+  const transcript = write(root, 't.jsonl', JSON.stringify({ message: { content: [{ type: 'tool_use', input: { command: 'cd projects/blog/repos/web && npm test' } }] } }));
+  assert.match(run({ cwd: root, transcript_path: transcript }).stdout, /working on the project "blog"/);
+  assert.doesNotMatch(run({ cwd: root }).stdout, /working on the project/, 'no guess when nothing points at a project');
+  const single = workspace({ mode: 'repo' }, { 'projects/shop/CLAUDE.md': '' });
+  assert.doesNotMatch(run({ cwd: `${single}/projects/shop` }, single).stdout, /working on the project/, 'one project at the root needs no name');
 });
