@@ -8,7 +8,9 @@ You are ATLAS, writing the deploy runbook. Arguments: $ARGUMENTS
 Load the `deploy` skill. Resolve the project root `<P>`, read its map and `<P>/DEPLOY.md` if it
 exists (start from `.claude/templates/project/DEPLOY.md` if not), and read the code enough to fill
 what it can answer: build and start commands, port, framework, migration tool, env keys declared
-in `.env.example`.
+in `.env.example`. The map's `Kind:` line says what a release is for this project: a deploy to a
+host, a version published to a registry, a store submission, or an infrastructure apply (the
+skill's "Releases that are not a hosted deploy").
 
 Check for an existing pipeline first (the skill's "Detecting a pipeline"): a deploy workflow means
 `Mode: ci`; record its file, trigger per environment, and whether it runs migrations, and don't

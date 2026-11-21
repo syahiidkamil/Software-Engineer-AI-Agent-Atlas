@@ -10,8 +10,10 @@ const readme = fs.readFileSync(path.join(REPO, 'README.md'), 'utf-8');
 
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
-  const stat = fs.statSync(dir);
-  if (stat.isFile()) return [...out, dir];
+  if (fs.statSync(dir).isFile()) {
+    out.push(dir); // push, not a new array: the recursive call below ignores the return value
+    return out;
+  }
   for (const n of fs.readdirSync(dir)) {
     if (n === '.DS_Store' || n === 'node_modules') continue;
     walk(path.join(dir, n), out);
@@ -49,7 +51,8 @@ test('removed agents, skills, commands, and hooks are referenced nowhere', () =>
     'mcp-builder', 'anthropic-product-knowledge', 'postgresql-code-review', 'postgresql-optimization', 'plandev',
     'task-complete', 'ask-user-input', 'server-postgres'];
   const files = [
-    ...walk(path.join(REPO, '.claude')).filter((f) => !f.includes(`${path.sep}worktrees${path.sep}`) && !f.endsWith('settings.local.json')),
+    // the manifest is the one place removed paths belong: `swe-atlas update` cleans them up from that list
+    ...walk(path.join(REPO, '.claude')).filter((f) => !f.includes(`${path.sep}worktrees${path.sep}`) && !f.endsWith('settings.local.json') && f !== claude('atlas-manifest.json')),
     ...walk(path.join(REPO, 'bin')), ...walk(path.join(REPO, 'claude_md_variants')), ...walk(path.join(REPO, 'misc', 'self')),
     path.join(REPO, 'README.md'), path.join(REPO, 'NOTES.md'), path.join(REPO, 'CLAUDE.md'), path.join(REPO, 'package.json'), path.join(REPO, '.mcp.json'),
   ].filter((f) => /\.(md|js|cjs|json|ya?ml)$/.test(f));
@@ -90,6 +93,26 @@ test('path-scoped rules and the design template are where the loader expects the
     const text = fs.readFileSync(f, 'utf-8');
     if (text.startsWith('---')) assert.match(text, /^---\npaths:\n/, `${path.relative(REPO, f)}: frontmatter must hold only paths:`);
   }
+});
+
+test('every .claude/reference file a command, skill, agent, or template points at is shipped', () => {
+  const kinds = fs.readFileSync(claude('reference', 'kinds.md'), 'utf-8');
+  const template = fs.readFileSync(claude('templates', 'project', 'CLAUDE.md'), 'utf-8');
+  const offered = /KIND: kind \|\| '<([^>]+)>'/.exec(fs.readFileSync(claude('scripts', 'lib', 'workspace.cjs'), 'utf-8'));
+  assert.ok(offered, 'workspace.cjs lists the kinds a new map offers');
+  for (const kind of offered[1].split('|').map((k) => k.trim())) assert.ok(kinds.includes(`| \`${kind}\``), `kinds.md has no row for ${kind}`);
+  assert.match(template, /^Kind: \{\{KIND\}\}$/m);
+
+  let pointers = 0;
+  for (const f of ['agents', 'commands', 'skills', 'templates', 'scripts', 'rules'].flatMap((d) => walk(claude(d))).filter((x) => /\.(md|cjs)$/.test(x))) {
+    for (const m of fs.readFileSync(f, 'utf-8').matchAll(/\.claude\/reference\/([\w.-]+\.md)/g)) {
+      pointers++;
+      assert.ok(fs.existsSync(claude('reference', m[1])), `${path.relative(REPO, f)} points at a missing reference: ${m[1]}`);
+    }
+  }
+  assert.ok(pointers > 5, 'the kind-aware commands read kinds.md');
+  const pkg = JSON.parse(fs.readFileSync(path.join(REPO, 'package.json'), 'utf-8'));
+  assert.ok(pkg.files.includes('.claude/reference/'), 'the reference folder is in the package');
 });
 
 test('shipped files carry no personal names or hosts', () => {

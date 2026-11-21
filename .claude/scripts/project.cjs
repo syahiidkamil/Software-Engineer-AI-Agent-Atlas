@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Projects in a multi-mode ATLAS workspace.
-//   add <name> [--stage toy|mvp|production] [--one-line "..."] [--stack "..."]
+//   add <name> [--stage toy|mvp|production] [--kind "..."] [--one-line "..."] [--stack "..."]
 //   list [--json]
 //   status            refresh index.md's Status column from each STATUS.md "Now:" line
 
@@ -11,8 +11,10 @@ const ws = require('./lib/workspace.cjs');
 
 const HELP = `Usage: node .claude/scripts/project.cjs <command>
 
-  add <name> [--stage toy|mvp|production] [--one-line "..."] [--stack "..."]
+  add <name> [--stage toy|mvp|production] [--kind "..."] [--one-line "..."] [--stack "..."]
         create projects/<name>/ (CLAUDE.md, STATUS.md, .env.example) and register it in index.md
+        --kind: web-app | backend-service | mobile-app | desktop-app | cli | library | game | data-ml | infrastructure | other
+                (what running, verifying and releasing mean: .claude/reference/kinds.md)
   list [--json]   projects with stage and status
   status          refresh index.md from each project's CLAUDE.md and STATUS.md
 
@@ -26,7 +28,7 @@ function parse(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--json' || a === '--help' || a === '-h') opts[a.replace(/^-+/, '')] = true;
-    else if (['--stage', '--one-line', '--stack'].includes(a)) {
+    else if (['--stage', '--kind', '--one-line', '--stack'].includes(a)) {
       if (argv[i + 1] === undefined) throw new Error(`${a} needs a value`);
       opts[a.slice(2)] = argv[++i];
     } else if (a.startsWith('--')) throw new Error(`unknown option ${a}`);
@@ -69,7 +71,7 @@ function add(opts) {
   lib.validateProjectName(name);
   const dir = path.join(root, 'projects', name);
   if (fs.existsSync(dir)) throw new Error(`projects/${name}/ already exists`);
-  const files = ws.projectFiles('multi', { name, stage: opts.stage, oneLine: opts['one-line'], stack: opts.stack });
+  const files = ws.projectFiles('multi', { name, stage: opts.stage, kind: opts.kind, oneLine: opts['one-line'], stack: opts.stack });
   for (const [file, content] of Object.entries(files)) lib.writeFile(path.join(dir, file), content);
   const row = { ...projectRow(name), Stack: opts.stack || '' };
   lib.writeFile(indexFile(), ws.upsertIndexRow(lib.readIfExists(indexFile()), row));

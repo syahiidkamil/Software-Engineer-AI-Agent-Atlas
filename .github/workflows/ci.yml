@@ -44,7 +44,7 @@ jobs:
           node -e '
             const [p] = require("./pack.json");
             const files = p.files.map((f) => f.path);
-            const must = [".claude/scripts/secrets.cjs", ".claude/hooks/notify.cjs", ".claude/templates/index.md", ".claude/rules/workspace.md", "bin/install.js"];
+            const must = [".claude/scripts/secrets.cjs", ".claude/hooks/notify.cjs", ".claude/templates/index.md", ".claude/rules/workspace.md", "bin/install.js", "bin/lib/template.js", "bin/lib/update.js", ".claude/atlas-manifest.json", ".claude/reference/kinds.md", ".claude/commands/atlas/update.md", ".claude/scripts/knowledge.cjs", ".claude/commands/atlas/dream.md", ".claude/agents/knowledge-dream.md", "misc/self/atlas.md"];
             const missing = must.filter((m) => !files.includes(m));
             if (missing.length) { console.error("missing from package:", missing); process.exit(1); }
             if (files.some((f) => f.endsWith(".wav") || f.startsWith("test/") || f.startsWith("gitignored/"))) { console.error("unexpected files in package"); process.exit(1); }

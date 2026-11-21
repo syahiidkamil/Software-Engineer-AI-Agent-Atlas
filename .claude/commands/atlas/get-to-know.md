@@ -31,6 +31,7 @@ don't already answer.
 **Batch 1 — What:**
 - "What is this project? (one sentence — what problem does it solve, for whom?)"
 - "What stage is it? toy (simplest thing that works) / mvp (sound core, honest shortcuts) / production (full engineering bar)"
+- "What kind of software is it? web app / backend service or API / mobile app / desktop app / CLI / library / game / data or ML pipeline / infrastructure" (skip this one when the code already answers it)
 
 **Batch 2 — Shape:**
 - "Who uses this? (audience/users)"
@@ -41,11 +42,12 @@ don't already answer.
 If the project already has code, hand the scan to the built-in **Explore** subagent so the file
 dumps stay in its context and only the conclusion comes back:
 
-"Analyze the code under <P> (and its repos/ if any). Report: 1) structure (top 3 levels),
-2) tech stack with versions (package.json, go.mod, requirements.txt, ...), 3) patterns and
-conventions in use, 4) entry points and how to run, test, and build it, with ports,
-5) existing CLAUDE.md, README.md, docs, 6) tests, CI/CD, database and migration setup.
-Be concise."
+"Analyze the code under <P> (and its repos/ if any). Report: 1) what kind of software it is and
+its structure (top 3 levels), 2) tech stack with versions (from its manifest and lock files),
+3) patterns and conventions in use, 4) entry points and how to run, test, and build it, with
+ports where it listens on one, and how a change is seen working (a URL, a simulator, a command's
+output), 5) existing CLAUDE.md, README.md, docs, 6) tests, CI/CD, how it is released, and any
+database and migration setup. Be concise."
 
 Summarize the findings to Boss: "Here's what I found: [stack, structure, patterns, how to run]".
 If no code exists, skip to Phase 3.
@@ -62,8 +64,9 @@ Do not use `misc/archive/` — it holds retired material kept for reference only
 
 ## Phase 4: Configure the Workspace
 
-- **Repos** (project and multi mode): list `<P>/repos/`. For each repo, ask its port and start
-  command (suggest defaults from the detected stack), and record them in the map's "Run and test".
+- **Repos** (project and multi mode): list `<P>/repos/`. For each repo, ask how it is started
+  and, if it listens on one, its port (suggest defaults from the detected stack), and record
+  them in the map's "Run and test".
 - **Env contract**: if the code reads env vars, list their names (never values) in
   `<P>/.env.example`. The user stores each value once, themselves
   (`node .claude/scripts/secrets.cjs set KEY` in their terminal, or `! pbpaste | node .claude/scripts/secrets.cjs set KEY`
@@ -78,9 +81,12 @@ Do not use `misc/archive/` — it holds retired material kept for reference only
 Write the map (`PROJECT.md`, or `projects/<name>/CLAUDE.md` in multi mode) from
 `.claude/templates/project/CLAUDE.md`, 60 to 100 lines:
 
-- `Stage:` and `One line:` at the top (the stage line sets how much rigor applies)
-- **Stack and layout** — framework, database, hosting; where things live
-- **Run and test** — dev, test, build commands with ports
+- `Stage:`, `Kind:` and `One line:` at the top. The stage line sets how much rigor applies; the
+  kind line says what running, verifying and releasing mean for this project
+  (`.claude/reference/kinds.md` has the list and what each implies)
+- **Stack and layout** — languages and frameworks, data stores, where it runs; where things live
+- **Run and test** — run, test and build commands (ports where they apply), and `verify:`, how a
+  change is seen working: a URL, a simulator, a command and its output, a plan diff
 - **Read before working on...** — which deep document to read for which job (point at them; never
   `@import` deep documents, imports load in full every session)
 - **Conventions** — only the non-obvious ones
@@ -91,7 +97,7 @@ exists from an older ATLAS, fold its content into the map and delete it.
 ## Phase 6: Summary
 
 Report what was configured:
-- Project: {one-liner}, stage {stage}
+- Project: {one-liner}, stage {stage}, kind {kind}
 - Tech stack: {detected/declared}
 - Conventions: {where they were recorded}
 - Repos: {list with ports, if any}

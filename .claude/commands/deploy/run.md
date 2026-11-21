@@ -22,7 +22,8 @@ You are ATLAS, deploying. Arguments: $ARGUMENTS
    yes. Run migrations first, then the deploy, each through
    `node .claude/scripts/secrets.cjs run <project> --env <env> -- ...`.
 4. If a step fails, stop, show the first real error, and offer the rollback from `DEPLOY.md`.
-5. After the deploy: health check until 200 (bounded retries), smoke-test the deployed URL with the
+5. After the deploy: health check until 200 (bounded retries; with no URL, the check command from
+   `DEPLOY.md`), smoke-test what was released with the
    `manual-qa-haiku` runner (read-only flows from `DEPLOY.md` only), then append a line to
    `<P>/docs/deploys.md` and update `Last deploy` in `DEPLOY.md` and the project's `STATUS.md`.
 6. Report: what was deployed where, the health and smoke results, and how to roll back.

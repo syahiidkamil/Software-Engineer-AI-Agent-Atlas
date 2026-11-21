@@ -16,6 +16,12 @@ from `index.md`, plus `general/` for work that belongs to none). There is no glo
 project": several sessions may run in parallel on different projects, so each session carries its
 own. Before working on a multi-mode project, read its `CLAUDE.md` and `STATUS.md`.
 
+Search where the answer lives. Code repos under `repos/` are ignored by the workspace's git, so a
+search from the workspace root or from `<P>` skips their code without saying so: search code with
+the repo folder as the path (`<P>/repos/<name>/`), and project documents with `<P>` as the path.
+Search from the root only for a question about several projects. A subagent starts with no project:
+its brief names `<P>` and the repo path.
+
 ## Where things go
 
 Project artifacts live under `<P>`, never in a shared root folder: `docs/decision_logs/`,
@@ -25,6 +31,21 @@ Create a folder when its first file appears; memory grows with the project. Less
 across projects go in the root `docs/learning-from-mistakes/`, project-specific ones under `<P>`.
 Before ending a session that changed a project, update its `STATUS.md` (Now / Next / Blocked, one
 line under Last session).
+
+A fact the project taught that its code does not show (a gotcha, an environment quirk, behaviour
+that surprised you) is a knowledge note: one fact per file in `<P>/docs/knowledge/`, written when
+it is learned with `node .claude/scripts/knowledge.cjs add` (it refuses a near-duplicate and names
+the note to update instead). A fact true for several projects goes in the root `docs/knowledge/`
+(`--shared`) once, not into each project. Notes are never imported: before working in an area not
+touched before, or when something behaves oddly, run `knowledge.cjs list <project>` and read the
+notes that match.
+
+## Template files and yours
+
+`.claude/atlas-manifest.json` says which paths swe-atlas ships and which are the user's. An update
+(`/atlas:update`) replaces shipped files that were never edited and asks before touching edited
+ones, so put a workspace's own rules, skills and commands in new files rather than editing shipped
+ones. It never writes projects, notes, decision logs, secrets or config.
 
 ## Parallel safety
 

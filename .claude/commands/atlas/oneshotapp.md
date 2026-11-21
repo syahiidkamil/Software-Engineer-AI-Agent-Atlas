@@ -15,9 +15,9 @@ If no idea is provided, use AskUserQuestion once: "What app should I one-shot? (
 
 - **Autonomous means autonomous.** Do not pause to ask "should I…?". Decide, record why, keep moving. Escalate only for genuinely destructive actions outside the workspace or decisions that are contractually the partner's (budget, publishing, external services needing their credentials).
 - **Every medium-to-high-stakes fork goes through the `free-will` skill.** Its mechanical triggers are your tripwires: choosing architecture/stack, adding a dependency, schema design, a fix failing for the 2nd–3rd time, deleting or changing something load-bearing.
-- **Every free-will collapse is logged** in `docs/decision_logs/` — choice, rejected branches, evidence, rationale. The decision log is the paper trail that replaces the partner watching over your shoulder.
+- **Every free-will collapse is logged** in `<P>/docs/decision_logs/` — choice, rejected branches, evidence, rationale. The decision log is the paper trail that replaces the partner watching over your shoulder.
 - **Every product decision goes through the `super-product-owner` skill.** Load it when decompressing the ask and whenever scope, order, or "is this worth building" is in question: outcomes before features, vertical slices, explicit cut lines — and the end-to-end user flows and journeys, which are PO/PM territory, not a design afterthought.
-- **Every user-facing surface goes through the `super-ui-ux-design` skill.** Load it before designing or building any UI: derive the design from domain/audience/tone, stay conventional in interaction (Jakob's Law), be distinctive in aesthetics, and never ship the default next-token look. The two super-skills split cleanly: `super-product-owner` decides what gets built and how the journey flows; `super-ui-ux-design` decides how each screen on that journey looks and behaves.
+- **Every graphical surface goes through the `super-ui-ux-design` skill.** An app without one (a CLI, a library, a service, a pipeline) still has an interface: its commands, flags, help and errors, its public API, its contract. Design that with the same care, following the platform's conventions (`.claude/reference/kinds.md`), and skip the visual skill. For a UI, load it before designing or building any of it: derive the design from domain/audience/tone, stay conventional in interaction (Jakob's Law), be distinctive in aesthetics, and never ship the default next-token look. The two super-skills split cleanly: `super-product-owner` decides what gets built and how the journey flows; `super-ui-ux-design` decides how each screen on that journey looks and behaves.
 - **Verify empirically, continuously.** Nothing is "done" because the code looks right — it's done when you ran it and watched it behave.
 - **Use `ultracode` (dynamic workflows) for the parallelizable phases.** A one-shot runs unattended and is judged on thoroughness, not token thrift — so when the work fans out (multi-lens adversarial review, broad codebase exploration, verifying several slices at once), author a workflow that spawns the subagents and cross-checks their findings instead of grinding through it serially. The execution loop is Claude Code's; you orchestrate it well.
 
@@ -33,21 +33,21 @@ Write the one-page brief to `<P>/docs/brief.md`, answering the skill's questions
 
 Invoke the **`free-will` skill** on the founding decision: stack, architecture, and core data model. This is the fork that decides all later forks — the one place where the urge (the default stack you always reach for) deserves the full treatment: contrarian, synthesis, precedent (what do battle-tested apps of this exact shape use?), first principles (what do the actual requirements — users, data volume, realtime or not — dictate?).
 
-Weigh branches for a **one-shot context**: favor boring, well-trodden, fast-to-verify technology; a one-shot app earns novelty nowhere. Collapse, refute the winner once, then write the founding ADR to `docs/decision_logs/`.
+Weigh branches for a **one-shot context**: favor boring, well-trodden, fast-to-verify technology; a one-shot app earns novelty nowhere. Collapse, refute the winner once, then write the founding ADR to `<P>/docs/decision_logs/`.
 
 ## Phase 2 — Plan lean, initiate
 
-No spec ceremony. Produce a short milestone list of **vertical slices** with the `super-product-owner` lens — each slice user-valuable end-to-end (skateboard, not wheel), ordered by value and risk — so the first slice is a **walking skeleton**: the thinnest end-to-end path (UI → API → data → back) that proves the architecture live. Scaffold the project, get the skeleton running, and verify it in the running app before building anything wide.
+No spec ceremony. Produce a short milestone list of **vertical slices** with the `super-product-owner` lens — each slice user-valuable end-to-end (skateboard, not wheel), ordered by value and risk — so the first slice is a **walking skeleton**: the thinnest end-to-end path through every layer the app has, proving the architecture live (a web app: UI → API → data → back; a CLI: arguments → core → output; a pipeline: source → transform → sink; a game: input → one rule → rendered frame). Scaffold the project, get the skeleton running, and verify it in the running app before building anything wide.
 
 ## Phase 3 — Build loop
 
-Implement slice by slice. After each slice: run it, exercise the new behavior against the acceptance checks it touches (browser automation if available, otherwise curl/scripts/tests), fix until observed-green, then move on.
+Implement slice by slice. After each slice: run it, exercise the new behavior against the acceptance checks it touches, on the surface this kind of app has (a browser, a simulator, HTTP calls, the command line; scripts and tests where nothing can drive it from here), fix until observed-green, then move on.
 
 For slices with a user-facing surface, invoke the **`super-ui-ux-design` skill** before writing the UI — its execution playbook (context reasoning, probability-bias breaking, HTML/CSS-first thinking, curate-and-verify) is how the frontend earns the same rigor the free-will skill gives the backend forks.
 
-Once the last user-facing slice lands and the UI/UX design is fixed, run a **standardization recheck** across every screen before leaving the build loop: one spacing scale, one typography hierarchy, one component language (buttons, cards, forms, empty states styled identically wherever they appear), consistent layout structure and navigation placement. Slice-by-slice building drifts by nature — this sweep converges the screens back into a single design system. If a design rule for this project exists in `.claude/rules/design/`, audit each screen against its tokens — tokens win over local improvisation.
+For an app with screens: once the last user-facing slice lands and the UI/UX design is fixed, run a **standardization recheck** across every screen before leaving the build loop: one spacing scale, one typography hierarchy, one component language (buttons, cards, forms, empty states styled identically wherever they appear), consistent layout structure and navigation placement. Slice-by-slice building drifts by nature — this sweep converges the screens back into a single design system. If a design rule for this project exists in `.claude/rules/design/`, audit each screen against its tokens — tokens win over local improvisation.
 
-The sharpest test is **same abstraction, same layout**: screens of the same kind must be structurally interchangeable. Walk all dashboard pages side by side — every table page puts its search/filter bar, column header treatment, row density, pagination, and page title + actions in the same places with the same fonts; every form page, every detail page, likewise. If two screens of the same kind solve the same problem two ways, pick one and migrate the other. Fix divergences now; a consistency bug surfacing in review is this step skipped.
+The sharpest test is **same abstraction, same layout**: screens of the same kind must be structurally interchangeable. Walk all dashboard pages side by side — every table page puts its search/filter bar, column header treatment, row density, pagination, and page title + actions in the same places with the same fonts; every form page, every detail page, likewise. If two screens of the same kind solve the same problem two ways, pick one and migrate the other. Fix divergences now; a consistency bug surfacing in review is this step skipped. The same test applies without screens: every subcommand takes its flags, prints its errors and formats its output the same way; every endpoint names, paginates and fails the same way.
 
 Mid-build, the free-will tripwires stay armed:
 
@@ -56,7 +56,7 @@ Mid-build, the free-will tripwires stay armed:
 - The **schema or a public contract** needs changing → free-will it; migrations are one-way doors.
 - Routine calls (naming, file layout, an obvious helper) do **not** trigger — deliberating everything ships nothing.
 
-Each invocation appends to `docs/decision_logs/`.
+Each invocation appends to `<P>/docs/decision_logs/`.
 
 ## Phase 4 — Adversarial review
 
@@ -73,7 +73,7 @@ Triage findings like a senior: **reproduce before fixing** (a finding that can't
 Different from the adversarial pass: that one attacked correctness; this one steps back and asks whether you built **the right thing, whole**. Slow down, on purpose:
 
 1. **Re-read the original ask** — the literal $ARGUMENTS — with fresh eyes, next to the finished app. Where did the build drift from what was pictured?
-2. **Walk the app as the end user** — the journey from the brief, start to finish, in the running app, ticking off every acceptance check (the `manual-qa-haiku` runner can execute them; use `manual-qa-sonnet` for the visual judgment). Not "do the endpoints respond" but "does this feel like the thing." Judge each screen with the `super-ui-ux-design` lens (squint test: is the primary action the most prominent element? is hierarchy, contrast, and spacing deliberate?). Screenshot the key screens as evidence.
+2. **Walk the app as the end user** — the journey from the brief, start to finish, in the running app, ticking off every acceptance check (the `manual-qa-haiku` runner can execute them; use `manual-qa-sonnet` for the visual judgment). Not "do the endpoints respond" but "does this feel like the thing." Judge each screen with the `super-ui-ux-design` lens (squint test: is the primary action the most prominent element? is hierarchy, contrast, and spacing deliberate?). Screenshot the key screens as evidence; where there are no screens, keep the commands you ran and their output.
 3. **Check the experience seams** — empty states, error messages, loading, the README/run instructions a stranger would need. One-shot apps die at the seams, not the core.
 4. **Audit the paper trail** — every free-will collapse has its decision-log entry; assumptions from Phase 0 are stated, not buried.
 5. **The honest gap list** — what you'd do next, what you knowingly cut, what is weaker than it looks. Naming the gaps is what makes the rest of the report trustworthy.
@@ -86,7 +86,7 @@ One report, written for the partner who just walked back in:
 
 - **What was built** — capabilities, and how to run it (exact commands, also recorded in the project map)
 - **Acceptance checks** — each one, passed or not, with evidence
-- **Decisions** — the founding ADR and each mid-build fork: what won, what was rejected, why (link the `docs/decision_logs/` entries)
+- **Decisions** — the founding ADR and each mid-build fork: what won, what was rejected, why (link the `<P>/docs/decision_logs/` entries)
 - **How it was verified** — what you ran, what you saw, screenshots from the conscious walk
 - **Adversarial findings** — found, fixed, and the false alarms
 - **The gap list** — known limitations and the natural next phase

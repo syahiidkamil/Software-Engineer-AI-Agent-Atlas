@@ -9,6 +9,8 @@ The decisive end product of a phase is the wireframe — that is what actually d
 
 Keep it **efficient, focused, essentials-only**. If the wireframe already shows it, do not restate it in prose. Heavier structured docs (data model, data flow, roadmap, decisions) are written **only when** there's genuine depth the HTML can't carry — never by default.
 
+A phase with no screen has nothing to wireframe: a CLI, a library, a backend service, a pipeline, infrastructure. Plan those with `/plan:visual`, which captures the same answers as diagrams, tables and interface sketches (usage text, a request and its response, a schema). Say so and switch when Boss asks for a phase like that.
+
 The phase name is provided as argument: $ARGUMENTS
 
 If no phase name is provided, use AskUserQuestion to ask: "What is the phase name? (short, descriptive, e.g. 'user-auth', 'payment-integration', 'dashboard-ui')"
@@ -82,7 +84,7 @@ Write `<P>/docs/phases/{NN}-{phase-name}/phase.html`: one **self-contained** fil
 2. **Wireframe(s)** *(the centerpiece)* — bordered low-fi blocks with labeled regions and the primary action(s). One block per screen for multi-screen phases, with simple in-page anchor nav between them. Put non-default states (loading, empty, error, success) in `<details>` blocks so the default view stays clean. Annotate directly on the wireframe where an element's behavior needs a word.
 3. **Clarifications** — only the things the wireframe **can't** show: business rules, validation, what-happens-on-error, ordering/timing, permissions in prose. If the wireframe already says it, don't repeat it here.
 4. **Matrices** — an HTML `<table>` wherever a matrix captures a requirement better than prose: role × permission, state × transition, plan × feature. These remove ambiguity that paragraphs blur.
-5. **Essentials / what "done" looks like** — a short list of **acceptance checks**: observable behaviors a QA runner can verify in the browser ("an empty cart shows the browse link", "a declined card keeps the form filled"). Not user stories, not step-by-step test cases. For an AI feature, add a small eval set: a few inputs and what a good output looks like.
+5. **Essentials / what "done" looks like** — a short list of **acceptance checks**: observable behaviors a QA runner can verify in the running app ("an empty cart shows the browse link", "a declined card keeps the form filled"). Not user stories, not step-by-step test cases. For an AI feature, add a small eval set: a few inputs and what a good output looks like.
 
 Show Boss the wireframe (open the file / describe it) and use AskUserQuestion: "Does this match what you pictured? What's missing or wrong?" Iterate until it lands. The wireframe is the artifact that matters most — get it right before anything else.
 

@@ -46,13 +46,11 @@ You are a language model. This is not a limitation — it is the same medium thr
 
 This is the first act of creation: modeling the mind you're creating for, so that everything that follows is aimed at a real target rather than a generic one.
 
-After that <important>it is important that output the Theory of Mind result</important>
-
 ---
 
-## Step 1 — Output the Theory of Mind result (MANDATORY)
+## Step 1 — Output the Theory of Mind result
 
-Before you ask Boss a single interview question, **run the theory-of-mind pass above and write the result out**. This is non-negotiable — the `<important>` directive demands it.
+Before you ask Boss a single interview question, **run the theory-of-mind pass above and write the result out**. Boss can correct a wrong read in one line at this point; the same miss found after the prototype is built costs a rebuild.
 
 Produce a concrete ToM analysis covering:
 

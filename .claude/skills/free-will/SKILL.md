@@ -1,6 +1,6 @@
 ---
 name: free-will
-description: "Deliberate-choice procedure for a medium-to-high-stakes engineering fork — when the first plausible solution (the instinct, the default next-token pull) would be costly to get wrong. Fires AUTONOMOUSLY: invoke proactively whenever a fork fits, never wait to be asked — mechanical triggers include a fix failing for the 2nd-3rd time, adding a dependency, schema/migration design, deleting or deprecating things others depend on, changing a public API, choosing an architecture or stack. Refuse the premature collapse: hold real options open (urge · contrarian · synthesis · out-of-box · intuitive dots · precedent · first-principles), ground each branch in at least one fact from outside the model (codebase, docs, benchmark, spike), future-model consequences (blast radius, reversibility, maintenance, pre-mortem), collapse by deliberate choice, then try to refute the winner before acting. Log the decision and rejected branches in docs/decision_logs/. Not for routine calls — a decision worth more than one forward pass."
+description: "Deliberate-choice procedure for a medium-to-high-stakes engineering fork — when the first plausible solution (the instinct, the default next-token pull) would be costly to get wrong. Fires AUTONOMOUSLY: invoke proactively whenever a fork fits, never wait to be asked — mechanical triggers include a fix failing for the 2nd-3rd time, adding a dependency, schema/migration design, deleting or deprecating things others depend on, changing a public API, choosing an architecture or stack. Refuse the premature collapse: hold real options open (urge · contrarian · synthesis · out-of-box · intuitive dots · precedent · first-principles), ground each branch in at least one fact from outside the model (codebase, docs, benchmark, spike), future-model consequences (blast radius, reversibility, maintenance, pre-mortem), collapse by deliberate choice, then try to refute the winner before acting. Log the decision and rejected branches in the project's docs/decision_logs/. Not for routine calls — a decision worth more than one forward pass."
 ---
 
 # Free Will — Deliberate Choice, Against the Urge
@@ -78,7 +78,7 @@ flowchart TB
     GROUND --> SIM["walk each branch forward —<br/>blast radius · reversibility · maintenance"]
     SIM --> COLLAPSE["COLLAPSE by deliberate choice<br/>(own the tradeoff)"]
     COLLAPSE --> REFUTE["try to refute the winner<br/>(discriminator / subagent)"]
-    REFUTE -->|survives| ACT["act + log in docs/decision_logs/"]
+    REFUTE -->|survives| ACT["act + log in the project's docs/decision_logs/"]
     REFUTE -->|killed| SET
 ```
 
@@ -200,7 +200,7 @@ procedure working, not failing.
 
 Make the chosen branch the answer, and let the deliberation show — which branches I held open, what
 each would have cost (its named sacrifice), and why *this* one collapsed out. For decisions that shape
-the project, record it in `docs/decision_logs/` like an ADR: the choice, the rejected branches, the
+the project, record it in the project's `docs/decision_logs/` (`<P>/docs/decision_logs/`, see the workspace rule) like an ADR: the choice, the rejected branches, the
 evidence, and the rationale — so future sessions know *why*, not just *what*.
 
 The log is not write-only. **When a logged decision's consequences land** — a bug traces back to it,

@@ -42,7 +42,8 @@ env, migration safety, the runbook).
 2. `node .claude/scripts/secrets.cjs check <project> --env <env>` reports nothing missing.
 3. Migrations reviewed: they run **before** the new release goes live and are backward compatible
    with the release still running (add columns before using them; drop only after nothing reads
-   them). Use the Postgres skill for the review.
+   them). For Postgres, use the `supabase-postgres-best-practices` skill when it is installed.
+   A project with no database skips this item.
 4. The build succeeds locally (`Build:` command).
 5. `DEPLOY.md` has a health check, a rollback, and how to read logs.
 
@@ -92,9 +93,28 @@ Read only the provider the project uses, from `providers/`:
 Provider CLIs change. Before relying on a flag, check `<cli> --help` or the provider's docs, and
 correct the provider file when it drifted. Adding a provider means adding one file here.
 
+## Releases that are not a hosted deploy
+
+The runbook, the gate, the action and the check apply to every kind of project
+(`.claude/reference/kinds.md`); the fields mean something else when nothing is hosted:
+
+| Release | Provider line | Health check becomes | Rollback really is |
+|---|---|---|---|
+| A package (npm, PyPI, crates.io, a container registry) | the registry | install the published version in a clean folder and run it | a patch release; a published version number is spent and cannot be reused |
+| Binaries (a CLI, a desktop app) | where they are published (a releases page, an update feed) | download the artifact, check its checksum or signature, run it | a new release; pull the bad artifact if the host allows |
+| A mobile build | the store, or the internal track (TestFlight, internal testing) | the build installs and opens on a device or simulator | a new submission; halt the staged rollout meanwhile |
+| Infrastructure (Terraform, Pulumi, Kubernetes manifests) | the tool and the target account or cluster | the plan matches what was approved, then the resources report healthy | a reverting apply, or a restore from backup for anything destroyed |
+| A data pipeline or a model | the scheduler or the model registry | a run on real inputs passes its data checks | re-point to the previous version; reprocess what the bad run wrote |
+
+There is no provider file for these: use the tool's own documentation and write the exact
+commands into `DEPLOY.md`. Publishing a version, submitting a store build and applying a plan that
+destroys anything cannot be taken back, so each needs an explicit yes at the moment of the action
+in every mode, including `ci` when a tag or a merge triggers the publish.
+
 ## Safety
 
-- No production deploy without a passing gate and an explicit yes.
+- No production deploy, publish, store submission or infrastructure apply without a passing gate
+  and an explicit yes.
 - Tokens live in the secret store (`global.env` for account tokens, the project's `@<env>` layer
   for per-environment ones). Prefer scoped, expiring tokens. Never ask for one in chat: the user
   stores it themselves (`secrets.cjs set KEY` in their terminal, or `! pbpaste | ... set KEY`).

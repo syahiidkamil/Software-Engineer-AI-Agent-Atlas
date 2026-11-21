@@ -52,4 +52,38 @@ function hook(name, args, { root, input = '', env = {} } = {}) {
   });
 }
 
-module.exports = { REPO, SCRIPTS, HOOKS, tempDir, workspace, write, read, exists, script, hook };
+/** Run the package CLI (bin/install.js). */
+function cli(args, { input = '', cwd } = {}) {
+  const r = spawnSync(process.execPath, [path.join(REPO, 'bin', 'install.js'), ...args], {
+    input,
+    cwd,
+    encoding: 'utf-8',
+    env: { ...process.env, ATLAS_SKIP_SUBMODULE: '1', GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@t' },
+  });
+  return { status: r.status, out: r.stdout.replace(/\x1b\[[0-9;]*m/g, ''), err: r.stderr };
+}
+
+/** Run the real scaffolder with piped answers (the numeric fallback prompts). */
+function scaffold(answers, { into } = {}) {
+  const dir = into || path.join(tempDir(), 'Saori-Hibana');
+  const r = cli(['new-project', dir], { input: answers.join('\n') + '\n' });
+  if (r.status !== 0) throw new Error(`scaffold failed:\n${r.out}${r.err}`);
+  return { dir, out: r.out };
+}
+
+/** The real content of files swe-atlas 2.6.4 shipped and 3.0.0 retired, by workspace path (test/fixtures/legacy-2.6.4). */
+function legacy() {
+  const base = path.join(__dirname, 'fixtures', 'legacy-2.6.4', 'claude');
+  const out = {};
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else out[`.claude/${path.relative(base, full).split(path.sep).join('/')}`] = fs.readFileSync(full);
+    }
+  };
+  walk(base);
+  return out;
+}
+
+module.exports = { REPO, SCRIPTS, HOOKS, tempDir, workspace, write, read, exists, script, hook, cli, scaffold, legacy };

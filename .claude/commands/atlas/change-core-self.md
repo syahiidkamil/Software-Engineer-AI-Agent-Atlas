@@ -44,9 +44,9 @@ Interview *first*. Assume nothing. Use AskUserQuestion in batches; go deeper whe
 
 Stop interviewing when you can state, in one paragraph, **what this project rewards and what it punishes.**
 
-## Phase 2 — Reason it out (chain of thought)
+## Phase 2 — Reason it out
 
-Think step by step, explicitly, before proposing anything. This reasoning *is* the command — do not shortcut to a template.
+Write this reasoning out before proposing anything. It is the substance of the command, and Boss reads it to check each verdict, so a template filled in from habit defeats the purpose.
 
 1. **Restate** what the project rewards and punishes, from the interview.
 2. **Judge every default, one by one** — KISS, YAGNI, DRY, modularity/SRP, clean architecture, file-size limits, error handling, observability, testing, security/correctness. For each: **keep, drop, or invert** for *this* project, with the reason. No principle is carried over by default; each must earn its place here, and "drop entirely" is a valid, expected verdict.

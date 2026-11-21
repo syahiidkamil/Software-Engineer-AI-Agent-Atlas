@@ -18,8 +18,11 @@ function template(...segments) {
   return fs.readFileSync(path.join(TEMPLATES_DIR, ...segments), 'utf-8');
 }
 
+/** Today in the machine's own time zone: toISOString() is UTC and reads a day early before 07:00 in UTC+7. */
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const two = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
 }
 
 /**
@@ -29,14 +32,15 @@ function today() {
  * repo/project: files live at the root and the map is PROJECT.md (the root
  * CLAUDE.md is the identity and imports it).
  */
-function projectFiles(mode, { name, stage = 'mvp', oneLine, stack }) {
+function projectFiles(mode, { name, stage = 'mvp', kind, oneLine, stack }) {
   if (!STAGES.includes(stage)) throw new Error(`stage must be one of: ${STAGES.join(', ')}`);
   const multi = mode === 'multi';
   const vars = {
     PROJECT: name,
     STAGE: stage,
     ONE_LINE: oneLine || '<what it is, for whom>',
-    STACK: stack || '<framework, database, hosting>',
+    KIND: kind || '<web-app | backend-service | mobile-app | desktop-app | cli | library | game | data-ml | infrastructure | other>',
+    STACK: stack || '<languages and frameworks, data stores, where it runs>',
     NOW: 'nothing started yet',
     DATE: today(),
     PROJECT_ARG: multi ? ` ${name}` : '',
@@ -110,7 +114,8 @@ function upsertIndexRow(text, row) {
 
 /** Read "Stage:" / "One line:" from a project map and "Now:" from a STATUS.md. */
 function readLineValue(text, label) {
-  const m = new RegExp(`^${label}:\\s*(.*)$`, 'mi').exec(text || '');
+  // [ \t]*, not \s*: an empty "Now:" line must not swallow the line after it
+  const m = new RegExp(`^${label}:[ \\t]*(.*)$`, 'mi').exec(text || '');
   return m ? m[1].trim() : '';
 }
 
@@ -154,8 +159,9 @@ function mergeGitignore(existing, mode) {
       if (i + 1 < missing.length && !missing[i + 1].startsWith('#')) out.push(missing[i]);
     } else out.push(missing[i]);
   }
+  const eol = /\r\n/.test(existing || '') ? '\r\n' : '\n'; // a CRLF file stays CRLF
   const base = (existing || '').replace(/\s*$/, '');
-  return `${base ? `${base}\n\n` : ''}${out.join('\n')}\n`;
+  return `${base ? `${base}${eol}${eol}` : ''}${out.join(eol)}${eol}`;
 }
 
 module.exports = {

@@ -262,7 +262,7 @@ If a previous DESIGN.md was archived in Step 0, leave the archived copy in place
 
 ## Step 7: Self-review
 
-Before reporting to Boss, run the **Generator–Discriminator Loop** discriminator pass once:
+Before reporting to Boss, review the result once against this list (the "Review Before Delivering" step of the work protocol):
 
 1. **Token completeness** — every YAML token has a real value (no `{{PLACEHOLDER}}`)?
 2. **Token coherence** — every component reference (`{colors.primary}`) resolves to a defined token?
@@ -273,7 +273,7 @@ Before reporting to Boss, run the **Generator–Discriminator Loop** discriminat
 7. **Self-sufficiency** — could a fresh agent build a new screen using only this DESIGN.md and produce something that feels like the locked-in variant? Read it cold and check.
 8. **Stitch compliance** — does the token block parse as valid YAML? Tokens use `{path.to.token}` reference syntax? Does the rule's own frontmatter hold only `paths:`, and does a pattern actually match the project's UI files?
 
-Fix every gap. The final DESIGN.md is frozen — it should not need a Round 2 from this discriminator.
+Fix every gap. The final DESIGN.md is frozen — it should not need a second round of this review.
 
 ## Step 8: Summary
 

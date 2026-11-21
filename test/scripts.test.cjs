@@ -1,5 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('fs');
 const net = require('net');
 const path = require('path');
 const { workspace, write, read, exists, script } = require('./helpers.cjs');
@@ -30,6 +31,162 @@ test('project: add creates the skeleton and registers it; status refreshes', () 
   assert.notEqual(script('project.cjs', ['add', 'general'], { root }).status, 0, 'reserved name refused');
   const list = JSON.parse(script('project.cjs', ['list', '--json'], { root }).stdout);
   assert.equal(list[0].Project, 'shop');
+});
+
+test('project: --kind lands in the map, and a project of any kind gets the same skeleton', () => {
+  const root = workspace({ mode: 'multi' });
+  const r = script('project.cjs', ['add', 'tool', '--kind', 'cli', '--one-line', 'a command-line tool', '--stack', 'Go'], { root });
+  assert.equal(r.status, 0, r.stderr);
+  const map = read(root, 'projects/tool/CLAUDE.md');
+  assert.match(map, /^Kind: cli$/m);
+  assert.match(map, /^- verify: /m);
+  assert.match(map, /\.claude\/reference\/kinds\.md/, 'the map points at the reference that explains its Kind line');
+  assert.match(read(root, 'index.md'), /\| tool \| a command-line tool \| mvp \| Go \|/, 'the registry row keeps its columns');
+});
+
+// ─── knowledge notes ────────────────────────────────────────────────────────
+
+const note = (when, title, body, extra = '') => `---\nwhen: ${when}\nlearned: 2026-01-05\n${extra}---\n# ${title}\n\n${body}\n`;
+const RETRY = ['add', 'shop', '--title', 'Stripe retries the checkout webhook until it gets a 2xx', '--when', 'touching the checkout webhook'];
+
+test('knowledge: add writes one note per fact; the index is computed, never stored', () => {
+  const root = multiWorkspace();
+  const before = read(root, 'projects/shop/CLAUDE.md');
+  assert.match(script('knowledge.cjs', ['list', 'shop'], { root }).stdout, /no notes yet/);
+
+  const r = script('knowledge.cjs', RETRY, { root, input: 'Make the handler idempotent on the event id.\n' });
+  assert.equal(r.status, 0, r.stderr);
+  const file = 'projects/shop/docs/knowledge/stripe-retries-the-checkout-webhook-until-it-gets-a-2xx.md';
+  assert.match(r.stdout, new RegExp(`wrote ${file.replace(/\./g, '\\.')}`));
+  assert.match(read(root, file), /^---\nwhen: touching the checkout webhook\nlearned: \d{4}-\d\d-\d\d\n---\n# Stripe retries the checkout webhook until it gets a 2xx\n\nMake the handler idempotent on the event id\.\n$/);
+
+  const list = script('knowledge.cjs', ['list', 'shop'], { root }).stdout;
+  assert.match(list, /Knowledge: shop \(1\)/);
+  assert.ok(list.includes(file), 'the list prints a path that can be read as it is');
+  assert.match(list, /read when: touching the checkout webhook/);
+  assert.ok(!exists(root, 'projects/shop/docs/knowledge/INDEX.md'), 'no index file to go stale or collide on');
+  assert.equal(read(root, 'projects/shop/CLAUDE.md'), before, 'adding a note never touches the always-loaded map');
+
+  // a note written by hand (another session, a subagent) shows up with no extra step
+  write(root, 'projects/shop/docs/knowledge/dev-db-needs-docker.md', note('starting the dev server', 'The dev database only runs in Docker', 'Run docker compose up db first.'));
+  assert.match(script('knowledge.cjs', ['list', 'shop'], { root }).stdout, /Knowledge: shop \(2\)[\s\S]*The dev database only runs in Docker/);
+});
+
+test('knowledge: a near-duplicate is refused and the existing note is named', () => {
+  const root = multiWorkspace();
+  assert.equal(script('knowledge.cjs', RETRY, { root, input: 'body\n' }).status, 0);
+  const dup = script('knowledge.cjs', ['add', 'shop', '--title', 'Checkout webhook: Stripe retries until 2xx', '--when', 'x'], { root, input: 'body\n' });
+  assert.notEqual(dup.status, 0);
+  assert.match(dup.stderr, /a similar note exists; update it instead[\s\S]*stripe-retries-the-checkout-webhook/);
+  assert.equal(script('knowledge.cjs', ['add', 'shop', '--title', 'Checkout webhook: Stripe retries until 2xx', '--when', 'x', '--force'], { root, input: 'body\n' }).status, 0);
+  assert.equal(script('knowledge.cjs', ['add', 'shop', '--title', 'Tailwind classes are purged in production builds', '--when', 'a style missing only after build'], { root, input: 'body\n' }).status, 0, 'an unrelated fact is not a duplicate');
+
+  assert.notEqual(script('knowledge.cjs', ['add', 'shop', '--title', 'no body', '--when', 'x'], { root, input: '' }).status, 0, 'an empty body is refused');
+  assert.notEqual(script('knowledge.cjs', ['add', 'shop', '--title', 'no when'], { root, input: 'b\n' }).status, 0);
+  assert.notEqual(script('knowledge.cjs', ['add', '--title', 't', '--when', 'w'], { root, input: 'b\n' }).status, 0, 'multi mode needs a project or --shared');
+  assert.notEqual(script('knowledge.cjs', ['list', 'nope'], { root }).status, 0);
+
+  const long = script('knowledge.cjs', ['add', 'shop', '--title', 'The webhook signing secret is shown once in the provider dashboard', '--when', 'x'], { root, input: 'b\n' });
+  assert.match(long.stdout, /knowledge\/the-webhook-signing-secret-is-shown-once-in-the-provider\.md/, 'a long title is cut at a word, not mid-word');
+});
+
+test('knowledge: a fact shared by projects lives once at the root; each project sees its own and the shared ones', () => {
+  const root = multiWorkspace();
+  assert.equal(script('project.cjs', ['add', 'blog'], { root }).status, 0);
+  script('knowledge.cjs', RETRY, { root, input: 'body\n' });
+  const shared = script('knowledge.cjs', ['add', '--shared', '--title', 'The host answers 502 until its certificate exists', '--when', 'the first deploy of any service'], { root, input: 'body\n' });
+  assert.equal(shared.status, 0, shared.stderr);
+  assert.ok(exists(root, 'docs/knowledge/the-host-answers-502-until-its-certificate-exists.md'));
+  write(root, 'projects/blog/docs/learning-from-mistakes/stale-cache.md', '# Stale cache after deploy\n\n**Date**: 2026-10-01\n');
+
+  const blog = script('knowledge.cjs', ['list', 'blog'], { root }).stdout;
+  assert.doesNotMatch(blog, /Stripe/, "another project's notes stay out");
+  assert.match(blog, /Shared by all projects \(1\)[\s\S]*The host answers 502/);
+  assert.match(blog, /Lessons \(1\)[\s\S]*Stale cache after deploy/, 'lessons are listed in the same place, so a fact is looked for once');
+
+  const shop = script('knowledge.cjs', ['list', 'shop', '--json'], { root });
+  const json = JSON.parse(shop.stdout);
+  assert.equal(json.notes.length, 1);
+  assert.equal(json.shared.length, 1);
+  assert.equal(json.lessons.length, 0);
+
+  const top = script('knowledge.cjs', ['list'], { root }).stdout;
+  assert.match(top, /Shared by all projects \(1\)/);
+  assert.match(top, /Per project: shop \(1\)/);
+  assert.doesNotMatch(top, /Stripe/, 'without a project, only the shared notes are printed');
+});
+
+test('knowledge: one project at the root needs no name', () => {
+  const root = workspace({ mode: 'repo', project: 'solo' });
+  const r = script('knowledge.cjs', ['add', '--title', 'The CLI exits 0 on a parse error', '--when', 'scripting around the CLI'], { root, input: 'body\n' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(exists(root, 'docs/knowledge/the-cli-exits-0-on-a-parse-error.md'));
+  const list = script('knowledge.cjs', ['list'], { root }).stdout;
+  assert.match(list, /Knowledge: solo \(1\)/);
+  assert.doesNotMatch(list, /Shared by all projects/);
+});
+
+test('knowledge: odd input is handled, not crashed on', () => {
+  const root = multiWorkspace();
+  // a folder whose name ends in .md is not a note
+  fs.mkdirSync(path.join(root, 'projects/shop/docs/knowledge/archive.md'), { recursive: true });
+  assert.equal(script('knowledge.cjs', RETRY, { root, input: 'body\n' }).status, 0);
+  const list = script('knowledge.cjs', ['list', 'shop'], { root });
+  assert.equal(list.status, 0, list.stderr);
+  assert.match(list.stdout, /Knowledge: shop \(1\)/);
+  assert.equal(script('knowledge.cjs', ['check', 'shop'], { root }).status, 0);
+
+  // a title with no ASCII letters still gets a file, and a second one a different file
+  const first = script('knowledge.cjs', ['add', 'shop', '--title', '決済のWebhookは冪等にする', '--when', 'touching payments'], { root, input: 'body\n' });
+  assert.equal(first.status, 0, first.stderr);
+  const second = script('knowledge.cjs', ['add', 'shop', '--title', 'ログインはメール確認が必要', '--when', 'touching auth'], { root, input: 'body\n' });
+  assert.equal(second.status, 0, second.stderr);
+  // only "webhook" survives of this title, so it reads like the first one: refused by default, its own file when insisted on
+  const REFUND = ['add', 'shop', '--title', '返金のWebhookは順不同で届く', '--when', 'touching refunds'];
+  assert.match(script('knowledge.cjs', REFUND, { root, input: 'body\n' }).stderr, /a similar note exists/);
+  const third = script('knowledge.cjs', [...REFUND, '--force'], { root, input: 'body\n' });
+  assert.equal(third.status, 0, third.stderr);
+  assert.match(script('knowledge.cjs', [...REFUND, '--force'], { root, input: 'body\n' }).stderr, /already exists/, 'the same title twice is still refused');
+  const files = fs.readdirSync(path.join(root, 'projects/shop/docs/knowledge')).filter((f) => f.endsWith('.md') && f !== 'archive.md').sort();
+  assert.equal(files.length, 4, 'each fact gets its own file');
+  assert.ok(files.includes('webhook.md') && files.some((f) => /^webhook-[0-9a-f]{6}\.md$/.test(f)) && files.some((f) => /^note-[0-9a-f]{10}\.md$/.test(f)), files.join(' '));
+  assert.match(script('knowledge.cjs', ['list', 'shop'], { root }).stdout, /決済のWebhookは冪等にする/);
+
+  // a line break in --when or --title cannot break the front matter
+  const r = script('knowledge.cjs', ['add', 'shop', '--title', 'Tailwind classes are purged\r\nin production builds', '--when', 'a style missing\r\nlearned: 1999-01-01'], { root, input: 'body\n' });
+  assert.equal(r.status, 0, r.stderr);
+  const text = read(root, 'projects/shop/docs/knowledge/tailwind-classes-are-purged-in-production-builds.md');
+  assert.match(text, /^---\nwhen: a style missing learned: 1999-01-01\nlearned: \d{4}-\d\d-\d\d\n---\n# Tailwind classes are purged in production builds\n/);
+  assert.equal(script('knowledge.cjs', ['check', 'shop'], { root }).status, 0);
+});
+
+test('knowledge check: says what makes a note unreadable, duplicated or stale, and when a dream is due', () => {
+  const root = multiWorkspace();
+  const today = new Date().toISOString().slice(0, 10);
+  write(root, 'projects/shop/docs/knowledge/good.md', note('seeding the database', 'Seeds must run before the first login', 'body', `checked: ${today}\n`));
+  let r = script('knowledge.cjs', ['check', 'shop'], { root });
+  assert.equal(r.status, 0);
+  assert.match(r.stdout, /^1 note, 0 findings\.\n$/);
+
+  write(root, 'projects/shop/docs/knowledge/no-when.md', `---\nlearned: ${today}\n---\n# A note nobody will find\n\nbody\n`);
+  write(root, 'projects/shop/docs/knowledge/no-title.md', `---\nwhen: x\nlearned: ${today}\n---\nbody without a heading\n`);
+  write(root, 'projects/shop/docs/knowledge/long.md', `---\nwhen: x\nlearned: ${today}\n---\n# A spec in disguise\n\n${Array.from({ length: 45 }, (_, i) => `line ${i}`).join('\n')}\n`);
+  write(root, 'projects/shop/docs/knowledge/old.md', note('y', 'Something learned long ago about caching headers', 'body'));
+  write(root, 'projects/shop/docs/knowledge/dup.md', `---\nwhen: z\nlearned: ${today}\n---\n# Seeds must run before first login\n\nbody\n`);
+  write(root, 'docs/learning-from-mistakes/seeds.md', '# Seeds must run before the first login\n');
+  r = script('knowledge.cjs', ['check', 'shop', '--json'], { root });
+  const { findings, due, notes } = JSON.parse(r.stdout);
+  const problems = (name) => findings.filter((f) => f.file.endsWith(name)).map((f) => f.problem).join(' | ');
+  assert.equal(notes, 6);
+  assert.equal(due, true);
+  assert.match(problems('no-when.md'), /no "when:" line/);
+  assert.match(problems('no-title.md'), /no "# title" line/);
+  assert.match(problems('long.md'), /too long for a note/);
+  assert.match(problems('old.md'), /not re-checked against the code/);
+  assert.match(problems('dup.md'), /likely the same fact as projects\/shop\/docs\/knowledge\/good\.md/);
+  assert.match(problems('good.md'), /likely the same fact as docs\/learning-from-mistakes\/seeds\.md/, 'a note that repeats a lesson is a duplicate too');
+  assert.doesNotMatch(problems('good.md'), /not re-checked/, 'a checked: date resets the clock');
+  assert.match(script('knowledge.cjs', ['check', 'shop'], { root }).stdout, /Due for \/atlas:dream\./);
 });
 
 test('project: refuses in single-project modes', () => {
@@ -219,7 +376,7 @@ test('port: reports a bound port as in use and a free one as free', async () => 
 
 test('every script answers --help with exit 0', () => {
   const root = workspace({ mode: 'repo' });
-  for (const s of ['secrets.cjs', 'db.cjs', 'project.cjs', 'mode.cjs', 'port.cjs']) {
+  for (const s of ['secrets.cjs', 'db.cjs', 'project.cjs', 'mode.cjs', 'port.cjs', 'knowledge.cjs']) {
     const r = script(s, ['--help'], { root });
     assert.equal(r.status, 0, `${s}: ${r.stderr}`);
     assert.match(r.stdout, /Usage/);

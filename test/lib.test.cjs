@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const lib = require('../.claude/scripts/lib/atlas.cjs');
 const ws = require('../.claude/scripts/lib/workspace.cjs');
+const { spawnSync } = require('child_process');
 const { tempDir } = require('./helpers.cjs');
 
 test('dotenv: parse handles export, quotes, escapes, comments, multiline', () => {
@@ -148,7 +149,33 @@ test('gitignore: merge adds missing lines once and never removes user lines', ()
 test('project files: multi map is CLAUDE.md, other modes PROJECT.md; stage validated', () => {
   assert.deepEqual(Object.keys(ws.projectFiles('multi', { name: 'shop' })), ['CLAUDE.md', 'STATUS.md', '.env.example']);
   const files = ws.projectFiles('repo', { name: 'shop', stage: 'toy', oneLine: 'a shop' });
-  assert.match(files['PROJECT.md'], /^# shop\n\nStage: toy\nOne line: a shop/);
+  assert.match(files['PROJECT.md'], /^# shop\n\nStage: toy\nKind: <web-app \| backend-service \| [^\n]+>\nOne line: a shop/, 'no kind given leaves the choices to fill in');
+  const cli = ws.projectFiles('repo', { name: 'tool', kind: 'cli', oneLine: 'a tool' })['PROJECT.md'];
+  assert.match(cli, /^# tool\n\nStage: mvp\nKind: cli\nOne line: a tool/);
+  assert.match(cli, /^- verify: /m, 'the map says how a change is seen working, whatever the kind');
+  assert.doesNotMatch(cli, /\{\{[A-Z_]+\}\}/, 'no placeholder left unrendered');
+  assert.match(cli, /`node \.claude\/scripts\/knowledge\.cjs list`/, 'one project: the notes command needs no name');
+  const multiMap = ws.projectFiles('multi', { name: 'shop' })['CLAUDE.md'];
+  assert.match(multiMap, /`node \.claude\/scripts\/knowledge\.cjs list shop`/, 'multi: the map points at its own notes');
+  assert.doesNotMatch(multiMap, /@docs\/knowledge|@.*knowledge/, 'notes are pointed at, never imported');
+  assert.match(ws.today(), /^\d{4}-\d\d-\d\d$/);
   assert.match(files['.env.example'], /secrets\.cjs link\n/);
   assert.throws(() => ws.projectFiles('repo', { name: 'x', stage: 'enterprise' }));
+});
+
+test('workspace: today() is the date where the machine is, on both sides of UTC', { skip: process.platform === 'win32' }, () => {
+  // UTC+14 and UTC-11 are 25 hours apart, so at any instant at least one of them is on a different date than UTC
+  const libPath = path.join(__dirname, '..', '.claude', 'scripts', 'lib', 'workspace.cjs');
+  const dates = ['Pacific/Kiritimati', 'Pacific/Pago_Pago'].map((timeZone) => {
+    const r = spawnSync(process.execPath, ['-e', `process.stdout.write(require(${JSON.stringify(libPath)}).today())`], { env: { ...process.env, TZ: timeZone }, encoding: 'utf-8' });
+    assert.equal(r.stdout, new Intl.DateTimeFormat('en-CA', { timeZone }).format(new Date()), timeZone);
+    return r.stdout;
+  });
+  assert.notEqual(dates[0], dates[1]);
+});
+
+test('workspace: readLineValue reads one line and never the next', () => {
+  assert.equal(ws.readLineValue('# Status\n\nNow:\nNext: ship it\n', 'Now'), '', 'an empty value stays empty');
+  assert.equal(ws.readLineValue('Now:   building checkout  \r\nNext: x\n', 'Now'), 'building checkout');
+  assert.equal(ws.readLineValue('Stage: mvp\n', 'One line'), '');
 });

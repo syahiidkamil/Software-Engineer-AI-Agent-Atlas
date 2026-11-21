@@ -14,9 +14,11 @@
   "files": [
     "bin/",
     "misc/self/",
+    ".claude/atlas-manifest.json",
     ".claude/agents/",
     ".claude/commands/",
     ".claude/hooks/",
+    ".claude/reference/",
     ".claude/rules/",
     ".claude/scripts/",
     ".claude/templates/",

@@ -62,7 +62,7 @@ Review what you have, then identify the ambiguities that actually matter: the ap
 
 The *output* of this step flows straight into `plan.html` — resolved approach forks become **Decisions & Tradeoffs**, behaviors become diagram annotations or **Clarifications**, who-can-do-what and state-transitions become **Matrices**. Capture only what's load-bearing; drop the rest.
 
-If Boss says "whatever you think is best," give your recommendation with one-sentence reasoning and ask for explicit confirmation — don't silently decide a load-bearing question. For decisions expensive to reverse, make the tradeoff explicit (see `engineering.md`) and log it to `docs/decision_logs/` if it's architectural.
+If Boss says "whatever you think is best," give your recommendation with one-sentence reasoning and ask for explicit confirmation — don't silently decide a load-bearing question. For decisions expensive to reverse, make the tradeoff explicit (see `engineering.md`) and log it to `<P>/docs/decision_logs/` if it's architectural.
 
 ## Step 3: Build `plan.html` (the deliverable)
 
@@ -84,7 +84,7 @@ Write `<P>/docs/plans/{NN}-{slug}/plan.html`: one self-contained file that is bo
 2. **Approach & Architecture** — the recommended approach, with a Mermaid diagram (`flowchart` / `sequenceDiagram` / `erDiagram` / `stateDiagram`) or ASCII/CSS boxes wherever the structure beats prose.
 3. **Wireframe(s)** *(only if UI is involved)* — bordered low-fi blocks with labeled regions and primary actions; non-default states (loading, empty, error, success) in `<details>` blocks.
 4. **Change Map** — an HTML `<table>` of files to create/modify, each with a one-line purpose. This is the "what changes where" an implementer needs.
-5. **Decisions & Tradeoffs** — the load-bearing decisions, the alternative(s) rejected, and why. Link to `docs/decision_logs/` entries where they exist.
+5. **Decisions & Tradeoffs** — the load-bearing decisions, the alternative(s) rejected, and why. Link to `<P>/docs/decision_logs/` entries where they exist.
 6. **Matrices** — an HTML `<table>` wherever a matrix beats prose: role × permission, state × transition, option × tradeoff.
 7. **Risks & Failure Modes** — what could bite mid-implementation, and the mitigation.
 8. **Sequencing** — ordered build steps or milestones, each ending in a shippable/verifiable state.
