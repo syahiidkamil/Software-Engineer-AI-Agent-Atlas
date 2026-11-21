@@ -1,6 +1,6 @@
 {
   "name": "swe-atlas",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Turn Claude Code into a senior AI software engineer that holds many projects end to end: skills, subagents, slash commands, project memory, secrets, database access, and deploy runbooks, scaffolded with one command. A pragmatic alternative to spec-driven development.",
   "bin": {
     "swe-atlas": "bin/install.js"
